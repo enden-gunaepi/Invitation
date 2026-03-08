@@ -14,7 +14,7 @@ class InvitationPublicController extends Controller
     {
         $invitation = Invitation::where('slug', $slug)
             ->where('status', 'active')
-            ->with(['template', 'photos', 'events', 'wishes' => function ($q) {
+            ->with(['template', 'photos', 'events', 'loveStories', 'wishes' => function ($q) {
                 $q->where('is_approved', true)->latest()->take(50);
             }, 'rsvps' => function ($q) {
                 $q->where('is_shown', true)->latest()->take(50);
@@ -28,7 +28,7 @@ class InvitationPublicController extends Controller
     {
         $invitation = Invitation::where('slug', $slug)
             ->where('status', 'active')
-            ->with(['template', 'photos', 'events', 'wishes' => function ($q) {
+            ->with(['template', 'photos', 'events', 'loveStories', 'wishes' => function ($q) {
                 $q->where('is_approved', true)->latest()->take(50);
             }, 'rsvps' => function ($q) {
                 $q->where('is_shown', true)->latest()->take(50);

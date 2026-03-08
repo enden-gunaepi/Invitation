@@ -11,19 +11,29 @@ class GuestController extends Controller
 {
     public function index(Invitation $invitation)
     {
-        if ($invitation->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize($invitation);
 
         $guests = $invitation->guests()->paginate(20);
+        $invitation->load('package');
 
-        return view('client.guests.index', compact('invitation', 'guests'));
+        $maxGuests = $invitation->package->max_guests ?? 100;
+        $currentGuests = $invitation->guests()->count();
+
+        return view('client.guests.index', compact('invitation', 'guests', 'maxGuests', 'currentGuests'));
     }
 
     public function store(Request $request, Invitation $invitation)
     {
-        if ($invitation->user_id !== auth()->id()) {
-            abort(403);
+        $this->authorize($invitation);
+
+        // Enforce package guest limit
+        $invitation->load('package');
+        $maxGuests = $invitation->package->max_guests ?? 100;
+        $currentGuests = $invitation->guests()->count();
+
+        if ($currentGuests >= $maxGuests) {
+            return redirect()->route('client.invitations.guests.index', $invitation)
+                ->with('error', "Batas tamu untuk paket {$invitation->package->name} adalah {$maxGuests} orang. Upgrade paket untuk menambah tamu.");
         }
 
         $validated = $request->validate([
@@ -39,18 +49,23 @@ class GuestController extends Controller
         Guest::create($validated);
 
         return redirect()->route('client.invitations.guests.index', $invitation)
-            ->with('success', 'Tamu berhasil ditambahkan!');
+            ->with('success', "Tamu berhasil ditambahkan! ({$currentGuests}/{$maxGuests})");
     }
 
     public function destroy(Invitation $invitation, Guest $guest)
     {
-        if ($invitation->user_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize($invitation);
 
         $guest->delete();
 
         return redirect()->route('client.invitations.guests.index', $invitation)
             ->with('success', 'Tamu berhasil dihapus!');
+    }
+
+    private function authorize(Invitation $invitation)
+    {
+        if ($invitation->user_id !== auth()->id()) {
+            abort(403);
+        }
     }
 }

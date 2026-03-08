@@ -240,10 +240,18 @@
                 <a href="{{ route('admin.packages.index') }}" class="nav-item {{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
                     <i class="fas fa-cube"></i> Paket
                 </a>
+                <a href="{{ route('admin.payments.index') }}" class="nav-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
+                    <i class="fas fa-credit-card"></i> Pembayaran
+                    @php $pendingPayments = \App\Models\Payment::where('payment_status', 'pending')->count(); @endphp
+                    @if($pendingPayments > 0)<span class="nav-badge" style="background: var(--warning);">{{ $pendingPayments }}</span>@endif
+                </a>
             </div>
 
             <div class="nav-section">
                 <div class="nav-label">Sistem</div>
+                <a href="{{ route('admin.payment-gateway.index') }}" class="nav-item {{ request()->routeIs('admin.payment-gateway.*') ? 'active' : '' }}">
+                    <i class="fas fa-plug"></i> Payment Gateway
+                </a>
                 <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                     <i class="fas fa-gear"></i> Pengaturan
                 </a>

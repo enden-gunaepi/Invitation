@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\InvitationController;
 use App\Http\Controllers\Admin\TemplateController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PaymentGatewayController;
 use Illuminate\Support\Facades\Route;
 
 // Admin Dashboard
@@ -26,6 +28,16 @@ Route::resource('templates', TemplateController::class);
 
 // Package Management
 Route::resource('packages', PackageController::class);
+
+// Payment Management
+Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+Route::patch('/payments/{payment}/mark-paid', [PaymentController::class, 'markPaid'])->name('payments.mark-paid');
+
+// Payment Gateway Config
+Route::get('/payment-gateway', [PaymentGatewayController::class, 'index'])->name('payment-gateway.index');
+Route::put('/payment-gateway', [PaymentGatewayController::class, 'update'])->name('payment-gateway.update');
+Route::post('/payment-gateway/test', [PaymentGatewayController::class, 'testConnection'])->name('payment-gateway.test');
 
 // Settings
 Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');

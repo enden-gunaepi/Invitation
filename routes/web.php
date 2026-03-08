@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InvitationPublicController;
+use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,5 +33,9 @@ Route::middleware(['track.view'])->group(function () {
 });
 Route::post('/inv/{slug}/rsvp', [InvitationPublicController::class, 'rsvp'])->name('invitation.rsvp');
 Route::post('/inv/{slug}/wish', [InvitationPublicController::class, 'wish'])->name('invitation.wish');
+
+// Payment Gateway Callbacks (no auth - called by gateways)
+Route::post('/callback/xendit', [PaymentCallbackController::class, 'xenditCallback'])->name('callback.xendit');
+Route::post('/callback/tripay', [PaymentCallbackController::class, 'tripayCallback'])->name('callback.tripay');
 
 require __DIR__.'/auth.php';

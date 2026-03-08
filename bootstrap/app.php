@@ -27,6 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'track.view' => \App\Http\Middleware\TrackInvitationView::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'callback/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -14,6 +14,7 @@ class Invitation extends Model
         'groom_name', 'bride_name', 'host_name', 'event_date', 'event_time',
         'event_end_time', 'venue_name', 'venue_address', 'venue_lat', 'venue_lng',
         'google_maps_url', 'cover_photo', 'opening_text', 'closing_text',
+        'bank_name', 'bank_account_number', 'bank_account_name', 'gift_address', 'footer_text',
         'music_url', 'status', 'is_password_protected', 'invitation_password',
         'rsvp_deadline', 'custom_colors', 'custom_fonts', 'view_count',
         'published_at', 'expires_at', 'admin_notes',
@@ -84,6 +85,11 @@ class Invitation extends Model
         return $this->hasMany(Wish::class);
     }
 
+    public function loveStories(): HasMany
+    {
+        return $this->hasMany(LoveStory::class)->orderBy('sort_order');
+    }
+
     public function views(): HasMany
     {
         return $this->hasMany(InvitationView::class);
@@ -114,5 +120,45 @@ class Invitation extends Model
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /**
+     * Check if more guests can be added based on the package limit.
+     */
+    public function canAddGuest(): bool
+    {
+        $max = $this->package->max_guests ?? 100;
+        return $this->guests()->count() < $max;
+    }
+
+    /**
+     * Check if more photos can be added based on the package limit.
+     */
+    public function canAddPhoto(): bool
+    {
+        $max = $this->package->max_photos ?? 10;
+        return $this->photos()->count() < $max;
+    }
+
+    /**
+     * Get guest limit info: [current, max].
+     */
+    public function guestLimitInfo(): array
+    {
+        return [
+            'current' => $this->guests()->count(),
+            'max' => $this->package->max_guests ?? 100,
+        ];
+    }
+
+    /**
+     * Get photo limit info: [current, max].
+     */
+    public function photoLimitInfo(): array
+    {
+        return [
+            'current' => $this->photos()->count(),
+            'max' => $this->package->max_photos ?? 10,
+        ];
     }
 }
