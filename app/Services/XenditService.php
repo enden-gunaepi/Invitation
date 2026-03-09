@@ -14,9 +14,9 @@ class XenditService
 
     public function __construct()
     {
-        $this->apiKey = Setting::get('xendit_secret_key', '');
-        $this->callbackToken = Setting::get('xendit_callback_token', '');
-        $mode = Setting::get('xendit_mode', 'sandbox');
+        $this->apiKey = (string) (Setting::get('xendit_secret_key', '') ?? '');
+        $this->callbackToken = (string) (Setting::get('xendit_callback_token', '') ?? '');
+        $mode = (string) (Setting::get('xendit_mode', 'sandbox') ?? 'sandbox');
         $this->baseUrl = 'https://api.xendit.co';
     }
 
@@ -25,6 +25,10 @@ class XenditService
      */
     public function createInvoice(array $data): array
     {
+        if (!$this->isConfigured()) {
+            return ['success' => false, 'error' => 'Xendit belum dikonfigurasi. Isi Secret API Key terlebih dahulu.'];
+        }
+
         try {
             $response = Http::withBasicAuth($this->apiKey, '')
                 ->post("{$this->baseUrl}/v2/invoices", [
@@ -40,6 +44,7 @@ class XenditService
                     'failure_redirect_url' => $data['failure_url'] ?? null,
                     'invoice_duration' => 86400, // 24 hours
                     'currency' => 'IDR',
+                    'payment_methods' => $data['payment_methods'] ?? null,
                 ]);
 
             if ($response->successful()) {
@@ -90,6 +95,10 @@ class XenditService
      */
     public function testConnection(): array
     {
+        if (!$this->isConfigured()) {
+            return ['success' => false, 'error' => 'Xendit belum dikonfigurasi lengkap.'];
+        }
+
         try {
             $response = Http::withBasicAuth($this->apiKey, '')
                 ->get("{$this->baseUrl}/balance");

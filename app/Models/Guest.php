@@ -11,7 +11,15 @@ class Guest extends Model
 {
     protected $fillable = [
         'invitation_id', 'name', 'phone', 'email', 'token', 'category', 'pax', 'notes',
+        'table_number', 'seat_label', 'checked_in_at', 'checkin_method', 'checked_in_by_user_id',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'checked_in_at' => 'datetime',
+        ];
+    }
 
     protected static function booted(): void
     {

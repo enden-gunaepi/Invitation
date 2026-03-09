@@ -9,7 +9,7 @@ class InvitationEvent extends Model
 {
     protected $fillable = [
         'invitation_id', 'event_name', 'event_date', 'event_time',
-        'event_end_time', 'venue_name', 'venue_address', 'venue_maps_url', 'sort_order',
+        'event_description', 'event_end_time', 'venue_name', 'venue_address', 'venue_maps_url', 'sort_order',
     ];
 
     protected function casts(): array

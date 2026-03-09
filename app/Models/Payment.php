@@ -11,15 +11,27 @@ class Payment extends Model
         'user_id', 'invitation_id', 'package_id', 'amount', 'payment_method',
         'payment_gateway', 'payment_channel', 'payment_status', 'transaction_id',
         'gateway_reference', 'callback_token', 'paid_at', 'expired_at',
-        'payment_url', 'gateway_response',
+        'payment_url', 'gateway_response', 'base_amount', 'discount_amount',
+        'tax_amount', 'total_amount', 'invoice_number', 'invoice_due_at',
+        'coupon_code', 'coupon_discount_amount', 'referral_code',
+        'affiliate_commission_amount', 'retry_count', 'last_retry_at', 'next_retry_at',
     ];
 
     protected function casts(): array
     {
         return [
             'amount' => 'decimal:2',
+            'base_amount' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
+            'tax_amount' => 'decimal:2',
+            'total_amount' => 'decimal:2',
+            'coupon_discount_amount' => 'decimal:2',
+            'affiliate_commission_amount' => 'decimal:2',
             'paid_at' => 'datetime',
             'expired_at' => 'datetime',
+            'invoice_due_at' => 'datetime',
+            'last_retry_at' => 'datetime',
+            'next_retry_at' => 'datetime',
             'gateway_response' => 'array',
         ];
     }
@@ -54,7 +66,7 @@ class Payment extends Model
         return $this->expired_at && $this->expired_at->isPast() && $this->isPending();
     }
 
-    public function markAsPaid(string $transactionId = null): void
+    public function markAsPaid(?string $transactionId = null): void
     {
         $this->update([
             'payment_status' => 'paid',

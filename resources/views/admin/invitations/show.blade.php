@@ -92,6 +92,9 @@
             <div class="p-3 bg-slate-800 rounded-lg text-xs text-indigo-400 break-all">
                 {{ $invitation->getPublicUrl() }}
             </div>
+            <a href="{{ route('admin.invitations.checkin', $invitation) }}" class="btn btn-secondary w-full text-center mt-3 text-sm">
+                <i class="fas fa-qrcode mr-2"></i> Buka Operasional Check-in
+            </a>
         </div>
         @endif
     </div>

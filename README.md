@@ -204,6 +204,29 @@ resources/views/invitations/templates/
    ```
 4. Template siap dipilih oleh client!
 
+### Referensi Aset & Data Template
+
+Gunakan relasi/data berikut saat membuat template baru supaya semua fitur tetap kompatibel:
+
+| Kebutuhan | Cara Panggil di Blade |
+|---|---|
+| Cover foto | `$invitation->cover_photo ? asset('storage/' . $invitation->cover_photo) : null` |
+| Foto mempelai | `$invitation->groom_photo`, `$invitation->bride_photo` |
+| Galeri foto | `@foreach($invitation->photos as $photo)` lalu `asset('storage/' . $photo->file_path)` |
+| Musik | `$invitation->music_url` lalu `<audio><source src="{{ asset('storage/' . $invitation->music_url) }}"></audio>` |
+| Event/rundown | `@foreach($invitation->events as $event)` (`event_name`, `event_time`, `event_description`) |
+| Love story | `@foreach($invitation->loveStories as $story)` (`title`, `description`, `year`, `photo_path`) |
+| Rekening multi-bank | `@foreach($invitation->bankAccounts as $acc)` (`bank_name`, `account_number`, `account_name`) |
+| RSVP messages | `@foreach($invitation->rsvps as $rsvp)` (pastikan controller public load relasi `rsvps`) |
+| Wishes/ucapan | `@foreach($invitation->wishes as $wish)` |
+| Peta lokasi | `venue_lat`, `venue_lng`, `google_maps_url` |
+| Link tamu personal | `$guest->getInvitationUrl()` |
+
+Catatan penting:
+1. Semua file upload disimpan di disk `public`, akses via `asset('storage/...')`.
+2. Pastikan public controller memuat relasi yang dibutuhkan template (`photos`, `events`, `loveStories`, `bankAccounts`, `rsvps`, `wishes`).
+3. Jika field opsional bisa kosong, selalu beri fallback di Blade agar template tidak error.
+
 ---
 
 ## 🗄 Struktur Database

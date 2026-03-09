@@ -109,6 +109,73 @@
         </div>
     </div>
 
+    <div class="card p-6 mt-6">
+        <h3 class="font-bold text-base mb-4">
+            <i class="fas fa-calculator mr-2" style="color: var(--accent);"></i> Aturan Tagihan
+        </h3>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="hidden" name="payment_dev_mode" value="0">
+                    <input type="checkbox" name="payment_dev_mode" value="1" {{ $config['payment_dev_mode'] === '1' ? 'checked' : '' }}
+                        style="width:18px;height:18px;accent-color:var(--warning);">
+                    <span class="text-sm font-semibold">Mode Development (Simulasi)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="hidden" name="payment_allow_qris" value="0">
+                    <input type="checkbox" name="payment_allow_qris" value="1" {{ $config['payment_allow_qris'] === '1' ? 'checked' : '' }}
+                        style="width:18px;height:18px;accent-color:var(--accent);">
+                    <span class="text-sm font-semibold">Aktifkan QRIS</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="hidden" name="payment_allow_ewallet" value="0">
+                    <input type="checkbox" name="payment_allow_ewallet" value="1" {{ $config['payment_allow_ewallet'] === '1' ? 'checked' : '' }}
+                        style="width:18px;height:18px;accent-color:var(--accent);">
+                    <span class="text-sm font-semibold">Aktifkan E-Wallet</span>
+                </label>
+            </div>
+
+            <div class="space-y-4">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="hidden" name="payment_discount_enabled" value="0">
+                    <input type="checkbox" name="payment_discount_enabled" value="1" {{ $config['payment_discount_enabled'] === '1' ? 'checked' : '' }}
+                        style="width:18px;height:18px;accent-color:var(--success);">
+                    <span class="text-sm font-semibold">Aktifkan Diskon Global</span>
+                </label>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="form-label">Tipe Diskon</label>
+                        <select name="payment_discount_type" class="form-input">
+                            <option value="percent" {{ $config['payment_discount_type'] === 'percent' ? 'selected' : '' }}>Persen (%)</option>
+                            <option value="fixed" {{ $config['payment_discount_type'] === 'fixed' ? 'selected' : '' }}>Nominal (Rp)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Nilai Diskon</label>
+                        <input type="number" min="0" step="0.01" name="payment_discount_value" class="form-input" value="{{ $config['payment_discount_value'] }}">
+                    </div>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="hidden" name="payment_ppn_enabled" value="0">
+                    <input type="checkbox" name="payment_ppn_enabled" value="1" {{ $config['payment_ppn_enabled'] === '1' ? 'checked' : '' }}
+                        style="width:18px;height:18px;accent-color:var(--warning);">
+                    <span class="text-sm font-semibold">Aktifkan PPN</span>
+                </label>
+                <div>
+                    <label class="form-label">PPN (%)</label>
+                    <input type="number" min="0" step="0.01" name="payment_ppn_percent" class="form-input" value="{{ $config['payment_ppn_percent'] }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="p-3 rounded-lg text-xs mt-4" style="background: var(--bg-tertiary); color: var(--text-secondary);">
+            Formula: <strong>Total = Harga Paket - Diskon + PPN</strong>.
+            Nilai total otomatis dipakai saat checkout QRIS/E-Wallet.
+            Jika mode development aktif, transaksi diproses simulasi (tanpa API real).
+        </div>
+    </div>
+
     <div class="mt-6">
         <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-2"></i> Simpan Konfigurasi</button>
     </div>

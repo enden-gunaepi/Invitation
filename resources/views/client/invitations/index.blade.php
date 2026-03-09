@@ -19,7 +19,7 @@
             <span class="text-xs text-slate-500">{{ $inv->event_date->format('d M Y') }}</span>
         </div>
         <h4 class="font-bold text-sm mb-1 group-hover:text-emerald-400 transition">{{ $inv->title }}</h4>
-        <p class="text-xs text-slate-500 mb-3">{{ ucfirst($inv->event_type) }} · {{ $inv->venue_name }}</p>
+        <p class="text-xs text-slate-500 mb-3">{{ ucfirst($inv->event_type) }} - {{ $inv->venue_name }}</p>
         <div class="flex items-center gap-4 text-xs text-slate-500">
             <span><i class="fas fa-eye mr-1"></i>{{ $inv->view_count }}</span>
             <span><i class="fas fa-users mr-1"></i>{{ $inv->guests_count ?? 0 }}</span>

@@ -170,6 +170,20 @@
                 <a href="{{ route('client.invitations.create') }}" class="nav-item {{ request()->routeIs('client.invitations.create') ? 'active' : '' }}">
                     <i class="fas fa-plus"></i> Buat Undangan
                 </a>
+                <a href="{{ route('client.affiliate.index') }}" class="nav-item {{ request()->routeIs('client.affiliate.*') ? 'active' : '' }}">
+                    <i class="fas fa-hand-holding-dollar"></i> Affiliate
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Pengaturan</div>
+                <a href="{{ route('profile.edit') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-gear"></i> Profile Settings
+                </a>
+                @if(auth()->user()->role === 'admin')
+                    <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                        <i class="fas fa-building"></i> Company Settings
+                    </a>
+                @endif
             </div>
         </nav>
         <div class="sidebar-footer">
@@ -207,5 +221,6 @@
     <main class="main-content">
         <div class="page-content">@yield('content')</div>
     </main>
+    @stack('scripts')
 </body>
 </html>

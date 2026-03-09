@@ -1,11 +1,10 @@
-@extends('layouts.client')
+﻿@extends('layouts.client')
 @section('title', 'Kelola Tamu')
 @section('page-title', 'Kelola Tamu')
 @section('page-subtitle', $invitation->title)
 
 @section('content')
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    {{-- Guest List --}}
     <div class="lg:col-span-2">
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color: var(--border);">
@@ -13,7 +12,10 @@
                     <h3 class="font-bold text-base">Daftar Tamu</h3>
                     <span class="text-xs font-semibold" style="color: var(--text-secondary);">{{ $currentGuests }}/{{ $maxGuests }}</span>
                 </div>
-                {{-- Progress bar --}}
+                <div class="flex items-center gap-3 text-xs mb-2" style="color: var(--text-secondary);">
+                    <span><i class="fas fa-check-circle mr-1"></i>Check-in: {{ $checkedInGuests ?? 0 }}</span>
+                    <span><i class="fas fa-chair mr-1"></i>Seat assigned: {{ $seatAssignedGuests ?? 0 }}</span>
+                </div>
                 @php $percent = $maxGuests > 0 ? min(100, round(($currentGuests / $maxGuests) * 100)) : 0; @endphp
                 <div style="background: var(--bg-tertiary); height: 4px; border-radius: 2px; overflow: hidden;">
                     <div style="width: {{ $percent }}%; height: 100%; border-radius: 2px; transition: width 0.3s;
@@ -34,12 +36,32 @@
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold">{{ $guest->name }}</p>
                         <p class="text-xs" style="color: var(--text-secondary);">
-                            {{ $guest->category ?? 'Umum' }} · {{ $guest->pax }} orang
-                            @if($guest->phone) · {{ $guest->phone }} @endif
+                            {{ $guest->category ?? 'Umum' }} - {{ $guest->pax }} orang
+                            @if($guest->phone) - {{ $guest->phone }} @endif
+                        </p>
+                        <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                            Meja: <strong>{{ $guest->table_number ? 'T' . $guest->table_number : '-' }}</strong>
+                            | Kursi: <strong>{{ $guest->seat_label ?? '-' }}</strong>
+                            | Check-in:
+                            <strong style="color: {{ $guest->checked_in_at ? 'var(--success)' : 'var(--text-secondary)' }};">
+                                {{ $guest->checked_in_at ? $guest->checked_in_at->format('H:i') : 'Belum' }}
+                            </strong>
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
                         @if($invitation->isActive())
+                        @php
+                            $guestUrl = $guest->getInvitationUrl();
+                            $shareText = urlencode("Halo {$guest->name}, ini link undangan Anda: {$guestUrl}");
+                        @endphp
+                        <a href="https://wa.me/?text={{ $shareText }}" target="_blank"
+                           class="topbar-btn" style="width:32px;height:32px;color:#25D366;" title="Share WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="https://t.me/share/url?url={{ urlencode($guestUrl) }}&text={{ urlencode('Undangan untuk ' . $guest->name) }}" target="_blank"
+                           class="topbar-btn" style="width:32px;height:32px;color:#229ED9;" title="Share Telegram">
+                            <i class="fab fa-telegram-plane"></i>
+                        </a>
                         <button onclick="navigator.clipboard.writeText('{{ $guest->getInvitationUrl() }}'); this.innerHTML='<i class=\'fas fa-check\' style=\'color:var(--success)\'></i>'; setTimeout(() => this.innerHTML='<i class=\'fas fa-link\'></i>', 2000);"
                                 class="topbar-btn" style="width:32px;height:32px;" title="Copy link">
                             <i class="fas fa-link"></i>
@@ -64,9 +86,7 @@
         <div class="mt-4">{{ $guests->links() }}</div>
     </div>
 
-    {{-- Add Guest Form --}}
     <div>
-        {{-- Limit info --}}
         <div class="card p-4 mb-4">
             <div class="flex items-center gap-3">
                 <div class="stat-icon" style="background: var(--accent-bg); color: var(--accent); width:32px; height:32px; font-size:13px;">
@@ -77,6 +97,9 @@
                     <p class="text-sm font-bold">{{ $currentGuests }} / {{ $maxGuests }} tamu</p>
                 </div>
             </div>
+            <a href="{{ route('client.invitations.checkin', $invitation) }}" class="btn btn-secondary w-full text-center block text-sm mt-3">
+                <i class="fas fa-qrcode mr-2"></i> Scanner Check-in Hari H
+            </a>
         </div>
 
         @if($currentGuests < $maxGuests)
@@ -109,6 +132,48 @@
                 </div>
                 <button type="submit" class="btn btn-primary w-full text-sm">
                     <i class="fas fa-plus mr-2"></i> Tambah Tamu
+                </button>
+            </form>
+        </div>
+
+        <div class="card p-6 mt-4">
+            <h3 class="font-bold text-base mb-2">Import Tamu dari Excel</h3>
+            <p class="text-xs mb-4" style="color: var(--text-secondary);">
+                Upload file <strong>.xlsx/.xls/.csv</strong>. Kolom yang didukung: <code>name</code>, <code>phone</code>, <code>email</code>, <code>category</code>, <code>pax</code>, <code>notes</code>.
+            </p>
+            <form method="POST" action="{{ route('client.invitations.guests.import', $invitation) }}" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-4">
+                    <label class="form-label">File Excel / CSV</label>
+                    <input type="file" name="guest_file" class="form-input" accept=".xlsx,.xls,.csv,.txt" required>
+                    @error('guest_file') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
+                </div>
+                <button type="submit" class="btn btn-primary w-full text-sm">
+                    <i class="fas fa-file-import mr-2"></i> Import Tamu
+                </button>
+            </form>
+            <a href="{{ asset('templates/guest-import-template.csv') }}" class="text-xs font-semibold inline-block mt-3" style="color: var(--accent);" download>
+                <i class="fas fa-download mr-1"></i> Download template CSV
+            </a>
+        </div>
+
+        <div class="card p-6 mt-4">
+            <h3 class="font-bold text-base mb-2">Auto Seating Plan</h3>
+            <p class="text-xs mb-4" style="color: var(--text-secondary);">Buat pembagian meja dan kursi otomatis untuk seluruh tamu.</p>
+            <form method="POST" action="{{ route('client.invitations.guests.auto-seat', $invitation) }}">
+                @csrf
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                        <label class="form-label">Kursi per Meja</label>
+                        <input type="number" name="seats_per_table" class="form-input" value="8" min="2" max="20" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Meja Awal</label>
+                        <input type="number" name="start_table" class="form-input" value="1" min="1" max="999">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-full text-sm">
+                    <i class="fas fa-chair mr-2"></i> Generate Seating Plan
                 </button>
             </form>
         </div>

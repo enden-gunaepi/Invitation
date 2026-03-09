@@ -1,7 +1,7 @@
-@extends('layouts.client')
+﻿@extends('layouts.client')
 @section('title', $invitation->title)
 @section('page-title', $invitation->title)
-@section('page-subtitle', ucfirst($invitation->event_type) . ' · ' . $invitation->event_date->format('d M Y'))
+@section('page-subtitle', ucfirst($invitation->event_type) . ' - ' . $invitation->event_date->format('d M Y'))
 
 @section('content')
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -96,11 +96,11 @@
                      onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='transparent'">
                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
                         style="{{ $rsvp->status === 'attending' ? 'background:rgba(52,199,89,0.12);color:var(--success)' : ($rsvp->status === 'maybe' ? 'background:rgba(255,149,0,0.12);color:var(--warning)' : 'background:rgba(255,59,48,0.12);color:var(--danger)') }}">
-                        {{ $rsvp->status === 'attending' ? '✓' : ($rsvp->status === 'maybe' ? '?' : '✗') }}
+                        {{ $rsvp->status === 'attending' ? 'OK' : ($rsvp->status === 'maybe' ? '?' : 'X') }}
                     </div>
                     <div class="flex-1">
                         <p class="text-sm font-semibold">{{ $rsvp->name }}</p>
-                        <p class="text-xs" style="color: var(--text-secondary);">{{ $rsvp->pax }} orang · {{ $rsvp->created_at->diffForHumans() }}</p>
+                        <p class="text-xs" style="color: var(--text-secondary);">{{ $rsvp->pax }} orang - {{ $rsvp->created_at->diffForHumans() }}</p>
                     </div>
                     @if($rsvp->message)
                     <p class="text-xs max-w-xs truncate" style="color: var(--text-secondary);">{{ $rsvp->message }}</p>
@@ -159,6 +159,17 @@
                 <a href="{{ route('client.invitations.guests.index', $invitation) }}" class="btn btn-secondary w-full text-center block text-sm py-3">
                     <i class="fas fa-users mr-2"></i> Kelola Tamu
                 </a>
+                <a href="{{ $invitation->google_calendar_url }}" target="_blank" class="btn btn-secondary w-full text-center block text-sm py-3">
+                    <i class="fas fa-calendar-plus mr-2"></i> Google Calendar
+                </a>
+                <a href="{{ $invitation->maps_deep_link }}" target="_blank" class="btn btn-secondary w-full text-center block text-sm py-3">
+                    <i class="fas fa-map-location-dot mr-2"></i> Maps Deep Link
+                </a>
+                @if($invitation->livestream_url)
+                <a href="{{ $invitation->livestream_url }}" target="_blank" class="btn btn-secondary w-full text-center block text-sm py-3">
+                    <i class="fas fa-video mr-2"></i> Live Streaming
+                </a>
+                @endif
 
                 {{-- Payment / Checkout --}}
                 @php
@@ -166,7 +177,7 @@
                 @endphp
                 @if($payment && $payment->isPaid())
                 <div class="p-3 rounded-lg text-center text-xs" style="background: rgba(52,199,89,0.08); color: var(--success);">
-                    <i class="fas fa-check-circle mr-1"></i> Lunas — {{ $payment->paid_at?->format('d M Y') }}
+                    <i class="fas fa-check-circle mr-1"></i> Lunas - {{ $payment->paid_at?->format('d M Y') }}
                 </div>
                 @elseif($payment && $payment->isPending())
                 <a href="{{ route('client.checkout.status', $invitation) }}" class="btn w-full text-center block text-sm py-3" style="background: rgba(255,149,0,0.1); color: var(--warning); border: 1px solid var(--warning);">
@@ -182,7 +193,7 @@
 
         {{-- Package Info --}}
         <div class="card p-6">
-            <h3 class="font-bold text-base mb-4">Paket — {{ $invitation->package->name ?? '-' }}</h3>
+            <h3 class="font-bold text-base mb-4">Paket - {{ $invitation->package->name ?? '-' }}</h3>
             <div class="space-y-3">
                 {{-- Guest Limit --}}
                 <div>
@@ -206,6 +217,17 @@
                         <div style="width: {{ $pP }}%; height: 100%; border-radius: 2px; background: {{ $pP >= 90 ? 'var(--danger)' : 'var(--accent)' }};"></div>
                     </div>
                 </div>
+                {{-- Invitation Limit --}}
+                <div>
+                    <div class="flex items-center justify-between text-xs mb-1">
+                        <span style="color: var(--text-secondary);"><i class="fas fa-layer-group mr-1"></i> Undangan</span>
+                        <span class="font-semibold">{{ $currentInvitations }}/{{ $maxInvitations }}</span>
+                    </div>
+                    @php $iP = $maxInvitations > 0 ? min(100, round(($currentInvitations / $maxInvitations) * 100)) : 0; @endphp
+                    <div style="background: var(--bg-tertiary); height: 4px; border-radius: 2px; overflow: hidden;">
+                        <div style="width: {{ $iP }}%; height: 100%; border-radius: 2px; background: {{ $iP >= 90 ? 'var(--danger)' : 'var(--accent)' }};"></div>
+                    </div>
+                </div>
             </div>
             {{-- Features --}}
             @if($invitation->package->features)
@@ -217,6 +239,23 @@
                     <span>{{ $feature }}</span>
                 </div>
                 @endforeach
+            </div>
+            @endif
+
+            @if($nextPackage && !empty($upsellReasons))
+            <div class="mt-4 pt-4 rounded-lg p-3" style="background: rgba(245,158,11,.09); border:1px solid rgba(245,158,11,.25);">
+                <p class="text-xs font-semibold mb-2" style="color: #f59e0b;">
+                    <i class="fas fa-rocket mr-1"></i> Rekomendasi Upgrade: {{ $nextPackage->name }}
+                </p>
+                @foreach($upsellReasons as $reason)
+                    <p class="text-xs mb-1" style="color: var(--text-secondary);">- {{ $reason }}</p>
+                @endforeach
+                <form method="POST" action="{{ route('client.invitations.upgrade-suggested', $invitation) }}" class="mt-2">
+                    @csrf
+                    <button type="submit" class="btn btn-secondary w-full text-center block text-xs py-2" style="color:#f59e0b;border-color:rgba(245,158,11,.35);">
+                        Upgrade Paket 1 Klik
+                    </button>
+                </form>
             </div>
             @endif
         </div>
@@ -231,16 +270,145 @@
                 </div>
                 <div class="flex items-center justify-between text-sm">
                     <span style="color: var(--success);"><i class="fas fa-check-circle mr-2 w-4"></i>Hadir</span>
-                    <span class="font-bold" style="color: var(--success);">{{ $invitation->rsvps->where('status', 'attending')->count() }}</span>
+                    <span id="an-attending" class="font-bold" style="color: var(--success);">{{ $invitation->rsvps->where('status', 'attending')->count() }}</span>
                 </div>
                 <div class="flex items-center justify-between text-sm">
                     <span style="color: var(--warning);"><i class="fas fa-question-circle mr-2 w-4"></i>Maybe</span>
-                    <span class="font-bold" style="color: var(--warning);">{{ $invitation->rsvps->where('status', 'maybe')->count() }}</span>
+                    <span id="an-maybe" class="font-bold" style="color: var(--warning);">{{ $invitation->rsvps->where('status', 'maybe')->count() }}</span>
                 </div>
                 <div class="flex items-center justify-between text-sm">
                     <span style="color: var(--danger);"><i class="fas fa-times-circle mr-2 w-4"></i>Tidak</span>
-                    <span class="font-bold" style="color: var(--danger);">{{ $invitation->rsvps->where('status', 'not_attending')->count() }}</span>
+                    <span id="an-not-attending" class="font-bold" style="color: var(--danger);">{{ $invitation->rsvps->where('status', 'not_attending')->count() }}</span>
                 </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span style="color: var(--text-secondary);"><i class="fas fa-user-group mr-2 w-4"></i>Total Pax Hadir</span>
+                    <span id="an-pax" class="font-bold">{{ $invitation->rsvps->where('status', 'attending')->sum('pax') }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span style="color: var(--text-secondary);"><i class="fas fa-qrcode mr-2 w-4"></i>Check-in</span>
+                    <span id="an-checkin" class="font-bold">{{ $invitation->guests->whereNotNull('checked_in_at')->count() }}/{{ $invitation->guests->count() }}</span>
+                </div>
+            </div>
+            <div class="mt-4 pt-3" style="border-top:1px solid var(--border);">
+                <p class="text-xs font-semibold mb-2" style="color: var(--text-secondary);">Kategori RSVP (Live)</p>
+                <div id="an-categories" class="space-y-1 text-xs" style="color: var(--text-secondary);"></div>
+            </div>
+        </div>
+
+        {{-- WhatsApp Blast Reminder --}}
+        <div class="card p-6">
+            <h3 class="font-bold text-base mb-4">WhatsApp Reminder</h3>
+            <form method="POST" action="{{ route('client.invitations.reminders.store', $invitation) }}" class="space-y-3">
+                @csrf
+                <div>
+                    <label class="form-label">Audience</label>
+                    <select name="audience" class="form-input">
+                        <option value="all_guests">Semua Tamu Ber-no HP</option>
+                        <option value="no_rsvp">Belum RSVP</option>
+                        <option value="not_checked_in">Belum Check-in</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Jadwal Kirim</label>
+                    <input type="datetime-local" name="scheduled_at" class="form-input" required>
+                </div>
+                <div>
+                    <label class="form-label">Template Pesan</label>
+                    <textarea name="message_template" class="form-input" rows="4" required>Halo {name}, ini pengingat untuk acara {event} pada {date} {time} di {venue}. Detail undangan: {link}</textarea>
+                </div>
+                <button class="btn btn-primary w-full text-sm">
+                    <i class="fab fa-whatsapp mr-2"></i> Jadwalkan Blast
+                </button>
+            </form>
+            @if($invitation->reminderCampaigns->count())
+            <div class="mt-4 pt-4" style="border-top:1px solid var(--border);">
+                <p class="text-xs font-semibold mb-2" style="color: var(--text-secondary);">Histori Campaign</p>
+                <div class="space-y-2">
+                    @foreach($invitation->reminderCampaigns->take(5) as $campaign)
+                        <div class="p-2 rounded-lg text-xs" style="background: var(--bg-tertiary);">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold">{{ strtoupper($campaign->channel) }} - {{ $campaign->audience }}</span>
+                                <span class="badge badge-{{ $campaign->status === 'sent' ? 'success' : ($campaign->status === 'failed' ? 'danger' : ($campaign->status === 'cancelled' ? 'default' : 'warning')) }}">{{ $campaign->status }}</span>
+                            </div>
+                            <div style="color: var(--text-secondary);">{{ $campaign->scheduled_at?->format('d M Y H:i') }} | Sent {{ $campaign->sent_count }} / Failed {{ $campaign->failed_count }}</div>
+                            @if($campaign->status === 'scheduled')
+                            <form method="POST" action="{{ route('client.invitations.reminders.cancel', [$invitation, $campaign]) }}" class="mt-2">
+                                @csrf @method('PATCH')
+                                <button class="btn btn-secondary btn-sm w-full">Batalkan Campaign</button>
+                            </form>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+        </div>
+
+        {{-- Vendor CRM --}}
+        <div class="card p-6">
+            <h3 class="font-bold text-base mb-4">CRM Vendor (WO/Fotografer)</h3>
+            <form method="POST" action="{{ route('client.invitations.vendors.store', $invitation) }}" class="space-y-3 mb-4">
+                @csrf
+                <div class="grid grid-cols-2 gap-2">
+                    <select name="category" class="form-input" required>
+                        <option value="wo">Wedding Organizer</option>
+                        <option value="photographer">Fotografer</option>
+                        <option value="makeup">Makeup</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="other">Lainnya</option>
+                    </select>
+                    <select name="status" class="form-input" required>
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="negotiation">Negotiation</option>
+                        <option value="deal">Deal</option>
+                        <option value="lost">Lost</option>
+                    </select>
+                </div>
+                <input type="text" name="vendor_name" class="form-input" placeholder="Nama Vendor" required>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" name="contact_name" class="form-input" placeholder="PIC">
+                    <input type="text" name="phone" class="form-input" placeholder="No HP">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" name="instagram" class="form-input" placeholder="Instagram">
+                    <input type="number" name="offered_price" class="form-input" placeholder="Penawaran Harga">
+                </div>
+                <input type="date" name="follow_up_date" class="form-input">
+                <textarea name="notes" class="form-input" rows="2" placeholder="Catatan"></textarea>
+                <button class="btn btn-primary w-full text-sm"><i class="fas fa-plus mr-2"></i>Tambah Vendor</button>
+            </form>
+
+            <div class="space-y-2">
+                @forelse($invitation->vendorLeads->take(8) as $vendor)
+                    <div class="p-3 rounded-lg" style="background: var(--bg-tertiary);">
+                        <div class="flex items-center justify-between mb-1">
+                            <p class="text-sm font-semibold">{{ $vendor->vendor_name }}</p>
+                            <span class="badge badge-{{ $vendor->status === 'deal' ? 'success' : ($vendor->status === 'lost' ? 'danger' : 'warning') }}">{{ $vendor->status }}</span>
+                        </div>
+                        <p class="text-xs" style="color: var(--text-secondary);">{{ strtoupper($vendor->category) }} | {{ $vendor->phone ?: '-' }} | {{ $vendor->instagram ?: '-' }}</p>
+                        @if($vendor->offered_price)
+                            <p class="text-xs mt-1">Harga: <strong>Rp{{ number_format($vendor->offered_price, 0, ',', '.') }}</strong></p>
+                        @endif
+                        <div class="mt-2 flex gap-2">
+                            <form method="POST" action="{{ route('client.invitations.vendors.update', [$invitation, $vendor]) }}" class="flex gap-2 flex-1">
+                                @csrf @method('PATCH')
+                                <select name="status" class="form-input text-xs" style="padding:6px 8px;">
+                                    @foreach(['new','contacted','negotiation','deal','lost'] as $st)
+                                        <option value="{{ $st }}" {{ $vendor->status === $st ? 'selected' : '' }}>{{ $st }}</option>
+                                    @endforeach
+                                </select>
+                                <button class="btn btn-secondary btn-sm">Update</button>
+                            </form>
+                            <form method="POST" action="{{ route('client.invitations.vendors.destroy', [$invitation, $vendor]) }}" onsubmit="return confirm('Hapus vendor ini?')">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-xs" style="color: var(--text-secondary);">Belum ada data vendor.</p>
+                @endforelse
             </div>
         </div>
 
@@ -266,3 +434,35 @@
     </a>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    (function () {
+        const url = "{{ route('client.invitations.analytics', $invitation) }}";
+        const catEl = document.getElementById('an-categories');
+        async function refreshAnalytics() {
+            try {
+                const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!res.ok) return;
+                const data = await res.json();
+                document.getElementById('an-attending').textContent = data.attending ?? 0;
+                document.getElementById('an-maybe').textContent = data.maybe ?? 0;
+                document.getElementById('an-not-attending').textContent = data.not_attending ?? 0;
+                document.getElementById('an-pax').textContent = data.attending_pax ?? 0;
+                document.getElementById('an-checkin').textContent = `${data.checked_in ?? 0}/${data.total_guests ?? 0}`;
+
+                if (catEl) {
+                    const rows = Array.isArray(data.categories) ? data.categories : [];
+                    catEl.innerHTML = rows.length
+                        ? rows.map((row) => `<div>${row.category}: <strong>${row.total}</strong></div>`).join('')
+                        : '<div>Belum ada data kategori.</div>';
+                }
+            } catch (e) {
+                // Ignore polling errors
+            }
+        }
+        refreshAnalytics();
+        setInterval(refreshAnalytics, 15000);
+    })();
+</script>
+@endpush

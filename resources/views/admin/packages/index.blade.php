@@ -12,17 +12,28 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
     @forelse($packages as $pkg)
     <div class="card p-6 relative overflow-hidden">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-cyan-500"></div>
         <div class="flex items-center justify-between mb-4">
-            <h4 class="font-bold text-lg">{{ $pkg->name }}</h4>
-            <span class="badge {{ $pkg->is_active ? 'badge-active' : 'badge-draft' }}">
-                {{ $pkg->is_active ? 'Aktif' : 'Nonaktif' }}
-            </span>
+            <div>
+                <h4 class="font-bold text-lg">{{ $pkg->name }}</h4>
+                <p class="text-xs mt-1" style="color: var(--text-secondary);">Tier {{ ucfirst($pkg->tier ?? 'starter') }}</p>
+            </div>
+            <div class="text-right">
+                <span class="badge {{ $pkg->is_active ? 'badge-active' : 'badge-draft' }}">
+                    {{ $pkg->is_active ? 'Aktif' : 'Nonaktif' }}
+                </span>
+                @if($pkg->is_recommended)
+                    <div class="text-[10px] mt-1 px-2 py-1 rounded-full inline-block" style="background: var(--accent-bg); color: var(--accent);">Recommended</div>
+                @endif
+            </div>
         </div>
         <p class="text-3xl font-bold mb-1">
             Rp{{ number_format($pkg->price, 0, ',', '.') }}
         </p>
         <p class="text-xs text-slate-500 mb-4">per undangan</p>
+        @if($pkg->badge_text)
+            <p class="text-xs font-semibold mb-3" style="color: var(--accent);">{{ $pkg->badge_text }}</p>
+        @endif
         <div class="space-y-2 mb-5">
             <div class="text-sm text-slate-400">
                 <i class="fas fa-users text-indigo-400 mr-2 w-4"></i> Max {{ $pkg->max_guests }} tamu
@@ -30,10 +41,30 @@
             <div class="text-sm text-slate-400">
                 <i class="fas fa-image text-indigo-400 mr-2 w-4"></i> Max {{ $pkg->max_photos }} foto
             </div>
+            <div class="text-sm text-slate-400">
+                <i class="fas fa-layer-group text-indigo-400 mr-2 w-4"></i> Max {{ $pkg->max_invitations }} undangan
+            </div>
+            <div class="text-sm text-slate-400">
+                <i class="fas fa-money-check-dollar text-indigo-400 mr-2 w-4"></i>
+                {{ ($pkg->billing_type ?? 'one_time') === 'subscription' ? 'Subscription ' . strtoupper($pkg->billing_cycle ?? 'monthly') : 'One-time payment' }}
+            </div>
+            @if($pkg->support_level)
+                <div class="text-sm text-slate-400">
+                    <i class="fas fa-headset text-indigo-400 mr-2 w-4"></i> {{ $pkg->support_level }}
+                    @if($pkg->sla_hours) (SLA {{ $pkg->sla_hours }} jam) @endif
+                </div>
+            @endif
             @if($pkg->features)
                 @foreach($pkg->features as $feature)
                 <div class="text-sm text-slate-400">
                     <i class="fas fa-check text-emerald-400 mr-2 w-4"></i> {{ $feature }}
+                </div>
+                @endforeach
+            @endif
+            @if($pkg->addons)
+                @foreach($pkg->addons as $addon)
+                <div class="text-sm text-slate-400">
+                    <i class="fas fa-star text-amber-400 mr-2 w-4"></i> {{ $addon }}
                 </div>
                 @endforeach
             @endif

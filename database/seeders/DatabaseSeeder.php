@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             PackageSeeder::class,
             TemplateSeeder::class,
+            CouponSeeder::class,
         ]);
     }
 }

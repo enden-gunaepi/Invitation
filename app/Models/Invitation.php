@@ -11,9 +11,9 @@ class Invitation extends Model
 {
     protected $fillable = [
         'user_id', 'template_id', 'package_id', 'slug', 'event_type', 'title',
-        'groom_name', 'bride_name', 'host_name', 'event_date', 'event_time',
+        'groom_name', 'groom_parent_name', 'bride_name', 'bride_parent_name', 'host_name', 'event_date', 'event_time',
         'event_end_time', 'venue_name', 'venue_address', 'venue_lat', 'venue_lng',
-        'google_maps_url', 'cover_photo', 'opening_text', 'closing_text',
+        'google_maps_url', 'livestream_url', 'livestream_label', 'cover_photo', 'groom_photo', 'bride_photo', 'groom_instagram', 'bride_instagram', 'groom_facebook', 'bride_facebook', 'opening_text', 'closing_text',
         'bank_name', 'bank_account_number', 'bank_account_name', 'gift_address', 'footer_text',
         'music_url', 'status', 'is_password_protected', 'invitation_password',
         'rsvp_deadline', 'custom_colors', 'custom_fonts', 'view_count',
@@ -100,6 +100,21 @@ class Invitation extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function bankAccounts(): HasMany
+    {
+        return $this->hasMany(InvitationBankAccount::class)->orderBy('sort_order');
+    }
+
+    public function reminderCampaigns(): HasMany
+    {
+        return $this->hasMany(ReminderCampaign::class)->latest();
+    }
+
+    public function vendorLeads(): HasMany
+    {
+        return $this->hasMany(VendorLead::class)->latest();
+    }
+
     // Scopes
     public function scopeActive($query)
     {
@@ -120,6 +135,36 @@ class Invitation extends Model
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    public function getMapsDeepLinkAttribute(): string
+    {
+        if (!empty($this->google_maps_url)) {
+            return $this->google_maps_url;
+        }
+
+        $query = trim((string) ($this->venue_name . ' ' . $this->venue_address));
+        return 'https://www.google.com/maps/search/?api=1&query=' . urlencode($query);
+    }
+
+    public function getGoogleCalendarUrlAttribute(): string
+    {
+        if (!$this->event_date || !$this->event_time) {
+            return '#';
+        }
+
+        $start = $this->event_date->format('Ymd') . 'T' . \Carbon\Carbon::parse($this->event_time)->format('His');
+        $endTime = $this->event_end_time
+            ? \Carbon\Carbon::parse($this->event_end_time)
+            : \Carbon\Carbon::parse($this->event_time)->addHours(2);
+        $end = $this->event_date->format('Ymd') . 'T' . $endTime->format('His');
+        $location = trim((string) ($this->venue_name . ', ' . $this->venue_address));
+
+        return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+            . '&text=' . urlencode((string) $this->title)
+            . '&dates=' . $start . '/' . $end
+            . '&location=' . urlencode($location)
+            . '&details=' . urlencode((string) ($this->opening_text ?: $this->title));
     }
 
     /**

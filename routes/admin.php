@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PaymentGatewayController;
+use App\Http\Controllers\Admin\AffiliateController;
+use App\Http\Controllers\Admin\GuestOpsController;
 use Illuminate\Support\Facades\Route;
 
 // Admin Dashboard
@@ -33,6 +35,19 @@ Route::resource('packages', PackageController::class);
 Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
 Route::patch('/payments/{payment}/mark-paid', [PaymentController::class, 'markPaid'])->name('payments.mark-paid');
+
+// Affiliate Management
+Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');
+Route::patch('/affiliate/{commission}/approve', [AffiliateController::class, 'approve'])->name('affiliate.approve');
+Route::patch('/affiliate/{commission}/mark-paid', [AffiliateController::class, 'markPaid'])->name('affiliate.mark-paid');
+Route::get('/affiliate/payouts', [AffiliateController::class, 'payouts'])->name('affiliate.payouts');
+Route::patch('/affiliate/payouts/{payout}/approve', [AffiliateController::class, 'approvePayout'])->name('affiliate.payouts.approve');
+Route::patch('/affiliate/payouts/{payout}/reject', [AffiliateController::class, 'rejectPayout'])->name('affiliate.payouts.reject');
+Route::patch('/affiliate/payouts/{payout}/mark-paid', [AffiliateController::class, 'markPayoutPaid'])->name('affiliate.payouts.mark-paid');
+
+// Guest Operation (Admin)
+Route::get('/invitations/{invitation}/checkin', [GuestOpsController::class, 'checkin'])->name('invitations.checkin');
+Route::post('/invitations/{invitation}/checkin', [GuestOpsController::class, 'checkinScan'])->name('invitations.checkin.scan');
 
 // Payment Gateway Config
 Route::get('/payment-gateway', [PaymentGatewayController::class, 'index'])->name('payment-gateway.index');

@@ -15,10 +15,10 @@ class TripayService
 
     public function __construct()
     {
-        $this->apiKey = Setting::get('tripay_api_key', '');
-        $this->privateKey = Setting::get('tripay_private_key', '');
-        $this->merchantCode = Setting::get('tripay_merchant_code', '');
-        $mode = Setting::get('tripay_mode', 'sandbox');
+        $this->apiKey = (string) (Setting::get('tripay_api_key', '') ?? '');
+        $this->privateKey = (string) (Setting::get('tripay_private_key', '') ?? '');
+        $this->merchantCode = (string) (Setting::get('tripay_merchant_code', '') ?? '');
+        $mode = (string) (Setting::get('tripay_mode', 'sandbox') ?? 'sandbox');
         $this->baseUrl = $mode === 'production'
             ? 'https://tripay.co.id/api'
             : 'https://tripay.co.id/api-sandbox';
@@ -29,6 +29,10 @@ class TripayService
      */
     public function createTransaction(array $data): array
     {
+        if (!$this->isConfigured()) {
+            return ['success' => false, 'error' => 'Tripay belum dikonfigurasi. Lengkapi API Key, Private Key, dan Merchant Code.'];
+        }
+
         try {
             $merchantRef = $data['merchant_ref'];
             $amount = (int) $data['amount'];
@@ -83,6 +87,10 @@ class TripayService
      */
     public function getPaymentChannels(): array
     {
+        if (!$this->isConfigured()) {
+            return ['success' => true, 'channels' => $this->staticChannels()];
+        }
+
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
@@ -130,6 +138,10 @@ class TripayService
      */
     public function testConnection(): array
     {
+        if (!$this->isConfigured()) {
+            return ['success' => false, 'error' => 'Tripay belum dikonfigurasi lengkap.'];
+        }
+
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,

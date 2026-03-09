@@ -54,7 +54,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold truncate">{{ $inv->title }}</p>
-                    <p class="text-xs text-slate-500">{{ $inv->event_date->format('d M Y') }} · {{ $inv->venue_name }}</p>
+                    <p class="text-xs text-slate-500">{{ $inv->event_date->format('d M Y') }} - {{ $inv->venue_name }}</p>
                 </div>
                 <span class="badge badge-{{ $inv->status }}">{{ ucfirst($inv->status) }}</span>
             </a>
@@ -70,33 +70,52 @@
         </div>
     </div>
 
-    {{-- Quick Start --}}
-    <div class="card p-6">
-        <h3 class="font-bold text-base mb-4">Mulai Buat Undangan</h3>
-        <p class="text-sm text-slate-400 mb-6">Buat undangan digital yang indah dalam hitungan menit.</p>
-        <a href="{{ route('client.invitations.create') }}" class="btn-primary w-full text-center block py-3">
-            <i class="fas fa-plus mr-2"></i> Buat Undangan Baru
-        </a>
-        <div class="mt-6 space-y-3">
-            <div class="flex items-center gap-3 text-sm text-slate-400">
-                <div class="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <i class="fas fa-check text-emerald-400 text-xs"></i>
-                </div>
-                Pilih template premium
+    <div class="space-y-6">
+        {{-- Onboarding --}}
+        <div class="card p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-base">Progress Setup</h3>
+                <span class="text-xs font-semibold" style="color: var(--accent);">{{ $onboarding['progress'] ?? 0 }}%</span>
             </div>
-            <div class="flex items-center gap-3 text-sm text-slate-400">
-                <div class="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <i class="fas fa-check text-emerald-400 text-xs"></i>
-                </div>
-                Kustomisasi sesuai keinginan
+            <div class="mb-4" style="background: var(--bg-tertiary); height: 6px; border-radius: 999px; overflow: hidden;">
+                <div style="width: {{ $onboarding['progress'] ?? 0 }}%; height: 100%; background: linear-gradient(90deg, #10b981, #22c55e);"></div>
             </div>
-            <div class="flex items-center gap-3 text-sm text-slate-400">
-                <div class="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <i class="fas fa-check text-emerald-400 text-xs"></i>
+
+            <div class="space-y-2 mb-5">
+                @foreach(($onboarding['items'] ?? []) as $item)
+                <div class="flex items-center gap-2 text-sm" style="color: {{ $item['done'] ? '#34d399' : 'var(--text-secondary)' }};">
+                    <i class="fas {{ $item['done'] ? 'fa-check-circle' : 'fa-circle' }} text-xs"></i>
+                    <span>{{ $item['label'] }}</span>
                 </div>
-                Share via WhatsApp / link
+                @endforeach
             </div>
+
+            <a href="{{ $onboarding['next_url'] ?? route('client.invitations.create') }}" class="btn-primary w-full text-center block py-3">
+                <i class="fas fa-arrow-right mr-2"></i> {{ $onboarding['next_label'] ?? 'Lanjutkan Setup' }}
+            </a>
         </div>
+
+        {{-- Upsell --}}
+        @if(!empty($upsell))
+        <div class="card p-6" style="border-color: rgba(245,158,11,.35);">
+            <h3 class="font-bold text-base mb-2" style="color: #f59e0b;"><i class="fas fa-rocket mr-2"></i> Rekomendasi Upgrade</h3>
+            <p class="text-sm mb-3" style="color: var(--text-secondary);">
+                Untuk menjaga performa undangan, upgrade ke paket <strong>{{ $upsell['next_package_name'] }}</strong>
+                (Rp{{ number_format($upsell['next_package_price'], 0, ',', '.') }}).
+            </p>
+            <div class="space-y-1 mb-4">
+                @foreach($upsell['reasons'] as $reason)
+                    <p class="text-xs" style="color: var(--text-secondary);"><i class="fas fa-angle-right mr-1"></i>{{ $reason }}</p>
+                @endforeach
+            </div>
+            <form method="POST" action="{{ route('client.invitations.upgrade-suggested', $upsell['invitation_id']) }}">
+                @csrf
+                <button type="submit" class="btn w-full text-center block py-3" style="background: rgba(245,158,11,.12); color: #f59e0b; border: 1px solid rgba(245,158,11,.35);">
+                    <i class="fas fa-arrow-up mr-2"></i> Upgrade Paket 1 Klik
+                </button>
+            </form>
+        </div>
+        @endif
     </div>
 </div>
 @endsection

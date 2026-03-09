@@ -270,6 +270,23 @@
         </section>
         @endif
 
+        @if($invitation->loveStories->count())
+        <section class="inv-section" id="love-story">
+            <div class="section-label" data-aos="fade-up">Perjalanan Cinta</div>
+            <h2 class="section-title" data-aos="fade-up" data-aos-delay="100">Love Story</h2>
+            <div class="section-divider" data-aos="fade-up" data-aos-delay="150"></div>
+            <div style="max-width: 450px; margin: 0 auto;">
+                @foreach($invitation->loveStories as $story)
+                <div class="wish-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 50 }}">
+                    @if($story->year)<div class="wish-name">{{ $story->year }}</div>@endif
+                    <div class="wish-name">{{ $story->title }}</div>
+                    @if($story->description)<div class="wish-message">{{ $story->description }}</div>@endif
+                </div>
+                @endforeach
+            </div>
+        </section>
+        @endif
+
         <section class="inv-section" id="rsvp">
             <div class="section-label" data-aos="fade-up">Konfirmasi</div>
             <h2 class="section-title" data-aos="fade-up" data-aos-delay="100">RSVP</h2>
@@ -290,6 +307,18 @@
                     <button type="submit" class="inv-btn"><i class="fas fa-paper-plane mr-2"></i> Kirim</button>
                 </form>
             </div>
+            @if($invitation->rsvps->whereNotNull('message')->count())
+            <div style="max-width: 450px; margin: 24px auto 0;">
+                @foreach($invitation->rsvps as $rsvp)
+                @if($rsvp->message)
+                <div class="wish-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 50 }}">
+                    <div class="wish-name">{{ $rsvp->name }} - {{ $rsvp->status }}</div>
+                    <div class="wish-message">{{ $rsvp->message }}</div>
+                </div>
+                @endif
+                @endforeach
+            </div>
+            @endif
         </section>
 
         <section class="inv-section" id="wishes">

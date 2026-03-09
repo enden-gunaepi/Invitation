@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LoveStory extends Model
 {
-    protected $fillable = ['invitation_id', 'year', 'title', 'description', 'sort_order'];
+    protected $fillable = ['invitation_id', 'year', 'title', 'description', 'photo_path', 'sort_order'];
 
     public function invitation(): BelongsTo
     {

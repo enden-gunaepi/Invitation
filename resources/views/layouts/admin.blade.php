@@ -245,6 +245,16 @@
                     @php $pendingPayments = \App\Models\Payment::where('payment_status', 'pending')->count(); @endphp
                     @if($pendingPayments > 0)<span class="nav-badge" style="background: var(--warning);">{{ $pendingPayments }}</span>@endif
                 </a>
+                <a href="{{ route('admin.affiliate.index') }}" class="nav-item {{ request()->routeIs('admin.affiliate.index') ? 'active' : '' }}">
+                    <i class="fas fa-hand-holding-dollar"></i> Affiliate
+                    @php $pendingCommissions = \App\Models\AffiliateCommission::where('status', 'pending')->count(); @endphp
+                    @if($pendingCommissions > 0)<span class="nav-badge" style="background: var(--warning);">{{ $pendingCommissions }}</span>@endif
+                </a>
+                <a href="{{ route('admin.affiliate.payouts') }}" class="nav-item {{ request()->routeIs('admin.affiliate.payouts*') ? 'active' : '' }}">
+                    <i class="fas fa-wallet"></i> Affiliate Payout
+                    @php $pendingPayouts = \App\Models\PayoutRequest::where('status', 'pending')->count(); @endphp
+                    @if($pendingPayouts > 0)<span class="nav-badge" style="background: var(--warning);">{{ $pendingPayouts }}</span>@endif
+                </a>
             </div>
 
             <div class="nav-section">

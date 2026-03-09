@@ -11,8 +11,9 @@
             <h3 class="font-bold text-base mb-4">Informasi Pembayaran</h3>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div><span style="color: var(--text-secondary);">Transaction ID</span><p class="font-mono font-semibold mt-1">{{ $payment->transaction_id }}</p></div>
+                <div><span style="color: var(--text-secondary);">Invoice</span><p class="font-mono font-semibold mt-1">{{ $payment->invoice_number ?? '-' }}</p></div>
                 <div><span style="color: var(--text-secondary);">Gateway</span><p class="font-semibold mt-1">{{ ucfirst($payment->payment_gateway) }}</p></div>
-                <div><span style="color: var(--text-secondary);">Channel</span><p class="font-semibold mt-1">{{ $payment->payment_channel ?? '-' }}</p></div>
+                <div><span style="color: var(--text-secondary);">Metode/Channel</span><p class="font-semibold mt-1">{{ strtoupper($payment->payment_method ?? '-') }} / {{ $payment->payment_channel ?? '-' }}</p></div>
                 <div><span style="color: var(--text-secondary);">Amount</span><p class="font-bold text-lg mt-1" style="color: var(--accent);">Rp{{ number_format($payment->amount, 0, ',', '.') }}</p></div>
                 <div><span style="color: var(--text-secondary);">Status</span>
                     <p class="mt-1"><span class="badge badge-{{ $payment->payment_status === 'paid' ? 'success' : ($payment->payment_status === 'pending' ? 'warning' : 'danger') }}">{{ ucfirst($payment->payment_status) }}</span></p>
@@ -23,6 +24,37 @@
                 @endif
                 @if($payment->expired_at)
                 <div><span style="color: var(--text-secondary);">Expired</span><p class="font-semibold mt-1" style="color: {{ $payment->expired_at->isPast() ? 'var(--danger)' : 'var(--text)' }};">{{ $payment->expired_at->format('d M Y, H:i') }}</p></div>
+                @endif
+            </div>
+
+            <div class="mt-4 p-3 rounded-lg text-sm" style="background: var(--bg-tertiary);">
+                <div class="flex items-center justify-between mb-1">
+                    <span style="color: var(--text-secondary);">Subtotal</span>
+                    <span>Rp{{ number_format($payment->base_amount ?? $payment->amount, 0, ',', '.') }}</span>
+                </div>
+                <div class="flex items-center justify-between mb-1">
+                    <span style="color: var(--text-secondary);">Diskon</span>
+                    <span>-Rp{{ number_format($payment->discount_amount ?? 0, 0, ',', '.') }}</span>
+                </div>
+                @if($payment->coupon_code)
+                <div class="flex items-center justify-between mb-1">
+                    <span style="color: var(--text-secondary);">Coupon ({{ $payment->coupon_code }})</span>
+                    <span>-Rp{{ number_format($payment->coupon_discount_amount ?? 0, 0, ',', '.') }}</span>
+                </div>
+                @endif
+                <div class="flex items-center justify-between mb-1">
+                    <span style="color: var(--text-secondary);">PPN</span>
+                    <span>Rp{{ number_format($payment->tax_amount ?? 0, 0, ',', '.') }}</span>
+                </div>
+                <div class="flex items-center justify-between pt-2" style="border-top:1px solid var(--border);">
+                    <strong>Total Tagihan</strong>
+                    <strong style="color: var(--accent);">Rp{{ number_format($payment->amount, 0, ',', '.') }}</strong>
+                </div>
+                @if(($payment->affiliate_commission_amount ?? 0) > 0)
+                <div class="flex items-center justify-between mt-2">
+                    <span style="color: var(--text-secondary);">Affiliate Komisi</span>
+                    <strong>Rp{{ number_format($payment->affiliate_commission_amount, 0, ',', '.') }}</strong>
+                </div>
                 @endif
             </div>
 
