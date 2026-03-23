@@ -11,7 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            Route::middleware(['web', 'auth', 'role:admin'])
+            Route::middleware(['web', 'auth', 'role:admin', 'admin.audit'])
                 ->prefix('admin')
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'track.view' => \App\Http\Middleware\TrackInvitationView::class,
+            'admin.audit' => \App\Http\Middleware\AdminAuditLogger::class,
         ]);
         $middleware->validateCsrfTokens(except: [
             'callback/*',
@@ -34,4 +35,3 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
-

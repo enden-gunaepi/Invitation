@@ -73,11 +73,8 @@ class AffiliateController extends Controller
 
     public function approve(AffiliateCommission $commission)
     {
-        if ($commission->status === 'pending') {
-            $commission->update([
-                'status' => 'approved',
-                'approved_at' => now(),
-            ]);
+        if (!$commission->approve()) {
+            return back()->with('error', 'Komisi ini tidak bisa di-approve.');
         }
 
         return back()->with('success', 'Komisi affiliate berhasil di-approve.');
@@ -85,23 +82,16 @@ class AffiliateController extends Controller
 
     public function markPaid(AffiliateCommission $commission)
     {
-        $payload = [
-            'status' => 'paid',
-            'paid_at' => now(),
-        ];
-
-        if ($commission->status === 'pending') {
-            $payload['approved_at'] = now();
+        if (!$commission->markPaid()) {
+            return back()->with('error', 'Komisi ini tidak bisa ditandai paid.');
         }
-
-        $commission->update($payload);
 
         return back()->with('success', 'Komisi affiliate berhasil ditandai terbayar.');
     }
 
     public function approvePayout(Request $request, PayoutRequest $payout)
     {
-        if ($payout->status !== 'pending') {
+        if (!$payout->canApprove()) {
             return back()->with('error', 'Payout ini tidak bisa di-approve lagi.');
         }
 
@@ -117,7 +107,7 @@ class AffiliateController extends Controller
 
     public function rejectPayout(Request $request, PayoutRequest $payout)
     {
-        if (in_array($payout->status, ['rejected', 'paid'], true)) {
+        if (!$payout->canReject()) {
             return back()->with('error', 'Payout ini tidak bisa di-reject.');
         }
 
@@ -137,7 +127,7 @@ class AffiliateController extends Controller
 
     public function markPayoutPaid(Request $request, PayoutRequest $payout)
     {
-        if ($payout->status === 'paid') {
+        if (!$payout->canMarkPaid()) {
             return back()->with('error', 'Payout ini sudah ditandai paid.');
         }
 

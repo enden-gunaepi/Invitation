@@ -43,8 +43,10 @@ class CheckoutController extends Controller
         $billing = $this->calculateBilling((int) $invitation->package->price);
         [$gateways, $channelMap] = $this->buildGatewayAndChannels();
         $devMode = $this->isDevModeEnabled();
+        $currentReferrer = auth()->user()->referredBy;
+        $lockedReferralCode = $currentReferrer?->referral_code;
 
-        return view('client.checkout.show', compact('invitation', 'gateways', 'pendingPayment', 'billing', 'channelMap', 'devMode'));
+        return view('client.checkout.show', compact('invitation', 'gateways', 'pendingPayment', 'billing', 'channelMap', 'devMode', 'currentReferrer', 'lockedReferralCode'));
     }
 
     public function process(Request $request, Invitation $invitation)
@@ -90,11 +92,20 @@ class CheckoutController extends Controller
         $billing['tax'] = $tax;
         $billing['total'] = max(1, $subtotal + $tax);
 
-        $referralCode = strtoupper(trim((string) ($validated['referral_code'] ?? '')));
-        $referrer = $this->resolveReferrer($referralCode, $user->id);
-        if ($referralCode !== '' && !$referrer) {
+        $referralCodeInput = strtoupper(trim((string) ($validated['referral_code'] ?? '')));
+        $lockedReferrer = $user->referredBy;
+        $lockedCode = $lockedReferrer?->referral_code;
+        $effectiveReferralCode = $lockedCode ?: $referralCodeInput;
+        $referrer = $this->resolveReferrer($effectiveReferralCode, $user->id);
+
+        if ($referralCodeInput !== '' && !$referrer && !$lockedReferrer) {
             return back()->withInput()->with('error', 'Kode referral tidak valid.');
         }
+
+        if ($lockedReferrer && $referralCodeInput !== '' && $lockedCode && $referralCodeInput !== $lockedCode) {
+            return back()->withInput()->with('error', 'Akun Anda sudah terhubung ke referral lain dan tidak bisa diganti.');
+        }
+
         if ($referrer && !$user->referred_by_user_id) {
             $user->update(['referred_by_user_id' => $referrer->id]);
         }
@@ -117,7 +128,7 @@ class CheckoutController extends Controller
             'invoice_due_at' => now()->addHours(24),
             'coupon_code' => $couponCode ?: null,
             'coupon_discount_amount' => $couponDiscount,
-            'referral_code' => $referralCode ?: null,
+            'referral_code' => $effectiveReferralCode ?: null,
             'payment_gateway' => $gateway,
             'payment_method' => $paymentType,
             'payment_channel' => $channel,

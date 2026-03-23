@@ -41,5 +41,19 @@ class PayoutRequest extends Model
     {
         return $this->hasMany(AffiliateCommission::class);
     }
-}
 
+    public function canApprove(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function canReject(): bool
+    {
+        return in_array($this->status, ['pending', 'approved'], true);
+    }
+
+    public function canMarkPaid(): bool
+    {
+        return in_array($this->status, ['pending', 'approved'], true);
+    }
+}

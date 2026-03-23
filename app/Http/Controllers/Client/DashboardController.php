@@ -3,39 +3,51 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Guest;
 use App\Models\Invitation;
 use App\Models\Package;
 use App\Models\Rsvp;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $user = auth()->user();
+        $cachePrefix = "client:dashboard:user:{$user->id}";
 
-        $stats = [
-            'total_invitations' => $user->invitations()->count(),
-            'active_invitations' => $user->invitations()->where('status', 'active')->count(),
-            'total_guests' => Invitation::where('user_id', $user->id)
-                ->withCount('guests')->get()->sum('guests_count'),
-            'total_rsvps' => Rsvp::whereHas('invitation', fn($q) => $q->where('user_id', $user->id))->count(),
-            'attending' => Rsvp::whereHas('invitation', fn($q) => $q->where('user_id', $user->id))
-                ->where('status', 'attending')->count(),
-            'total_views' => $user->invitations()->sum('view_count'),
-        ];
+        $stats = Cache::remember("{$cachePrefix}:stats:v1", now()->addSeconds(45), function () use ($user) {
+            return [
+                'total_invitations' => Invitation::where('user_id', $user->id)->count(),
+                'active_invitations' => Invitation::where('user_id', $user->id)->where('status', 'active')->count(),
+                'total_guests' => Guest::whereHas('invitation', fn ($q) => $q->where('user_id', $user->id))->count(),
+                'total_rsvps' => Rsvp::whereHas('invitation', fn($q) => $q->where('user_id', $user->id))->count(),
+                'attending' => Rsvp::whereHas('invitation', fn($q) => $q->where('user_id', $user->id))
+                    ->where('status', 'attending')->count(),
+                'total_views' => Invitation::where('user_id', $user->id)->sum('view_count'),
+            ];
+        });
 
-        $invitations = $user->invitations()
-            ->with('template', 'package')
-            ->withCount(['guests', 'photos'])
-            ->latest()
-            ->take(5)
-            ->get();
+        $invitations = Cache::remember("{$cachePrefix}:invitations:v1", now()->addSeconds(30), function () use ($user) {
+            return Invitation::query()
+                ->where('user_id', $user->id)
+                ->with(['template:id,name', 'package:id,name'])
+                ->withCount(['guests', 'photos'])
+                ->select(['id', 'user_id', 'template_id', 'package_id', 'title', 'status', 'event_date', 'view_count', 'created_at'])
+                ->latest()
+                ->take(5)
+                ->get();
+        });
 
-        $latestInvitation = $user->invitations()
-            ->with('package')
-            ->withCount(['guests', 'photos'])
-            ->latest()
-            ->first();
+        $latestInvitation = Cache::remember("{$cachePrefix}:latest_invitation:v1", now()->addSeconds(30), function () use ($user) {
+            return Invitation::query()
+                ->where('user_id', $user->id)
+                ->with('package:id,name,price,max_guests,max_photos,max_invitations')
+                ->withCount(['guests', 'photos'])
+                ->select(['id', 'user_id', 'package_id', 'title', 'venue_name', 'status', 'created_at'])
+                ->latest()
+                ->first();
+        });
 
         $onboarding = $this->buildOnboardingData($latestInvitation);
         $upsell = $this->buildUpsellData($latestInvitation, $user->id);

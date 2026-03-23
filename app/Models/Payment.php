@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Payment extends Model
 {
@@ -51,6 +52,11 @@ class Payment extends Model
         return $this->belongsTo(Package::class);
     }
 
+    public function callbackReceipts(): HasMany
+    {
+        return $this->hasMany(PaymentCallbackReceipt::class);
+    }
+
     public function isPending(): bool
     {
         return $this->payment_status === 'pending';
@@ -68,6 +74,10 @@ class Payment extends Model
 
     public function markAsPaid(?string $transactionId = null): void
     {
+        if (!in_array($this->payment_status, ['pending', 'failed'], true)) {
+            return;
+        }
+
         $this->update([
             'payment_status' => 'paid',
             'paid_at' => now(),
@@ -77,6 +87,10 @@ class Payment extends Model
 
     public function markAsFailed(): void
     {
+        if ($this->payment_status !== 'pending') {
+            return;
+        }
+
         $this->update(['payment_status' => 'failed']);
     }
 }

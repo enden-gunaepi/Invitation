@@ -9,7 +9,7 @@ class Package extends Model
 {
     protected $fillable = [
         'name', 'slug', 'tier', 'description', 'badge_text', 'support_level', 'sla_hours',
-        'price', 'billing_type', 'billing_cycle', 'max_guests', 'max_photos', 'max_invitations',
+        'price', 'affiliate_commission_rate', 'billing_type', 'billing_cycle', 'max_guests', 'max_photos', 'max_invitations',
         'features', 'addons', 'allowed_template_ids', 'is_active', 'is_recommended',
     ];
 
@@ -17,6 +17,7 @@ class Package extends Model
     {
         return [
             'price' => 'decimal:2',
+            'affiliate_commission_rate' => 'decimal:2',
             'features' => 'array',
             'addons' => 'array',
             'allowed_template_ids' => 'array',
@@ -30,8 +31,13 @@ class Package extends Model
         if (empty($this->allowed_template_ids)) {
             return true;
         }
+        $allowed = collect($this->allowed_template_ids)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->values()
+            ->all();
 
-        return in_array($templateId, $this->allowed_template_ids, true);
+        return in_array($templateId, $allowed, true);
     }
 
     public function invitations(): HasMany

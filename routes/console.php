@@ -10,3 +10,5 @@ Artisan::command('inspire', function () {
 
 Schedule::command('payments:dunning')->everyThirtyMinutes();
 Schedule::command('reminders:process-whatsapp')->everyTenMinutes();
+Schedule::command('system:heartbeat')->everyFiveMinutes();
+Schedule::command('billing:reconcile-daily')->dailyAt('00:30');

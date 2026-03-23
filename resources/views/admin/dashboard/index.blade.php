@@ -7,7 +7,7 @@
 @section('content')
 {{-- Stats Grid --}}
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-    <div class="stat-card">
+    <div class="card stat-card">
         <div class="flex items-center justify-between mb-3">
             <div class="stat-icon bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400">
                 <i class="fas fa-envelope"></i>
@@ -17,7 +17,7 @@
         <p class="text-2xl font-bold mb-1">{{ number_format($stats['total_invitations']) }}</p>
         <p class="text-xs text-slate-500">Total Undangan</p>
     </div>
-    <div class="stat-card">
+    <div class="card stat-card">
         <div class="flex items-center justify-between mb-3">
             <div class="stat-icon bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-emerald-400">
                 <i class="fas fa-check-circle"></i>
@@ -27,7 +27,7 @@
         <p class="text-2xl font-bold mb-1">{{ number_format($stats['attending_rsvps']) }}</p>
         <p class="text-xs text-slate-500">Total RSVP Hadir</p>
     </div>
-    <div class="stat-card">
+    <div class="card stat-card">
         <div class="flex items-center justify-between mb-3">
             <div class="stat-icon bg-gradient-to-br from-amber-500/20 to-orange-500/20 text-amber-400">
                 <i class="fas fa-users"></i>
@@ -37,7 +37,7 @@
         <p class="text-2xl font-bold mb-1">{{ number_format($stats['total_users']) }}</p>
         <p class="text-xs text-slate-500">Total Client</p>
     </div>
-    <div class="stat-card">
+    <div class="card stat-card">
         <div class="flex items-center justify-between mb-3">
             <div class="stat-icon bg-gradient-to-br from-rose-500/20 to-pink-500/20 text-rose-400">
                 <i class="fas fa-palette"></i>

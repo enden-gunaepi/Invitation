@@ -5,10 +5,16 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\InvitationPhoto;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class PhotoController extends Controller
 {
+    public function __construct(private readonly ImageCompressionService $imageCompressionService)
+    {
+    }
+
     public function store(Request $request, Invitation $invitation)
     {
         $this->authorize($invitation);
@@ -24,11 +30,20 @@ class PhotoController extends Controller
         }
 
         $request->validate([
-            'photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
             'caption' => 'nullable|string|max:200',
         ]);
 
-        $path = $request->file('photo')->store('invitations/photos', 'public');
+        try {
+            $path = $this->imageCompressionService->compressAndStore(
+                $request->file('photo'),
+                'invitations/photos'
+            );
+        } catch (\Throwable $e) {
+            throw ValidationException::withMessages([
+                'photo' => 'Gagal memproses gambar. Coba upload gambar lain.',
+            ]);
+        }
 
         InvitationPhoto::create([
             'invitation_id' => $invitation->id,

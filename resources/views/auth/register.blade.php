@@ -101,6 +101,20 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="form-label">Kode Referral (opsional)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-handshake"></i>
+                        <input type="text" name="referral_code" value="{{ old('referral_code', $refCode ?? '') }}" class="form-input" placeholder="Masukkan kode referral">
+                    </div>
+                    @if(!empty($referrer))
+                        <p class="text-xs mt-2" style="color: var(--text-secondary);">Direferensikan oleh <strong>{{ $referrer->name }}</strong></p>
+                    @elseif(!empty($refCode))
+                        <p class="text-xs mt-2" style="color: #ff3b30;">Kode referral pada URL tidak ditemukan.</p>
+                    @endif
+                    @error('referral_code')<p class="error-msg">{{ $message }}</p>@enderror
+                </div>
+
+                <div class="form-group">
                     <label class="form-label">Konfirmasi Password</label>
                     <div class="input-wrapper">
                         <i class="fas fa-lock"></i>

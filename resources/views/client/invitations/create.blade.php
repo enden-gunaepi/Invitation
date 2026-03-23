@@ -6,6 +6,17 @@
 @section('content')
 <div class="max-w-3xl">
     <div class="card p-6">
+        @if($errors->any())
+            <div class="mb-5 rounded-lg border px-4 py-3" style="border-color: var(--danger); background: rgba(239,68,68,.08);">
+                <p class="text-sm font-semibold mb-1" style="color: var(--danger);">Ada data yang belum valid:</p>
+                <ul class="text-xs space-y-1" style="color: var(--danger);">
+                    @foreach($errors->all() as $error)
+                        <li>• {{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('client.invitations.store') }}" enctype="multipart/form-data">
             @csrf
 
@@ -109,8 +120,16 @@
                 <div><label class="form-label">Link Google Maps</label><input type="url" name="google_maps_url" value="{{ old('google_maps_url') }}" class="form-input"></div>
             </div>
             <div class="mb-5"><label class="form-label">Alamat Lengkap</label><textarea name="venue_address" class="form-input" rows="2" required>{{ old('venue_address') }}</textarea></div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
-                <div><label class="form-label">Link Live Streaming (opsional)</label><input type="url" name="livestream_url" value="{{ old('livestream_url') }}" class="form-input" placeholder="https://youtube.com/live/..."></div>
+            <div class="mb-3">
+                <label class="inline-flex items-center gap-2 text-sm font-semibold">
+                    <input type="hidden" name="livestream_enabled" value="0">
+                    <input type="checkbox" name="livestream_enabled" value="1" id="livestream_enabled_create" {{ old('livestream_enabled') ? 'checked' : '' }} style="accent-color: var(--accent); width:16px; height:16px;">
+                    Aktifkan Live Streaming
+                </label>
+                <p class="text-xs mt-1" style="color: var(--text-secondary);">Nyalakan hanya jika acara Anda memakai live streaming.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5" id="livestream_fields_create" style="{{ old('livestream_enabled') ? '' : 'display:none;' }}">
+                <div><label class="form-label">Link Live Streaming</label><input type="url" name="livestream_url" value="{{ old('livestream_url') }}" class="form-input" placeholder="https://youtube.com/live/..."></div>
                 <div><label class="form-label">Label Live Streaming</label><input type="text" name="livestream_label" value="{{ old('livestream_label', 'Live Streaming') }}" class="form-input" placeholder="Live Streaming Akad"></div>
             </div>
 
@@ -119,7 +138,11 @@
             <h3 class="font-bold text-base mb-4" style="color: var(--accent);"><i class="fas fa-align-left mr-2"></i> Teks Undangan</h3>
             <div class="mb-5"><label class="form-label">Teks Pembuka</label><textarea name="opening_text" class="form-input" rows="3">{{ old('opening_text') }}</textarea></div>
             <div class="mb-5"><label class="form-label">Teks Penutup</label><textarea name="closing_text" class="form-input" rows="3">{{ old('closing_text') }}</textarea></div>
-            <div class="mb-6"><label class="form-label">Cover Photo</label><input type="file" name="cover_photo" class="form-input" accept="image/*"></div>
+            <div class="mb-6">
+                <label class="form-label">Cover Photo</label>
+                <input type="file" name="cover_photo" class="form-input" accept="image/*">
+                @error('cover_photo') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
+            </div>
             <div class="mb-6">
                 <label class="form-label">Upload Musik (max 20MB)</label>
                 <input type="file" name="music_url" class="form-input" accept="audio/*">
@@ -226,6 +249,13 @@ function updateTemplatePreview() {
 document.addEventListener('DOMContentLoaded', () => {
     updatePackageInfo();
     updateTemplatePreview();
+    const toggle = document.getElementById('livestream_enabled_create');
+    const fields = document.getElementById('livestream_fields_create');
+    if (toggle && fields) {
+        const refreshLive = () => { fields.style.display = toggle.checked ? '' : 'none'; };
+        toggle.addEventListener('change', refreshLive);
+        refreshLive();
+    }
 });
 </script>
 @endsection

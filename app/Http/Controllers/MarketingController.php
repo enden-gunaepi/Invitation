@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Package;
+use App\Models\Template;
 use Illuminate\Http\Request;
 
 class MarketingController extends Controller
@@ -9,7 +11,16 @@ class MarketingController extends Controller
     public function home()
     {
         $niches = $this->niches();
-        return view('marketing.home', compact('niches'));
+        $templates = Template::where('is_active', true)
+            ->orderByDesc('is_premium')
+            ->orderBy('name')
+            ->limit(6)
+            ->get();
+        $packages = Package::where('is_active', true)
+            ->orderBy('price')
+            ->get();
+
+        return view('marketing.home', compact('niches', 'templates', 'packages'));
     }
 
     public function niche(string $niche)
@@ -88,4 +99,3 @@ class MarketingController extends Controller
         ];
     }
 }
-

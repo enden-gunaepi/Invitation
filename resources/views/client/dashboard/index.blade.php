@@ -7,7 +7,7 @@
 @section('content')
 {{-- Stats Grid --}}
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-    <div class="stat-card">
+    <div class="card stat-card">
         <div class="flex items-center justify-between mb-3">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center text-emerald-400 text-lg">
                 <i class="fas fa-envelope"></i>
@@ -16,7 +16,7 @@
         <p class="text-2xl font-bold mb-1">{{ $stats['total_invitations'] }}</p>
         <p class="text-xs text-slate-500">Total Undangan</p>
     </div>
-    <div class="stat-card">
+    <div class="card stat-card">
         <div class="flex items-center justify-between mb-3">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center text-indigo-400 text-lg">
                 <i class="fas fa-check-circle"></i>
@@ -26,7 +26,7 @@
         <p class="text-2xl font-bold mb-1">{{ $stats['total_rsvps'] }}</p>
         <p class="text-xs text-slate-500">Total RSVP</p>
     </div>
-    <div class="stat-card">
+    <div class="card stat-card">
         <div class="flex items-center justify-between mb-3">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center text-amber-400 text-lg">
                 <i class="fas fa-eye"></i>

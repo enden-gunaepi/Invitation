@@ -74,6 +74,11 @@
                         <span class="badge badge-{{ $c->status === 'paid' ? 'success' : ($c->status === 'approved' ? 'info' : 'warning') }}">
                             {{ ucfirst($c->status) }}
                         </span>
+                        @if($c->risk_flag)
+                            <div class="text-[10px] mt-1 px-2 py-1 rounded-full inline-block" style="background: rgba(239,68,68,.12); color: #ef4444;">
+                                Risk: {{ $c->risk_reason ?? 'flagged' }}
+                            </div>
+                        @endif
                     </td>
                     <td class="text-xs">{{ $c->created_at->format('d/m/Y H:i') }}</td>
                     <td>

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -15,6 +16,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'referral_code', 'referred_by_user_id', 'affiliate_rate',
         'password', 'role', 'phone', 'avatar', 'is_active',
+        'signup_ip', 'signup_ua_hash', 'referral_clicked_at',
     ];
 
     protected $hidden = [
@@ -28,6 +30,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'affiliate_rate' => 'decimal:2',
+            'referral_clicked_at' => 'datetime',
         ];
     }
 
@@ -55,6 +58,16 @@ class User extends Authenticatable
         return $this->hasMany(Invitation::class);
     }
 
+    public function referredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'referred_by_user_id');
+    }
+
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(User::class, 'referred_by_user_id');
+    }
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
@@ -68,6 +81,11 @@ class User extends Authenticatable
     public function payoutRequests(): HasMany
     {
         return $this->hasMany(PayoutRequest::class);
+    }
+
+    public function affiliateClicks(): HasMany
+    {
+        return $this->hasMany(AffiliateClick::class, 'referrer_user_id');
     }
 
     public function reminderCampaigns(): HasMany

@@ -144,7 +144,12 @@
                     </div>
                     <div>
                         <label class="form-label">Referral (opsional)</label>
-                        <input type="text" name="referral_code" class="form-input" value="{{ old('referral_code') }}" placeholder="REF12345">
+                        <input type="text" name="referral_code" class="form-input" value="{{ old('referral_code', $lockedReferralCode ?? '') }}" placeholder="REF12345" {{ !empty($lockedReferralCode) ? 'readonly' : '' }}>
+                        @if(!empty($currentReferrer))
+                        <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                            Akun ini sudah direferensikan oleh <strong>{{ $currentReferrer->name }}</strong> ({{ $lockedReferralCode }}), kode tidak bisa diganti.
+                        </p>
+                        @endif
                     </div>
                 </div>
                 <p class="text-xs mb-2" style="color: var(--text-secondary);">Kupon dan referral akan diverifikasi saat proses pembayaran.</p>

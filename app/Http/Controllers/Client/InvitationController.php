@@ -11,10 +11,17 @@ use App\Models\MusicTrack;
 use App\Models\Rsvp;
 use App\Models\Template;
 use App\Models\Package;
+use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\ValidationException;
 
 class InvitationController extends Controller
 {
+    public function __construct(private readonly ImageCompressionService $imageCompressionService)
+    {
+    }
+
     public function index()
     {
         $invitations = auth()->user()->invitations()
@@ -40,6 +47,9 @@ class InvitationController extends Controller
         if ($uploadError = $this->getUploadErrorMessage($request, 'music_url')) {
             return back()->withInput()->withErrors(['music_url' => $uploadError]);
         }
+        if ($mimeErrors = $this->validateUploadMimeSniff($request)) {
+            return back()->withInput()->withErrors($mimeErrors);
+        }
 
         $validated = $request->validate([
             'template_id' => 'required|exists:templates,id',
@@ -56,20 +66,22 @@ class InvitationController extends Controller
             'venue_name' => 'required|string|max:200',
             'venue_address' => 'required|string',
             'google_maps_url' => 'nullable|url',
-            'livestream_url' => 'nullable|url',
+            'livestream_enabled' => 'nullable|boolean',
+            'livestream_url' => 'nullable|required_if:livestream_enabled,1|url',
             'livestream_label' => 'nullable|string|max:100',
             'opening_text' => 'nullable|string',
             'closing_text' => 'nullable|string',
-            'cover_photo' => 'nullable|image|max:5120',
-            'groom_photo' => 'nullable|image|max:5120',
-            'bride_photo' => 'nullable|image|max:5120',
+            'cover_photo' => 'nullable|image|max:10240',
+            'groom_photo' => 'nullable|image|max:10240',
+            'bride_photo' => 'nullable|image|max:10240',
             'groom_instagram' => 'nullable|string|max:255',
             'bride_instagram' => 'nullable|string|max:255',
             'groom_facebook' => 'nullable|string|max:255',
             'bride_facebook' => 'nullable|string|max:255',
             'music_url' => 'nullable|file|mimes:mp3,ogg,wav,m4a,aac|max:20480',
             'music_track_id' => 'nullable|exists:music_tracks,id',
-            'love_story_photos.*' => 'nullable|image|max:5120',
+            'love_story_photos.*' => 'nullable|image|max:10240',
+            'love_stories.*.photo_path' => 'nullable|string|max:255',
             'bank_accounts' => 'nullable|array',
             'bank_accounts.*.bank_name' => 'nullable|string|max:100',
             'bank_accounts.*.account_number' => 'nullable|string|max:50',
@@ -78,6 +90,8 @@ class InvitationController extends Controller
             'music_url.uploaded' => 'Upload musik gagal. Coba file lebih kecil (disarankan <= 20MB) atau cek konfigurasi server upload.',
             'music_url.mimes' => 'Format musik harus mp3, ogg, wav, m4a, atau aac.',
             'music_url.max' => 'Ukuran musik maksimal 20MB.',
+            'livestream_url.required_if' => 'Link live streaming wajib diisi jika fitur live streaming diaktifkan.',
+            'love_story_photos.*.max' => 'Ukuran foto love story maksimal 10MB.',
         ]);
 
         // Enforce template access based on package
@@ -108,16 +122,16 @@ class InvitationController extends Controller
 
         $validated['user_id'] = auth()->id();
         $validated['status'] = 'draft';
+        $validated['livestream_enabled'] = $request->boolean('livestream_enabled');
 
-        if ($request->hasFile('cover_photo')) {
-            $validated['cover_photo'] = $request->file('cover_photo')->store('invitations/covers', 'public');
+        if (!$validated['livestream_enabled']) {
+            $validated['livestream_url'] = null;
+            $validated['livestream_label'] = null;
         }
-        if ($request->hasFile('groom_photo')) {
-            $validated['groom_photo'] = $request->file('groom_photo')->store('invitations/couples', 'public');
-        }
-        if ($request->hasFile('bride_photo')) {
-            $validated['bride_photo'] = $request->file('bride_photo')->store('invitations/couples', 'public');
-        }
+
+        $this->storeCompressedImageIfPresent($request, $validated, 'cover_photo', 'invitations/covers');
+        $this->storeCompressedImageIfPresent($request, $validated, 'groom_photo', 'invitations/couples');
+        $this->storeCompressedImageIfPresent($request, $validated, 'bride_photo', 'invitations/couples');
 
         if ($request->hasFile('music_url')) {
             $musicFile = $request->file('music_url');
@@ -165,7 +179,7 @@ class InvitationController extends Controller
                 if (!empty($ls['title'])) {
                     $storyPhotoPath = null;
                     if (isset($loveStoryPhotos[$i]) && $loveStoryPhotos[$i]->isValid()) {
-                        $storyPhotoPath = $loveStoryPhotos[$i]->store('invitations/love-stories', 'public');
+                        $storyPhotoPath = $this->storeCompressedLoveStoryPhoto($loveStoryPhotos[$i], $i);
                     }
                     LoveStory::create([
                         'invitation_id' => $invitation->id,
@@ -253,6 +267,9 @@ class InvitationController extends Controller
         if ($uploadError = $this->getUploadErrorMessage($request, 'music_url')) {
             return back()->withInput()->withErrors(['music_url' => $uploadError]);
         }
+        if ($mimeErrors = $this->validateUploadMimeSniff($request)) {
+            return back()->withInput()->withErrors($mimeErrors);
+        }
 
         $validated = $request->validate([
             'template_id' => 'required|exists:templates,id',
@@ -269,7 +286,8 @@ class InvitationController extends Controller
             'venue_name' => 'required|string|max:200',
             'venue_address' => 'required|string',
             'google_maps_url' => 'nullable|url',
-            'livestream_url' => 'nullable|url',
+            'livestream_enabled' => 'nullable|boolean',
+            'livestream_url' => 'nullable|required_if:livestream_enabled,1|url',
             'livestream_label' => 'nullable|string|max:100',
             'opening_text' => 'nullable|string',
             'closing_text' => 'nullable|string',
@@ -278,9 +296,9 @@ class InvitationController extends Controller
             'bank_account_name' => 'nullable|string|max:255',
             'gift_address' => 'nullable|string',
             'footer_text' => 'nullable|string|max:255',
-            'cover_photo' => 'nullable|image|max:5120',
-            'groom_photo' => 'nullable|image|max:5120',
-            'bride_photo' => 'nullable|image|max:5120',
+            'cover_photo' => 'nullable|image|max:10240',
+            'groom_photo' => 'nullable|image|max:10240',
+            'bride_photo' => 'nullable|image|max:10240',
             'groom_instagram' => 'nullable|string|max:255',
             'bride_instagram' => 'nullable|string|max:255',
             'groom_facebook' => 'nullable|string|max:255',
@@ -288,7 +306,8 @@ class InvitationController extends Controller
             'music_url' => 'nullable|file|mimes:mp3,ogg,wav,m4a,aac|max:20480',
             'music_track_id' => 'nullable|exists:music_tracks,id',
             'events.*.event_description' => 'nullable|string|max:1000',
-            'love_story_photos.*' => 'nullable|image|max:5120',
+            'love_story_photos.*' => 'nullable|image|max:10240',
+            'love_stories.*.photo_path' => 'nullable|string|max:255',
             'bank_accounts' => 'nullable|array',
             'bank_accounts.*.bank_name' => 'nullable|string|max:100',
             'bank_accounts.*.account_number' => 'nullable|string|max:50',
@@ -297,7 +316,15 @@ class InvitationController extends Controller
             'music_url.uploaded' => 'Upload musik gagal. Coba file lebih kecil (disarankan <= 20MB) atau cek konfigurasi server upload.',
             'music_url.mimes' => 'Format musik harus mp3, ogg, wav, m4a, atau aac.',
             'music_url.max' => 'Ukuran musik maksimal 20MB.',
+            'livestream_url.required_if' => 'Link live streaming wajib diisi jika fitur live streaming diaktifkan.',
+            'love_story_photos.*.max' => 'Ukuran foto love story maksimal 10MB.',
         ]);
+
+        $validated['livestream_enabled'] = $request->boolean('livestream_enabled');
+        if (!$validated['livestream_enabled']) {
+            $validated['livestream_url'] = null;
+            $validated['livestream_label'] = null;
+        }
 
         // Enforce template access on update too
         $package = Package::findOrFail($validated['package_id']);
@@ -326,15 +353,9 @@ class InvitationController extends Controller
                 ->with('error', "Batas undangan untuk paket {$package->name} sudah tercapai ({$maxInvitations}).");
         }
 
-        if ($request->hasFile('cover_photo')) {
-            $validated['cover_photo'] = $request->file('cover_photo')->store('invitations/covers', 'public');
-        }
-        if ($request->hasFile('groom_photo')) {
-            $validated['groom_photo'] = $request->file('groom_photo')->store('invitations/couples', 'public');
-        }
-        if ($request->hasFile('bride_photo')) {
-            $validated['bride_photo'] = $request->file('bride_photo')->store('invitations/couples', 'public');
-        }
+        $this->storeCompressedImageIfPresent($request, $validated, 'cover_photo', 'invitations/covers');
+        $this->storeCompressedImageIfPresent($request, $validated, 'groom_photo', 'invitations/couples');
+        $this->storeCompressedImageIfPresent($request, $validated, 'bride_photo', 'invitations/couples');
 
         if ($request->hasFile('music_url')) {
             $musicFile = $request->file('music_url');
@@ -403,9 +424,10 @@ class InvitationController extends Controller
             $loveStoryPhotos = $request->file('love_story_photos', []);
             foreach ($request->input('love_stories', []) as $i => $ls) {
                 if (!empty($ls['title'])) {
-                    $storyPhotoPath = null;
+                    $storyPhotoPath = !empty($ls['photo_path']) ? (string) $ls['photo_path'] : null;
                     if (isset($loveStoryPhotos[$i]) && $loveStoryPhotos[$i]->isValid()) {
-                        $storyPhotoPath = $loveStoryPhotos[$i]->store('invitations/love-stories', 'public');
+                        $this->deletePublicFileIfExists($storyPhotoPath);
+                        $storyPhotoPath = $this->storeCompressedLoveStoryPhoto($loveStoryPhotos[$i], $i);
                     }
                     LoveStory::create([
                         'invitation_id' => $invitation->id,
@@ -539,6 +561,26 @@ class InvitationController extends Controller
         }
     }
 
+    private function storeCompressedImageIfPresent(Request $request, array &$validated, string $field, string $directory): void
+    {
+        if (!$request->hasFile($field)) {
+            return;
+        }
+
+        try {
+            $validated[$field] = $this->imageCompressionService->compressAndStore(
+                $request->file($field),
+                $directory
+            );
+        } catch (\Throwable $e) {
+            report($e);
+            $detail = app()->environment('local') ? (' Detail: ' . $e->getMessage()) : '';
+            throw ValidationException::withMessages([
+                $field => 'Gagal memproses gambar. Coba upload gambar lain.' . $detail,
+            ]);
+        }
+    }
+
     private function getUploadErrorMessage(Request $request, string $field): ?string
     {
         if (!isset($_FILES[$field])) {
@@ -557,5 +599,118 @@ class InvitationController extends Controller
         }
 
         return 'Upload musik gagal karena error server upload. Coba ulangi atau ganti file.';
+    }
+
+    private function validateUploadMimeSniff(Request $request): array
+    {
+        $errors = [];
+
+        $imageMimes = ['image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png', 'image/webp', 'image/gif'];
+        $audioMimes = ['audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/mp4', 'audio/x-m4a', 'audio/aac', 'audio/aacp'];
+        $audioExts = ['mp3', 'ogg', 'wav', 'm4a', 'aac'];
+        $imageExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
+        $imageFields = ['cover_photo', 'groom_photo', 'bride_photo'];
+        foreach ($imageFields as $field) {
+            if ($request->hasFile($field)) {
+                $file = $request->file($field);
+                if (
+                    $file instanceof UploadedFile
+                    && !$this->isAllowedMimeByContent($file, $imageMimes)
+                    && !$this->isAllowedByExtensionFallback($file, $imageExts)
+                ) {
+                    $errors[$field] = 'File gambar terdeteksi tidak valid (MIME mismatch).';
+                }
+            }
+        }
+
+        if ($request->hasFile('love_story_photos')) {
+            foreach ((array) $request->file('love_story_photos') as $idx => $file) {
+                if (
+                    $file instanceof UploadedFile
+                    && !$this->isAllowedMimeByContent($file, $imageMimes)
+                    && !$this->isAllowedByExtensionFallback($file, $imageExts)
+                ) {
+                    $errors["love_story_photos.{$idx}"] = 'Foto love story tidak valid (MIME mismatch).';
+                }
+            }
+        }
+
+        if ($request->hasFile('music_url')) {
+            $file = $request->file('music_url');
+            if (
+                $file instanceof UploadedFile
+                && !$this->isAllowedMimeByContent($file, $audioMimes)
+                && !$this->isAllowedByExtensionFallback($file, $audioExts)
+            ) {
+                $errors['music_url'] = 'File musik terdeteksi tidak valid atau ekstensi tidak sesuai isi file.';
+            }
+        }
+
+        return $errors;
+    }
+
+    private function isAllowedMimeByContent(UploadedFile $file, array $allowedMimes): bool
+    {
+        $detectedMime = $this->detectMimeType($file);
+        if ($detectedMime === null) {
+            return false;
+        }
+
+        $detectedMime = strtolower($detectedMime);
+        $allowed = array_map('strtolower', $allowedMimes);
+        return in_array($detectedMime, $allowed, true);
+    }
+
+    private function isAllowedByExtensionFallback(UploadedFile $file, array $allowedExtensions): bool
+    {
+        $detectedMime = strtolower($this->detectMimeType($file) ?? '');
+        $fallbackMimes = ['application/octet-stream', 'video/mp4'];
+        if (!in_array($detectedMime, $fallbackMimes, true)) {
+            return false;
+        }
+
+        $ext = strtolower((string) $file->getClientOriginalExtension());
+        return in_array($ext, array_map('strtolower', $allowedExtensions), true);
+    }
+
+    private function detectMimeType(UploadedFile $file): ?string
+    {
+        $path = $file->getPathname();
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $detected = (string) $finfo->file($path);
+        return $detected !== '' ? $detected : null;
+    }
+
+    private function storeCompressedLoveStoryPhoto(UploadedFile $file, int $index): string
+    {
+        try {
+            return $this->imageCompressionService->compressAndStore(
+                $file,
+                'invitations/love-stories'
+            );
+        } catch (\Throwable $e) {
+            report($e);
+            $detail = app()->environment('local') ? (' Detail: ' . $e->getMessage()) : '';
+            throw ValidationException::withMessages([
+                "love_story_photos.{$index}" => 'Gagal memproses foto love story. Coba upload gambar lain.' . $detail,
+            ]);
+        }
+    }
+
+    private function deletePublicFileIfExists(?string $path): void
+    {
+        if (empty($path)) {
+            return;
+        }
+
+        $fullPath = storage_path('app/public/' . ltrim($path, '/'));
+        if (is_file($fullPath)) {
+            @unlink($fullPath);
+        }
     }
 }

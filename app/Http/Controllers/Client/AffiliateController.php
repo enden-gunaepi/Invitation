@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\AffiliateClick;
 use App\Models\AffiliateCommission;
 use App\Models\PayoutRequest;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ class AffiliateController extends Controller
     public function index()
     {
         $user = auth()->user();
+        $referralLink = route('referral.visit', ['referralCode' => $user->referral_code]);
 
         $commissions = AffiliateCommission::with(['referred', 'payment'])
             ->where('referrer_user_id', $user->id)
@@ -31,9 +33,12 @@ class AffiliateController extends Controller
                 ->where('status', 'approved')
                 ->whereNull('payout_request_id')
                 ->sum('commission_amount'),
+            'clicks' => AffiliateClick::where('referrer_user_id', $user->id)->count(),
+            'signups' => AffiliateClick::where('referrer_user_id', $user->id)->whereNotNull('converted_user_id')->count(),
+            'paid_referrals' => AffiliateCommission::where('referrer_user_id', $user->id)->distinct('referred_user_id')->count('referred_user_id'),
         ];
 
-        return view('client.affiliate.index', compact('commissions', 'payouts', 'stats'));
+        return view('client.affiliate.index', compact('commissions', 'payouts', 'stats', 'referralLink'));
     }
 
     public function requestPayout(Request $request)

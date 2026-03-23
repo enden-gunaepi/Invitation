@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="The Wedding Of John & Jane">
+    <title>The Wedding of John & Jane - Our Wedding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --peach-50: #fff7f2;
+            --peach-100: #ffefe5;
+            --peach-200: #ffd8c2;
+            --peach-300: #ffc2a2;
+            --peach-500: #e89570;
+            --peach-700: #9c6246;
+            --rose: #d97979;
+            --text-main: #4c3a32;
+            --text-soft: #7a6359;
+            --card: rgba(255, 255, 255, 0.78);
+            --border: rgba(232, 149, 112, 0.28);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background:
+                radial-gradient(circle at 10% -5%, rgba(255, 194, 162, 0.35), transparent 32%),
+                radial-gradient(circle at 90% 5%, rgba(217, 121, 121, 0.20), transparent 34%),
+                linear-gradient(180deg, var(--peach-50) 0%, #fffdfb 70%, #ffffff 100%);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        .font-cormorant {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .bg-slideshow {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .bg-slide {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transform: scale(1.16);
+            transition: opacity 1.8s ease, transform 9s ease;
+            filter: grayscale(35%) contrast(118%) brightness(68%);
+        }
+
+        .bg-slide.active {
+            opacity: 0.9;
+            transform: scale(1);
+            animation: kenburn 9s ease forwards;
+        }
+
+        @keyframes kenburn {
+            from {
+                transform: scale(1.08) translate3d(0, 0, 0);
+            }
+
+            to {
+                transform: scale(1) translate3d(-0.8%, -0.8%, 0);
+            }
+        }
+
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 50% 35%, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.42) 75%),
+                linear-gradient(180deg, rgba(0, 0, 0, 0.48) 0%, rgba(0, 0, 0, 0.56) 100%);
+        }
+
+        .leaflet-map {
+            width: 100%;
+            height: 290px;
+        }
+
+        .music-player {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f6b494, #e89570);
+            border: 1px solid rgba(255, 255, 255, .5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 8px 22px rgba(176, 96, 65, .34);
+            cursor: pointer;
+            z-index: 99;
+        }
+
+        .music-player.playing {
+            animation: spin 3.4s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-slideshow" id="bgSlideshow">
+        <img src="https://images.unsplash.com/photo-1597861405922-26b24961a034?q=80&w=2070&auto=format&fit=crop"
+            class="bg-slide active" alt="Background" loading="eager" decoding="async" fetchpriority="high">
+        <img src="https://images.unsplash.com/photo-1523438885209-e6b5a229302a?q=80&w=2070&auto=format&fit=crop"
+            class="bg-slide" alt="Background" loading="lazy" decoding="async">
+        <img src="https://images.unsplash.com/photo-1520854221256-17452cc3da25?q=80&w=2070&auto=format&fit=crop"
+            class="bg-slide" alt="Background" loading="lazy" decoding="async">
+    </div>
+    <div class="bg-overlay"></div>
+
+    <section id="cover" class="min-h-screen grid place-items-center relative p-6 overflow-hidden">
+        <div data-aos="zoom-in" data-aos-duration="900"
+            class="w-full max-w-[680px] border border-[rgba(232,149,112,0.3)] rounded-[36px] bg-gradient-to-b from-[rgba(255,255,255,0.94)] to-[rgba(255,248,241,0.90)] shadow-[0_20px_60px_rgba(180,110,78,0.18)] py-8 px-6 text-center relative z-10">
+
+            <div class="tracking-[.26em] uppercase text-xs text-[var(--text-soft)] mb-3.5 font-semibold">The Wedding Of
+            </div>
+            <h1 class="font-cormorant text-[clamp(2.2rem,9vw,4.2rem)] text-[var(--peach-700)] leading-[.98] mb-2.5">
+                John Doe</h1>
+            <div class="font-cormorant text-[clamp(1.3rem,5vw,2.1rem)] text-[var(--text-main)] mb-4">&amp;</div>
+            <h2 class="font-cormorant text-[clamp(2.2rem,9vw,4.2rem)] text-[var(--peach-700)] leading-[.98] mb-2.5">
+                Jane Doe</h2>
+            <div class="text-sm text-[var(--text-soft)] mb-5">01 January 2025</div>
+            <div
+                class="inline-block py-2 px-4 rounded-full text-xs text-[var(--peach-700)] border border-[var(--border)] bg-[rgba(255,255,255,.7)] mb-5">
+                Kepada Yth: Guest Name - Guest Address</div>
+            <button onclick="openInvitation()"
+                class="border border-[var(--peach-500)] bg-gradient-to-br from-[#f6b494] to-[#e89570] text-white rounded-full py-3 px-6 font-semibold text-sm cursor-pointer transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(232,149,112,.3)]">
+                <i class="fas fa-envelope-open-text mr-2"></i>Buka Undangan
+            </button>
+        </div>
+    </section>
+
+    <main class="hidden" id="content">
+        <section class="max-w-4xl mx-auto py-12 px-5 text-center">
+            <div data-aos="fade-up" class="uppercase text-xs tracking-[.23em] text-[var(--text-soft)] font-semibold mb-3">
+                Assalamu'alaikum</div>
+            <h2 data-aos="fade-up" data-aos-delay="100"
+                class="font-cormorant text-[clamp(1.8rem,5vw,2.6rem)] text-[var(--peach-700)] mb-4">The Wedding</h2>
+            <div data-aos="fade-up" data-aos-delay="140"
+                class="w-[70px] h-0.5 rounded-full mx-auto mb-5 bg-gradient-to-r from-transparent via-[var(--peach-500)] to-transparent">
+            </div>
+            <p data-aos="fade-up" data-aos-delay="200"
+                class="max-w-xl mx-auto text-base text-[var(--text-soft)] leading-loose">
+                Dengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir pada acara
+                kami.
+            </p>
+        </section>
+
+        <section class="bg-gradient-to-b from-[rgba(255,239,229,.55)] to-[rgba(255,255,255,.7)] border-y border-[rgba(232,149,112,.12)]">
+            <div class="max-w-4xl mx-auto py-12 px-5 text-center">
+                <div data-aos="fade-up" class="uppercase text-xs tracking-[.23em] text-[var(--text-soft)] font-semibold mb-3">Mempelai</div>
+                <h2 data-aos="fade-up" data-aos-delay="100"
+                    class="font-cormorant text-[clamp(1.8rem,5vw,2.6rem)] text-[var(--peach-700)] mb-4">Bride &amp; Groom</h2>
+                <div data-aos="fade-up" data-aos-delay="150"
+                    class="w-[70px] h-0.5 rounded-full mx-auto mb-5 bg-gradient-to-r from-transparent via-[var(--peach-500)] to-transparent">
+                </div>
+
+                <div class="relative max-w-[780px] min-h-[720px] md:min-h-[840px] mx-auto">
+                    <div class="absolute inset-0 rounded-3xl overflow-hidden border border-[rgba(255,255,255,0.24)] shadow-2xl bg-cover bg-center"
+                        style="background-image: url('https://images.unsplash.com/photo-1529623992450-4848923b8f41?q=80&w=2070&auto=format&fit=crop');">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-black/30"></div>
+                        
+                        <div data-aos="fade-right" data-aos-delay="200" class="absolute top-[90px] left-0 md:left-auto md:top-auto md:bottom-[70px] w-[min(340px,44vw)] md:w-full md:max-w-md text-white p-4 rounded-2xl border border-white/25 bg-black/20 backdrop-blur-sm z-10">
+                            <div class="w-[150px] h-[150px] rounded-full border-2 border-white/75 p-1 bg-black/30 mb-3">
+                                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1887&auto=format&fit=crop" class="w-full h-full rounded-full object-cover border-2 border-white/45" alt="Groom">
+                            </div>
+                            <div class="text-xs text-white/80 mb-1 tracking-wider">Putra dari</div>
+                            <div class="font-cormorant text-[clamp(1.55rem,2.9vw,2.15rem)] font-bold leading-tight mb-2">John Doe</div>
+                            <div class="text-sm leading-relaxed text-white/90">Mr. & Mrs. Doe</div>
+                            <div class="mt-2 flex gap-2">
+                                <a href="#" target="_blank" class="inline-flex items-center gap-2 text-xs border border-white/40 rounded-full px-2.5 py-1 bg-black/20 text-white no-underline font-semibold"><i class="fab fa-instagram"></i> Instagram</a>
+                            </div>
+                        </div>
+
+                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white/95 font-cormorant text-[clamp(2rem,5vw,3.4rem)] font-bold z-10">&amp;</div>
+
+                        <div data-aos="fade-left" data-aos-delay="250" class="absolute bottom-[90px] right-0 md:right-auto md:top-[70px] w-[min(340px,44vw)] md:w-full md:max-w-md text-white p-4 rounded-2xl border border-white/25 bg-black/20 backdrop-blur-sm z-10 md:text-left">
+                           <div class="w-[150px] h-[150px] rounded-full border-2 border-white/75 p-1 bg-black/30 mb-3 ml-auto md:ml-0">
+                                <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=1887&auto=format&fit=crop" class="w-full h-full rounded-full object-cover border-2 border-white/45" alt="Bride">
+                            </div>
+                            <div class="text-xs text-white/80 mb-1 tracking-wider">Putri dari</div>
+                            <div class="font-cormorant text-[clamp(1.55rem,2.9vw,2.15rem)] font-bold leading-tight mb-2">Jane Doe</div>
+                            <div class="text-sm leading-relaxed text-white/90">Mr. & Mrs. Roe</div>
+                             <div class="mt-2 flex gap-2 justify-end md:justify-start">
+                                <a href="#" target="_blank" class="inline-flex items-center gap-2 text-xs border border-white/40 rounded-full px-2.5 py-1 bg-black/20 text-white no-underline font-semibold"><i class="fab fa-instagram"></i> Instagram</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="max-w-4xl mx-auto py-12 px-5 text-center">
+            <div data-aos="fade-up" class="uppercase text-xs tracking-[.23em] text-[var(--text-soft)] font-semibold mb-3">Countdown</div>
+            <h2 data-aos="fade-up" data-aos-delay="100" class="font-cormorant text-[clamp(1.8rem,5vw,2.6rem)] text-[var(--peach-700)] mb-4">Menuju Hari H</h2>
+            <div data-aos="fade-up" data-aos-delay="150" class="w-[70px] h-0.5 rounded-full mx-auto mb-5 bg-gradient-to-r from-transparent via-[var(--peach-500)] to-transparent"></div>
+            <div id="countdown" data-date="2025-01-01T10:00:00" class="flex justify-center gap-2.5 flex-wrap mt-5">
+                <div class="min-w-[72px] border border-[var(--border)] bg-[var(--card)] rounded-xl text-center p-2.5">
+                    <div id="cd-days" class="text-xl font-bold text-[var(--peach-700)] leading-tight">0</div>
+                    <div class="text-xs uppercase tracking-widest text-[var(--text-soft)]">Hari</div>
+                </div>
+                <div class="min-w-[72px] border border-[var(--border)] bg-[var(--card)] rounded-xl text-center p-2.5">
+                    <div id="cd-hours" class="text-xl font-bold text-[var(--peach-700)] leading-tight">0</div>
+                    <div class="text-xs uppercase tracking-widest text-[var(--text-soft)]">Jam</div>
+                </div>
+                <div class="min-w-[72px] border border-[var(--border)] bg-[var(--card)] rounded-xl text-center p-2.5">
+                    <div id="cd-minutes" class="text-xl font-bold text-[var(--peach-700)] leading-tight">0</div>
+                    <div class="text-xs uppercase tracking-widest text-[var(--text-soft)]">Menit</div>
+                </div>
+                <div class="min-w-[72px] border border-[var(--border)] bg-[var(--card)] rounded-xl text-center p-2.5">
+                    <div id="cd-seconds" class="text-xl font-bold text-[var(--peach-700)] leading-tight">0</div>
+                    <div class="text-xs uppercase tracking-widest text-[var(--text-soft)]">Detik</div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center py-8 px-4 text-[var(--text-soft)] text-xs border-t border-[rgba(232,149,112,.18)]">
+            <p class="mb-1.5">Terima kasih atas doa restunya.</p>
+            <p>Made with love by Our Wedding App</p>
+        </footer>
+    </main>
+
+    <div class="music-player" id="musicPlayer" onclick="toggleMusic()"><i class="fas fa-music"></i></div>
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let mapInitialized = false;
+
+        function openInvitation() {
+            document.getElementById('cover').style.display = 'none';
+            document.getElementById('content').classList.remove('hidden');
+            document.getElementById('content').classList.add('block');
+            AOS.init({
+                duration: 850,
+                once: true,
+                offset: 60
+            });
+
+            const audio = document.getElementById('bgMusic');
+            const player = document.getElementById('musicPlayer');
+            if (audio) {
+                audio.play().then(() => player && player.classList.add('playing')).catch(() => {});
+            }
+            initLeafletMap();
+            startBackgroundSlideshow();
+            startCountdown();
+        }
+        
+        function startBackgroundSlideshow() {
+            const slides = document.querySelectorAll('#bgSlideshow .bg-slide');
+            if (!slides.length || slides.length === 1) return;
+            let idx = 0;
+            setInterval(() => {
+                slides[idx].classList.remove('active');
+                idx = (idx + 1) % slides.length;
+                slides[idx].classList.add('active');
+            }, 5000);
+        }
+
+        function startCountdown() {
+            const el = document.getElementById('countdown');
+            if (!el) return;
+            const target = new Date(el.dataset.date).getTime();
+            const interval = setInterval(() => {
+                const now = Date.now();
+                const diff = target - now;
+                if (diff < 0) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                document.getElementById('cd-days').textContent = Math.floor(diff / 86400000);
+                document.getElementById('cd-hours').textContent = Math.floor((diff % 86400000) / 3600000);
+                document.getElementById('cd-minutes').textContent = Math.floor((diff % 3600000) / 60000);
+                document.getElementById('cd-seconds').textContent = Math.floor((diff % 60000) / 1000);
+            }, 1000);
+        }
+
+        function toggleMusic() {
+            const audio = document.getElementById('bgMusic');
+            const player = document.getElementById('musicPlayer');
+            if (!audio || !player) return;
+            if (audio.paused) {
+                audio.play();
+                player.classList.add('playing');
+            } else {
+                audio.pause();
+                player.classList.remove('playing');
+            }
+        }
+        
+        AOS.init({
+            duration: 700,
+            once: true
+        });
+    </script>
+</body>
+
+</html>

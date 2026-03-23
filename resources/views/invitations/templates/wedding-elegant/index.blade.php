@@ -690,7 +690,7 @@
                     @foreach ($invitation->photos as $photo)
                         <div class="gallery-item" data-aos="zoom-in" data-aos-delay="{{ $loop->index * 100 }}">
                             <img src="{{ asset('storage/' . $photo->file_path) }}"
-                                alt="{{ $photo->caption ?? 'Photo' }}" loading="lazy">
+                                alt="{{ $photo->caption ?? 'Photo' }}" loading="lazy" decoding="async">
                         </div>
                     @endforeach
                 </div>
@@ -858,7 +858,7 @@
             <i class="fas fa-music text-[var(--secondary)]" id="musicIcon"></i>
         </div>
         <audio id="bgMusic" loop>
-            <source src="{{ asset('storage/' . $invitation->music_url) }}" type="audio/mpeg">
+            <source src="{{ $invitation->music_signed_url ?? asset('storage/' . $invitation->music_url) }}" type="audio/mpeg">
         </audio>
     @endif
 

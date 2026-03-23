@@ -76,10 +76,35 @@
         .nav-badge { margin-left: auto; font-size: 11px; font-weight: 600; background: var(--danger); color: white; padding: 1px 7px; border-radius: 10px; min-width: 18px; text-align: center; }
 
         .sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border); }
+        .user-trigger { width: 100%; background: transparent; border: 0; padding: 0; text-align: left; cursor: pointer; }
         .user-info { display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-bg); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--accent); }
         .user-name { font-size: 13px; font-weight: 600; color: var(--text); }
         .user-role { font-size: 11px; color: var(--text-secondary); }
+        .user-menu {
+            margin-top: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 6px;
+        }
+        .user-menu a, .user-menu button {
+            width: 100%;
+            border: 0;
+            background: transparent;
+            color: var(--text-secondary);
+            text-align: left;
+            font-size: 12px;
+            padding: 7px 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .user-menu a:hover, .user-menu button:hover { background: var(--hover-bg); color: var(--text); }
+        .user-menu .danger { color: var(--danger); }
 
         /* ===== TOPBAR ===== */
         .topbar {
@@ -106,6 +131,7 @@
         /* ===== MAIN ===== */
         .main-content { margin-left: var(--sidebar-w); padding-top: var(--topbar-h); min-height: 100vh; }
         .page-content { padding: 24px; max-width: 1400px; }
+        .page-shell { display: grid; gap: 18px; }
 
         /* ===== COMPONENTS ===== */
         .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--card-shadow); transition: all 0.2s ease; }
@@ -182,14 +208,74 @@
         /* Mobile Overlay */
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 45; }
 
+        /* Mobile Bottom Dock */
+        .mobile-dock {
+            position: fixed;
+            left: 50%;
+            bottom: 14px;
+            transform: translateX(-50%);
+            width: min(360px, calc(100% - 24px));
+            height: 62px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, #0f172a, #111827);
+            border: 1px solid rgba(148, 163, 184, .22);
+            box-shadow: 0 16px 35px rgba(2, 6, 23, .45);
+            z-index: 80;
+            display: none;
+            align-items: center;
+            padding: 0 10px;
+        }
+        .mobile-dock-track {
+            width: 100%;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 0 2px;
+        }
+        .mobile-dock-track::-webkit-scrollbar { display: none; }
+        .mobile-dock-slot {
+            flex: 0 0 calc((100% - 20px) / 3);
+            display: flex;
+            justify-content: center;
+            scroll-snap-align: start;
+        }
+        .mobile-dock-link {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            color: rgba(255,255,255,.82);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all .2s ease;
+        }
+        .mobile-dock-link:hover { color: #fff; transform: translateY(-1px); }
+        .mobile-dock-link.active {
+            background: rgba(96, 165, 250, .18);
+            color: #60a5fa;
+            box-shadow: inset 0 0 0 1px rgba(96, 165, 250, .35);
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar-overlay.open { display: block; }
-            .topbar { left: 0; }
-            .main-content { margin-left: 0; }
-            .mobile-toggle { display: flex; }
+            .sidebar { display: none; }
+            .sidebar-overlay { display: none !important; }
+            .topbar {
+                position: relative;
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+                padding-top: 0;
+            }
+            .mobile-toggle { display: none !important; }
+            .mobile-dock { display: flex; }
+            .main-content { padding-bottom: 88px; }
         }
         @media (max-width: 640px) {
             .page-content { padding: 16px; }
@@ -262,19 +348,34 @@
                 <a href="{{ route('admin.payment-gateway.index') }}" class="nav-item {{ request()->routeIs('admin.payment-gateway.*') ? 'active' : '' }}">
                     <i class="fas fa-plug"></i> Payment Gateway
                 </a>
+                <a href="{{ route('admin.system.reliability') }}" class="nav-item {{ request()->routeIs('admin.system.reliability') ? 'active' : '' }}">
+                    <i class="fas fa-heart-pulse"></i> Reliability
+                    @php $failedJobsCount = \Illuminate\Support\Facades\DB::table('failed_jobs')->count(); @endphp
+                    @if($failedJobsCount > 0)<span class="nav-badge">{{ $failedJobsCount }}</span>@endif
+                </a>
                 <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                     <i class="fas fa-gear"></i> Pengaturan
                 </a>
             </div>
         </nav>
 
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar">{{ substr(auth()->user()->name, 0, 1) }}</div>
-                <div>
-                    <div class="user-name">{{ auth()->user()->name }}</div>
-                    <div class="user-role">Administrator</div>
+        <div class="sidebar-footer" x-data="{ userMenuOpen: false }">
+            <button class="user-trigger" @click="userMenuOpen = !userMenuOpen">
+                <div class="user-info">
+                    <div class="user-avatar">{{ substr(auth()->user()->name, 0, 1) }}</div>
+                    <div>
+                        <div class="user-name">{{ auth()->user()->name }}</div>
+                        <div class="user-role">Administrator</div>
+                    </div>
                 </div>
+            </button>
+            <div class="user-menu" x-show="userMenuOpen" x-transition>
+                <a href="{{ route('profile.edit') }}"><i class="fas fa-user-gear"></i> Profile Settings</a>
+                <a href="{{ route('admin.settings.index') }}"><i class="fas fa-building"></i> Company Settings</a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="danger"><i class="fas fa-arrow-right-from-bracket"></i> Logout</button>
+                </form>
             </div>
         </div>
     </aside>
@@ -300,18 +401,95 @@
                     <span x-show="darkMode">🌙</span>
                 </div>
             </div>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="topbar-btn" title="Logout"><i class="fas fa-arrow-right-from-bracket"></i></button>
-            </form>
         </div>
     </header>
 
     {{-- Main Content --}}
     <main class="main-content">
-        <div class="page-content">
+        <div class="page-content page-shell">
             @yield('content')
         </div>
     </main>
+
+    <nav class="mobile-dock" aria-label="Mobile Navigation">
+        <div class="mobile-dock-track" data-mobile-dock-track>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.dashboard') }}" class="mobile-dock-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" title="Dashboard">
+                    <i class="fas fa-house"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.users.index') }}" class="mobile-dock-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" title="Users">
+                    <i class="fas fa-users"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.invitations.index') }}" class="mobile-dock-link {{ request()->routeIs('admin.invitations.*') ? 'active' : '' }}" title="Undangan">
+                    <i class="fas fa-envelope"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.templates.index') }}" class="mobile-dock-link {{ request()->routeIs('admin.templates.*') ? 'active' : '' }}" title="Template">
+                    <i class="fas fa-palette"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.packages.index') }}" class="mobile-dock-link {{ request()->routeIs('admin.packages.*') ? 'active' : '' }}" title="Paket">
+                    <i class="fas fa-cube"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.payments.index') }}" class="mobile-dock-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}" title="Pembayaran">
+                    <i class="fas fa-credit-card"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.affiliate.index') }}" class="mobile-dock-link {{ request()->routeIs('admin.affiliate.index') ? 'active' : '' }}" title="Affiliate">
+                    <i class="fas fa-hand-holding-dollar"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.affiliate.payouts') }}" class="mobile-dock-link {{ request()->routeIs('admin.affiliate.payouts*') ? 'active' : '' }}" title="Payout">
+                    <i class="fas fa-wallet"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.payment-gateway.index') }}" class="mobile-dock-link {{ request()->routeIs('admin.payment-gateway.*') ? 'active' : '' }}" title="Gateway">
+                    <i class="fas fa-plug"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.system.reliability') }}" class="mobile-dock-link {{ request()->routeIs('admin.system.reliability') ? 'active' : '' }}" title="Reliability">
+                    <i class="fas fa-heart-pulse"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('admin.settings.index') }}" class="mobile-dock-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" title="Pengaturan">
+                    <i class="fas fa-gear"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const track = document.querySelector('[data-mobile-dock-track]');
+            if (!track) return;
+
+            const key = 'admin_mobile_dock_scroll';
+            const saved = localStorage.getItem(key);
+            if (saved !== null) {
+                track.scrollLeft = parseInt(saved, 10) || 0;
+            } else {
+                const active = track.querySelector('.mobile-dock-link.active');
+                if (active) {
+                    active.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+                }
+            }
+
+            track.addEventListener('scroll', function () {
+                localStorage.setItem(key, String(track.scrollLeft));
+            }, { passive: true });
+        });
+    </script>
 </body>
 </html>

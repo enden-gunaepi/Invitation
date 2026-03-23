@@ -121,6 +121,16 @@
                         <label class="form-label">Kode Referral Anda</label>
                         <input type="text" class="form-input" value="{{ $user->referral_code ?? '-' }}" readonly>
                         <p class="text-xs mt-1" style="color: var(--text-secondary);">Bagikan kode ini untuk program referral/affiliate.</p>
+                        <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                            Link referral: <code>{{ route('referral.visit', ['referralCode' => $user->referral_code]) }}</code>
+                        </p>
+                        <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                            Direferensikan oleh:
+                            <strong>{{ $user->referredBy->name ?? '-' }}</strong>
+                            @if($user->referredBy?->referral_code)
+                                ({{ $user->referredBy->referral_code }})
+                            @endif
+                        </p>
                     </div>
                     <button type="submit" class="btn btn-primary text-sm"><i class="fas fa-save mr-2"></i>Simpan Perubahan</button>
                 </form>
@@ -157,7 +167,14 @@
             <div class="profile-block full" style="border-color: rgba(255,59,48,.35);">
                 <div class="profile-label">Section</div>
                 <h3 class="profile-title" style="color: var(--danger);"><i class="fas fa-triangle-exclamation mr-2"></i>Zona Berbahaya</h3>
-                <p class="profile-sub">Hapus akun akan menghapus semua data permanen.</p>
+                <p class="profile-sub">Logout atau hapus akun dari perangkat ini.</p>
+
+                <form method="post" action="{{ route('logout') }}" class="mb-4">
+                    @csrf
+                    <button type="submit" class="btn text-sm" style="background: rgba(0,113,227,.1); color: var(--info); border: 1px solid rgba(0,113,227,.25);">
+                        <i class="fas fa-arrow-right-from-bracket mr-2"></i>Logout
+                    </button>
+                </form>
 
                 <form method="post" action="{{ route('profile.destroy') }}" onsubmit="return confirm('Yakin ingin menghapus akun? Tindakan ini permanen.')">
                     @csrf

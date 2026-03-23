@@ -69,10 +69,35 @@
         .nav-item i { width: 18px; text-align: center; font-size: 14px; }
 
         .sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border); }
+        .user-trigger { width: 100%; background: transparent; border: 0; padding: 0; text-align: left; cursor: pointer; }
         .user-info { display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-bg); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--accent); }
         .user-name { font-size: 13px; font-weight: 600; color: var(--text); }
         .user-role { font-size: 11px; color: var(--text-secondary); }
+        .user-menu {
+            margin-top: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 6px;
+        }
+        .user-menu a, .user-menu button {
+            width: 100%;
+            border: 0;
+            background: transparent;
+            color: var(--text-secondary);
+            text-align: left;
+            font-size: 12px;
+            padding: 7px 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .user-menu a:hover, .user-menu button:hover { background: var(--hover-bg); color: var(--text); }
+        .user-menu .danger { color: var(--danger); }
 
         .topbar { position: fixed; top: 0; right: 0; left: var(--sidebar-w); height: var(--topbar-h); z-index: 40; background: var(--sidebar-bg); backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
         .topbar-left { display: flex; align-items: center; gap: 12px; }
@@ -90,6 +115,7 @@
 
         .main-content { margin-left: var(--sidebar-w); padding-top: var(--topbar-h); min-height: 100vh; }
         .page-content { padding: 24px; max-width: 1200px; }
+        .page-shell { display: grid; gap: 18px; }
 
         /* Components — same as admin */
         .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--card-shadow); }
@@ -129,13 +155,73 @@
         @keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
 
         .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 45; }
+
+        /* Mobile Bottom Dock */
+        .mobile-dock {
+            position: fixed;
+            left: 50%;
+            bottom: 14px;
+            transform: translateX(-50%);
+            width: min(360px, calc(100% - 24px));
+            height: 62px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, #111827, #0b1220);
+            border: 1px solid rgba(148, 163, 184, .2);
+            box-shadow: 0 16px 35px rgba(2, 6, 23, .45);
+            z-index: 80;
+            display: none;
+            align-items: center;
+            padding: 0 10px;
+        }
+        .mobile-dock-track {
+            width: 100%;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 0 2px;
+        }
+        .mobile-dock-track::-webkit-scrollbar { display: none; }
+        .mobile-dock-slot {
+            flex: 0 0 calc((100% - 20px) / 3);
+            display: flex;
+            justify-content: center;
+            scroll-snap-align: start;
+        }
+        .mobile-dock-link {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            color: rgba(255,255,255,.82);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all .2s ease;
+        }
+        .mobile-dock-link:hover { color: #fff; transform: translateY(-1px); }
+        .mobile-dock-link.active {
+            background: rgba(74, 222, 128, .2);
+            color: #4ade80;
+            box-shadow: inset 0 0 0 1px rgba(74, 222, 128, .35);
+        }
         @media (max-width: 1024px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar-overlay.open { display: block; }
-            .topbar { left: 0; }
-            .main-content { margin-left: 0; }
-            .mobile-toggle { display: flex; }
+            .sidebar { display: none; }
+            .sidebar-overlay { display: none !important; }
+            .topbar {
+                position: relative;
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+                padding-top: 0;
+            }
+            .mobile-toggle { display: none !important; }
+            .mobile-dock { display: flex; }
+            .main-content { padding-bottom: 88px; }
         }
         @media (max-width: 640px) { .page-content { padding: 16px; } .topbar { padding: 0 16px; } }
     </style>
@@ -186,13 +272,22 @@
                 @endif
             </div>
         </nav>
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar">{{ substr(auth()->user()->name, 0, 1) }}</div>
-                <div>
-                    <div class="user-name">{{ auth()->user()->name }}</div>
-                    <div class="user-role">Client</div>
+        <div class="sidebar-footer" x-data="{ userMenuOpen: false }">
+            <button class="user-trigger" @click="userMenuOpen = !userMenuOpen">
+                <div class="user-info">
+                    <div class="user-avatar">{{ substr(auth()->user()->name, 0, 1) }}</div>
+                    <div>
+                        <div class="user-name">{{ auth()->user()->name }}</div>
+                        <div class="user-role">Client</div>
+                    </div>
                 </div>
+            </button>
+            <div class="user-menu" x-show="userMenuOpen" x-transition>
+                <a href="{{ route('profile.edit') }}"><i class="fas fa-user-gear"></i> Profile Settings</a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="danger"><i class="fas fa-arrow-right-from-bracket"></i> Logout</button>
+                </form>
             </div>
         </div>
     </aside>
@@ -212,15 +307,63 @@
                     <span x-show="darkMode">🌙</span>
                 </div>
             </div>
-            <form method="POST" action="{{ route('logout') }}">@csrf
-                <button type="submit" class="topbar-btn" title="Logout"><i class="fas fa-arrow-right-from-bracket"></i></button>
-            </form>
         </div>
     </header>
 
     <main class="main-content">
-        <div class="page-content">@yield('content')</div>
+        <div class="page-content page-shell">@yield('content')</div>
     </main>
+
+    <nav class="mobile-dock" aria-label="Mobile Navigation">
+        <div class="mobile-dock-track" data-mobile-dock-track>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('client.dashboard') }}" class="mobile-dock-link {{ request()->routeIs('client.dashboard') ? 'active' : '' }}" title="Dashboard">
+                    <i class="fas fa-house"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('client.invitations.index') }}" class="mobile-dock-link {{ request()->routeIs('client.invitations.index') ? 'active' : '' }}" title="Undangan Saya">
+                    <i class="fas fa-envelope"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('client.invitations.create') }}" class="mobile-dock-link {{ request()->routeIs('client.invitations.create') ? 'active' : '' }}" title="Buat Undangan">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('client.affiliate.index') }}" class="mobile-dock-link {{ request()->routeIs('client.affiliate.*') ? 'active' : '' }}" title="Affiliate">
+                    <i class="fas fa-hand-holding-dollar"></i>
+                </a>
+            </div>
+            <div class="mobile-dock-slot">
+                <a href="{{ route('profile.edit') }}" class="mobile-dock-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" title="Pengaturan">
+                    <i class="fas fa-gear"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const track = document.querySelector('[data-mobile-dock-track]');
+            if (!track) return;
+
+            const key = 'client_mobile_dock_scroll';
+            const saved = localStorage.getItem(key);
+            if (saved !== null) {
+                track.scrollLeft = parseInt(saved, 10) || 0;
+            } else {
+                const active = track.querySelector('.mobile-dock-link.active');
+                if (active) {
+                    active.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+                }
+            }
+
+            track.addEventListener('scroll', function () {
+                localStorage.setItem(key, String(track.scrollLeft));
+            }, { passive: true });
+        });
+    </script>
     @stack('scripts')
 </body>
 </html>

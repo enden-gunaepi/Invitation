@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\AffiliateCommission;
+use App\Models\AffiliateFraudLog;
 use App\Models\Coupon;
 use App\Models\CouponRedemption;
 use App\Models\Payment;
+use App\Models\PaymentCallbackReceipt;
 use App\Services\XenditService;
 use App\Services\TripayService;
 use Illuminate\Http\Request;
@@ -30,6 +32,21 @@ class PaymentCallbackController extends Controller
 
         $externalId = $request->input('external_id');
         $status = $request->input('status');
+        $idempotencyKey = $this->buildXenditIdempotencyKey($request);
+
+        $receipt = PaymentCallbackReceipt::firstOrCreate(
+            ['idempotency_key' => $idempotencyKey],
+            [
+                'gateway' => 'xendit',
+                'event_id' => (string) $request->input('id', ''),
+                'status' => (string) $status,
+                'payload' => $request->all(),
+            ]
+        );
+
+        if ($receipt->processed_at) {
+            return response()->json(['message' => 'Duplicate callback ignored']);
+        }
 
         $payment = Payment::where('transaction_id', $externalId)
             ->where('payment_gateway', 'xendit')
@@ -41,6 +58,11 @@ class PaymentCallbackController extends Controller
         }
 
         $payment->update(['gateway_response' => $request->all()]);
+        $receipt->update([
+            'payment_id' => $payment->id,
+            'status' => (string) $status,
+            'payload' => $request->all(),
+        ]);
 
         if ($status === 'PAID' || $status === 'SETTLED') {
             if ($payment->isPaid()) {
@@ -62,6 +84,8 @@ class PaymentCallbackController extends Controller
             $payment->markAsFailed();
         }
 
+        $receipt->update(['processed_at' => now()]);
+
         return response()->json(['message' => 'OK']);
     }
 
@@ -82,6 +106,21 @@ class PaymentCallbackController extends Controller
 
         $merchantRef = $request->input('merchant_ref');
         $status = $request->input('status');
+        $idempotencyKey = $this->buildTripayIdempotencyKey($request);
+
+        $receipt = PaymentCallbackReceipt::firstOrCreate(
+            ['idempotency_key' => $idempotencyKey],
+            [
+                'gateway' => 'tripay',
+                'event_id' => (string) $request->input('reference', ''),
+                'status' => (string) $status,
+                'payload' => $request->all(),
+            ]
+        );
+
+        if ($receipt->processed_at) {
+            return response()->json(['message' => 'Duplicate callback ignored']);
+        }
 
         $payment = Payment::where('transaction_id', $merchantRef)
             ->where('payment_gateway', 'tripay')
@@ -93,6 +132,11 @@ class PaymentCallbackController extends Controller
         }
 
         $payment->update(['gateway_response' => $request->all()]);
+        $receipt->update([
+            'payment_id' => $payment->id,
+            'status' => (string) $status,
+            'payload' => $request->all(),
+        ]);
 
         if ($status === 'PAID') {
             if ($payment->isPaid()) {
@@ -113,6 +157,8 @@ class PaymentCallbackController extends Controller
         } elseif (in_array($status, ['EXPIRED', 'FAILED'])) {
             $payment->markAsFailed();
         }
+
+        $receipt->update(['processed_at' => now()]);
 
         return response()->json(['message' => 'OK']);
     }
@@ -152,24 +198,76 @@ class PaymentCallbackController extends Controller
             return;
         }
 
-        $rate = (float) ($user->affiliate_rate ?? 5);
+        $referrer = $user->referredBy;
+        if (!$referrer) {
+            return;
+        }
+
+        $packageRate = (float) ($payment->package?->affiliate_commission_rate ?? 0);
+        $rate = $packageRate > 0 ? $packageRate : (float) ($referrer->affiliate_rate ?? 5);
         $commission = (int) round(((int) $payment->amount * $rate) / 100);
         if ($commission <= 0) {
             return;
         }
 
-        AffiliateCommission::firstOrCreate(
+        $riskReason = null;
+        if ($referrer->id === $user->id) {
+            $riskReason = 'self_referral';
+        } elseif (!empty($referrer->signup_ip) && !empty($user->signup_ip) && $referrer->signup_ip === $user->signup_ip) {
+            $riskReason = 'same_signup_ip';
+        } elseif (!empty($referrer->signup_ua_hash) && !empty($user->signup_ua_hash) && $referrer->signup_ua_hash === $user->signup_ua_hash) {
+            $riskReason = 'same_signup_device_hash';
+        }
+
+        $affiliateCommission = AffiliateCommission::firstOrCreate(
             [
-                'referrer_user_id' => $user->referred_by_user_id,
+                'referrer_user_id' => $referrer->id,
                 'referred_user_id' => $user->id,
                 'payment_id' => $payment->id,
             ],
             [
                 'commission_amount' => $commission,
                 'status' => 'pending',
+                'risk_flag' => !is_null($riskReason),
+                'risk_reason' => $riskReason,
             ]
         );
 
+        if ($riskReason) {
+            AffiliateFraudLog::create([
+                'referrer_user_id' => $referrer->id,
+                'referred_user_id' => $user->id,
+                'payment_id' => $payment->id,
+                'fraud_type' => 'affiliate_risk_flag',
+                'reason' => $riskReason,
+                'meta' => [
+                    'referrer_signup_ip' => $referrer->signup_ip,
+                    'referred_signup_ip' => $user->signup_ip,
+                    'referrer_ua_hash' => $referrer->signup_ua_hash,
+                    'referred_ua_hash' => $user->signup_ua_hash,
+                    'commission_id' => $affiliateCommission->id,
+                ],
+            ]);
+        }
+
         $payment->update(['affiliate_commission_amount' => $commission]);
+    }
+
+    private function buildXenditIdempotencyKey(Request $request): string
+    {
+        $externalId = (string) $request->input('external_id', '');
+        $eventId = (string) $request->input('id', '');
+        $status = (string) $request->input('status', '');
+
+        return 'xendit:' . sha1($externalId . '|' . $eventId . '|' . $status);
+    }
+
+    private function buildTripayIdempotencyKey(Request $request): string
+    {
+        $merchantRef = (string) $request->input('merchant_ref', '');
+        $reference = (string) $request->input('reference', '');
+        $status = (string) $request->input('status', '');
+
+        return 'tripay:' . sha1($merchantRef . '|' . $reference . '|' . $status);
     }
 }

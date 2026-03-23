@@ -4,6 +4,15 @@
 @section('page-subtitle', 'Komisi referral, histori, dan payout request')
 
 @section('content')
+<div class="card p-4 mb-6">
+    <p class="text-xs mb-2" style="color: var(--text-secondary);">Kode Referral Anda</p>
+    <div class="grid grid-cols-1 md:grid-cols-[140px_1fr_auto] gap-2 items-center">
+        <input type="text" class="form-input font-semibold text-center" value="{{ auth()->user()->referral_code }}" readonly>
+        <input type="text" id="ref-link" class="form-input text-xs" value="{{ $referralLink }}" readonly>
+        <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('ref-link').value)">Copy Link</button>
+    </div>
+</div>
+
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     <div class="card stat-card">
         <div class="stat-value" style="color: var(--warning);">Rp{{ number_format($stats['pending'], 0, ',', '.') }}</div>
@@ -20,6 +29,20 @@
     <div class="card stat-card">
         <div class="stat-value" style="color: var(--accent);">Rp{{ number_format($stats['available'], 0, ',', '.') }}</div>
         <div class="stat-label">Available Payout</div>
+    </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="card p-4">
+        <p class="text-xs" style="color: var(--text-secondary);">Funnel Click</p>
+        <p class="text-2xl font-bold">{{ number_format($stats['clicks']) }}</p>
+    </div>
+    <div class="card p-4">
+        <p class="text-xs" style="color: var(--text-secondary);">Funnel Signup</p>
+        <p class="text-2xl font-bold">{{ number_format($stats['signups']) }}</p>
+    </div>
+    <div class="card p-4">
+        <p class="text-xs" style="color: var(--text-secondary);">Funnel Paid</p>
+        <p class="text-2xl font-bold">{{ number_format($stats['paid_referrals']) }}</p>
     </div>
 </div>
 

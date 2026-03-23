@@ -7,39 +7,40 @@ use App\Models\Guest;
 use App\Models\Rsvp;
 use App\Models\Wish;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\URL;
 
 class InvitationPublicController extends Controller
 {
     public function show($slug)
     {
-        $invitation = Invitation::where('slug', $slug)
-            ->where('status', 'active')
-            ->with(['template', 'photos', 'events', 'loveStories', 'bankAccounts', 'wishes' => function ($q) {
-                $q->where('is_approved', true)->latest()->take(50);
-            }, 'rsvps' => function ($q) {
-                $q->where('is_shown', true)->latest()->take(50);
-            }])
-            ->firstOrFail();
+        $invitation = $this->preparePublicInvitation($this->getCachedPublicInvitation($slug));
 
         return view($this->resolveTemplate($invitation), compact('invitation'));
     }
 
     public function showGuest($slug, $token)
     {
-        $invitation = Invitation::where('slug', $slug)
-            ->where('status', 'active')
-            ->with(['template', 'photos', 'events', 'loveStories', 'bankAccounts', 'wishes' => function ($q) {
-                $q->where('is_approved', true)->latest()->take(50);
-            }, 'rsvps' => function ($q) {
-                $q->where('is_shown', true)->latest()->take(50);
-            }])
-            ->firstOrFail();
+        $invitation = $this->preparePublicInvitation($this->getCachedPublicInvitation($slug));
 
         $guest = Guest::where('token', $token)
             ->where('invitation_id', $invitation->id)
             ->first();
 
         return view($this->resolveTemplate($invitation), compact('invitation', 'guest'));
+    }
+
+    private function preparePublicInvitation(Invitation $invitation): Invitation
+    {
+        if (!empty($invitation->music_url)) {
+            $invitation->music_signed_url = URL::temporarySignedRoute(
+                'media.music',
+                now()->addHours(12),
+                ['invitation' => $invitation->id]
+            );
+        }
+
+        return $invitation;
     }
 
     /**
@@ -62,8 +63,10 @@ class InvitationPublicController extends Controller
 
     public function rsvp(Request $request, $slug)
     {
-        $invitation = Invitation::where('slug', $slug)
+        $invitation = Invitation::query()
+            ->where('slug', $slug)
             ->where('status', 'active')
+            ->select(['id', 'slug'])
             ->firstOrFail();
 
         $validated = $request->validate([
@@ -79,14 +82,17 @@ class InvitationPublicController extends Controller
         $validated['ip_address'] = $request->ip();
 
         Rsvp::create($validated);
+        $this->forgetPublicInvitationCache($slug);
 
         return redirect()->back()->with('success', 'Terima kasih atas konfirmasi kehadiran Anda!');
     }
 
     public function wish(Request $request, $slug)
     {
-        $invitation = Invitation::where('slug', $slug)
+        $invitation = Invitation::query()
+            ->where('slug', $slug)
             ->where('status', 'active')
+            ->select(['id', 'slug'])
             ->firstOrFail();
 
         $validated = $request->validate([
@@ -98,7 +104,49 @@ class InvitationPublicController extends Controller
         $validated['ip_address'] = $request->ip();
 
         Wish::create($validated);
+        $this->forgetPublicInvitationCache($slug);
 
         return redirect()->back()->with('success', 'Ucapan Anda berhasil dikirim!');
+    }
+
+    private function getCachedPublicInvitation(string $slug): Invitation
+    {
+        $cacheKey = $this->publicInvitationCacheKey($slug);
+
+        return Cache::remember($cacheKey, now()->addSeconds(30), function () use ($slug) {
+            return Invitation::query()
+                ->where('slug', $slug)
+                ->where('status', 'active')
+                ->with([
+                    'template:id,name,html_path',
+                    'photos:id,invitation_id,file_path,caption,sort_order',
+                    'events:id,invitation_id,event_name,event_description,event_date,event_time,event_end_time,venue_name,venue_address,venue_maps_url,sort_order',
+                    'loveStories:id,invitation_id,year,title,description,photo_path,sort_order',
+                    'bankAccounts:id,invitation_id,bank_name,account_number,account_name,sort_order',
+                    'wishes' => function ($q) {
+                        $q->select(['id', 'invitation_id', 'name', 'message', 'created_at'])
+                            ->where('is_approved', true)
+                            ->latest()
+                            ->take(50);
+                    },
+                    'rsvps' => function ($q) {
+                        $q->select(['id', 'invitation_id', 'name', 'status', 'message', 'pax', 'created_at'])
+                            ->where('is_shown', true)
+                            ->latest()
+                            ->take(50);
+                    },
+                ])
+                ->firstOrFail();
+        });
+    }
+
+    private function forgetPublicInvitationCache(string $slug): void
+    {
+        Cache::forget($this->publicInvitationCacheKey($slug));
+    }
+
+    private function publicInvitationCacheKey(string $slug): string
+    {
+        return "public:invitation:{$slug}:v1";
     }
 }

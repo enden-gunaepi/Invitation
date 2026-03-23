@@ -45,6 +45,11 @@
                     <input type="number" name="price" value="{{ old('price', $package->price) }}" class="form-input" min="0" step="1000" required>
                 </div>
                 <div>
+                    <label class="form-label">Komisi Affiliate (%)</label>
+                    <input type="number" name="affiliate_commission_rate" value="{{ old('affiliate_commission_rate', $package->affiliate_commission_rate ?? 5) }}" class="form-input" min="0" max="100" step="0.01">
+                    <p class="text-xs mt-1 text-slate-400">Atur persen komisi affiliate per paket di sini.</p>
+                </div>
+                <div>
                     <label class="form-label">Billing Type</label>
                     <select name="billing_type" class="form-input" required>
                         @php $bt = old('billing_type', $package->billing_type ?? 'one_time'); @endphp

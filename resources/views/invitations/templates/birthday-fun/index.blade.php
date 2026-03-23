@@ -265,7 +265,7 @@
             <div class="section-divider" data-aos="fade-up" data-aos-delay="150"></div>
             <div class="gallery-grid">
                 @foreach($invitation->photos as $photo)
-                <div class="gallery-item" data-aos="zoom-in" data-aos-delay="{{ $loop->index * 80 }}"><img src="{{ asset('storage/' . $photo->file_path) }}" alt="{{ $photo->caption ?? 'Photo' }}" loading="lazy"></div>
+                <div class="gallery-item" data-aos="zoom-in" data-aos-delay="{{ $loop->index * 80 }}"><img src="{{ asset('storage/' . $photo->file_path) }}" alt="{{ $photo->caption ?? 'Photo' }}" loading="lazy" decoding="async"></div>
                 @endforeach
             </div>
         </section>
@@ -368,7 +368,7 @@
 
     @if($invitation->music_url)
     <div class="music-player" id="musicPlayer" onclick="toggleMusic()"><i class="fas fa-music text-white text-sm"></i></div>
-    <audio id="bgMusic" loop><source src="{{ asset('storage/' . $invitation->music_url) }}" type="audio/mpeg"></audio>
+    <audio id="bgMusic" loop><source src="{{ $invitation->music_signed_url ?? asset('storage/' . $invitation->music_url) }}" type="audio/mpeg"></audio>
     @endif
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>

@@ -78,5 +78,33 @@ class TemplateSeeder extends Seeder
             'is_premium' => true,
             'is_active' => true,
         ]);
+
+        Template::create([
+            'name' => 'Wedding GNV1',
+            'slug' => 'wedding-gnv1',
+            'category' => 'wedding',
+            'thumbnail' => null,
+            'html_path' => 'invitations.templates.wedding-gnv1.index',
+            'color_schemes' => [
+                ['primary' => '#BE123C', 'secondary' => '#111827', 'accent' => '#FCE7F3'],
+                ['primary' => '#7F1D1D', 'secondary' => '#0F172A', 'accent' => '#FFE4E6'],
+            ],
+            'is_premium' => false,
+            'is_active' => true,
+        ]);
+
+        Template::create([
+            'name' => 'Wedding GNV2',
+            'slug' => 'wedding-gnv2',
+            'category' => 'wedding',
+            'thumbnail' => null,
+            'html_path' => 'invitations.templates.wedding-gnv2.index',
+            'color_schemes' => [
+                ['primary' => '#9fbfd6', 'secondary' => '#000000', 'accent' => '#e2f1ff'],
+                ['primary' => '#89adc6', 'secondary' => '#111827', 'accent' => '#f4faff'],
+            ],
+            'is_premium' => false,
+            'is_active' => true,
+        ]);
     }
 }

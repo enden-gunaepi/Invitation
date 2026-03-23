@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PaymentGatewayController;
 use App\Http\Controllers\Admin\AffiliateController;
 use App\Http\Controllers\Admin\GuestOpsController;
+use App\Http\Controllers\Admin\ReliabilityController;
 use Illuminate\Support\Facades\Route;
 
 // Admin Dashboard
@@ -57,3 +58,6 @@ Route::post('/payment-gateway/test', [PaymentGatewayController::class, 'testConn
 // Settings
 Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
 Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+
+// Reliability Monitoring
+Route::get('/system/reliability', [ReliabilityController::class, 'index'])->name('system.reliability');

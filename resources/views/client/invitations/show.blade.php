@@ -165,7 +165,7 @@
                 <a href="{{ $invitation->maps_deep_link }}" target="_blank" class="btn btn-secondary w-full text-center block text-sm py-3">
                     <i class="fas fa-map-location-dot mr-2"></i> Maps Deep Link
                 </a>
-                @if($invitation->livestream_url)
+                @if($invitation->livestream_enabled && $invitation->livestream_url)
                 <a href="{{ $invitation->livestream_url }}" target="_blank" class="btn btn-secondary w-full text-center block text-sm py-3">
                     <i class="fas fa-video mr-2"></i> Live Streaming
                 </a>
