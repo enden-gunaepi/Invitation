@@ -52,13 +52,28 @@
                         @if($invitation->isActive())
                         @php
                             $guestUrl = $guest->getInvitationUrl();
-                            $shareText = urlencode("Halo {$guest->name}, ini link undangan Anda: {$guestUrl}");
+                            $signature = trim((string) (($invitation->groom_name ?? 'Mempelai Pria') . ' dan ' . ($invitation->bride_name ?? 'Mempelai Wanita')));
+                            $waMessage = "Kepada Yth.\n"
+                                . "Bapak/Ibu/Saudara/i\n"
+                                . "{$guest->name}\n"
+                                . "_______\n\n"
+                                . "Assalamualaikum Warahmatullahi Wabarakatuh\n\n"
+                                . "Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami.\n\n"
+                                . "Untuk informasi detail Acara, Lokasi, dan Waktu lebih lengkap bisa akses link undangan berikut:\n"
+                                . "{$guestUrl}\n\n"
+                                . "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu di acara pernikahan kami.\n"
+                                . "Karena keterbatasan jarak dan waktu tidak dapat mengirimkan undangan ini secara langsung, maka melalui e-invitation ini dapat menjadi pengganti undangan resmi sehingga tujuan kami tersampaikan.\n\n"
+                                . "Wassalamualaikum Warahmatullahi Wabarakatuh\n\n"
+                                . "Hormat kami,\n"
+                                . "{$signature}\n"
+                                . "________";
+                            $shareText = urlencode($waMessage);
                         @endphp
                         <a href="https://wa.me/?text={{ $shareText }}" target="_blank"
                            class="topbar-btn" style="width:32px;height:32px;color:#25D366;" title="Share WhatsApp">
                             <i class="fab fa-whatsapp"></i>
                         </a>
-                        <a href="https://t.me/share/url?url={{ urlencode($guestUrl) }}&text={{ urlencode('Undangan untuk ' . $guest->name) }}" target="_blank"
+                        <a href="https://t.me/share/url?url={{ urlencode($guestUrl) }}&text={{ $shareText }}" target="_blank"
                            class="topbar-btn" style="width:32px;height:32px;color:#229ED9;" title="Share Telegram">
                             <i class="fab fa-telegram-plane"></i>
                         </a>

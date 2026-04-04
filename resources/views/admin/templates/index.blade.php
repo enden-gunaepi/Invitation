@@ -41,6 +41,8 @@
                         <i class="fas fa-tag mr-1"></i> {{ ucfirst($template->category) }}
                     </p>
                     <div class="flex items-center gap-2">
+                        <a href="{{ route('templates.demo', $template->slug) }}" target="_blank"
+                            class="btn-outline text-xs py-2 px-3 text-center">Demo</a>
                         <a href="{{ route('admin.templates.edit', $template) }}"
                             class="btn-outline text-xs py-2 px-4 flex-1 text-center">Edit</a>
                         <form method="POST" action="{{ route('admin.templates.destroy', $template) }}"

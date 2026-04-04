@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Invitation extends Model
@@ -42,6 +44,10 @@ class Invitation extends Model
             if (empty($invitation->slug)) {
                 $invitation->slug = Str::slug($invitation->title) . '-' . Str::random(6);
             }
+        });
+
+        static::deleting(function (self $invitation) {
+            $invitation->deleteOwnedMediaFiles();
         });
     }
 
@@ -116,10 +122,30 @@ class Invitation extends Model
         return $this->hasMany(VendorLead::class)->latest();
     }
 
+    public function funnelEvents(): HasMany
+    {
+        return $this->hasMany(InvitationFunnelEvent::class)->latest();
+    }
+
+    public function collaborators(): HasMany
+    {
+        return $this->hasMany(InvitationCollaborator::class);
+    }
+
+    public function backups(): HasMany
+    {
+        return $this->hasMany(InvitationBackup::class)->latest();
+    }
+
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('status', 'active');
+        return $query
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            });
     }
 
     public function scopePending($query)
@@ -135,7 +161,26 @@ class Invitation extends Model
 
     public function isActive(): bool
     {
-        return $this->status === 'active';
+        return $this->status === 'active'
+            && ($this->expires_at === null || $this->expires_at->isFuture());
+    }
+
+    public function calculateExpiresAtFromPackage(?Carbon $from = null): ?Carbon
+    {
+        $package = $this->package;
+        if (!$package || empty($package->active_duration_value) || empty($package->active_duration_unit)) {
+            return null;
+        }
+
+        $base = ($from ?? now())->copy();
+        $duration = (int) $package->active_duration_value;
+        if ($duration <= 0) {
+            return null;
+        }
+
+        return $package->active_duration_unit === 'month'
+            ? $base->addMonthsNoOverflow($duration)
+            : $base->addDays($duration);
     }
 
     public function getMapsDeepLinkAttribute(): string
@@ -206,5 +251,76 @@ class Invitation extends Model
             'current' => $this->photos()->count(),
             'max' => $this->package->max_photos ?? 10,
         ];
+    }
+
+    private function deleteOwnedMediaFiles(): void
+    {
+        $this->deleteImagePathIfUnused($this->cover_photo);
+        $this->deleteImagePathIfUnused($this->groom_photo);
+        $this->deleteImagePathIfUnused($this->bride_photo);
+
+        foreach ($this->photos()->pluck('file_path') as $galleryPath) {
+            $this->deleteImagePathIfUnused($galleryPath);
+        }
+
+        foreach ($this->loveStories()->pluck('photo_path') as $storyPath) {
+            $this->deleteImagePathIfUnused($storyPath);
+        }
+
+        $this->deleteMusicPathIfUnused($this->music_url);
+    }
+
+    private function deleteImagePathIfUnused(?string $path): void
+    {
+        if (empty($path)) {
+            return;
+        }
+
+        $isUsedByOtherInvitation = self::query()
+            ->where('id', '!=', $this->id)
+            ->where(function ($q) use ($path) {
+                $q->where('cover_photo', $path)
+                    ->orWhere('groom_photo', $path)
+                    ->orWhere('bride_photo', $path);
+            })
+            ->exists();
+
+        $isUsedByOtherGallery = InvitationPhoto::query()
+            ->where('file_path', $path)
+            ->where('invitation_id', '!=', $this->id)
+            ->exists();
+
+        $isUsedByOtherLoveStory = LoveStory::query()
+            ->where('photo_path', $path)
+            ->where('invitation_id', '!=', $this->id)
+            ->exists();
+
+        if ($isUsedByOtherInvitation || $isUsedByOtherGallery || $isUsedByOtherLoveStory) {
+            return;
+        }
+
+        Storage::disk('public')->delete(ltrim($path, '/'));
+    }
+
+    private function deleteMusicPathIfUnused(?string $path): void
+    {
+        if (empty($path)) {
+            return;
+        }
+
+        $isSharedMusicTrack = MusicTrack::query()
+            ->where('file_path', $path)
+            ->exists();
+
+        $isUsedByOtherInvitation = self::query()
+            ->where('id', '!=', $this->id)
+            ->where('music_url', $path)
+            ->exists();
+
+        if ($isSharedMusicTrack || $isUsedByOtherInvitation) {
+            return;
+        }
+
+        Storage::disk('public')->delete(ltrim($path, '/'));
     }
 }

@@ -1,9 +1,12 @@
-@extends('layouts.client')
+@extends(auth()->check() && auth()->user()->role === 'admin' ? 'layouts.admin' : 'layouts.client')
 @section('title', 'Profile Settings')
 @section('page-title', 'Profile Settings')
 @section('page-subtitle', 'Kelola akun dan keamanan')
 
 @section('content')
+@php
+/** @var \App\Models\User $user */
+@endphp
 <style>
     .profile-shell {
         max-width: 980px;
@@ -75,33 +78,64 @@
     }
 </style>
 
-<div class="profile-shell space-y-6">
-    <div class="mac-panel">
+<div class="profile-shell space-y-6" x-data="{ tab: 'profile' }">
+    {{-- Tabs Navigation --}}
+    <div class="flex gap-2 p-1 bg-gray-100/50 rounded-xl max-w-sm backdrop-blur-sm border border-gray-200/50">
+        <button @click="tab = 'profile'"
+            class="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all"
+            :class="tab === 'profile' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+            <i class="fas fa-user mr-2"></i>Profile Pribadi
+        </button>
+        <button @click="tab = 'company'"
+             class="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all"
+            :class="tab === 'company' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+            <i class="fas fa-building mr-2"></i>Perusahaan
+        </button>
+    </div>
+
+    <div class="mac-panel max-w-2xl">
         <div class="mac-head">
             <div class="mac-dots">
                 <span class="mac-dot red"></span>
                 <span class="mac-dot yellow"></span>
                 <span class="mac-dot green"></span>
             </div>
-            <div class="mac-title">Account Preferences</div>
+            <div class="mac-title" x-text="tab === 'profile' ? '192.168.1.1 — Profile Settings' : '192.168.1.1 — Company Settings'"></div>
             <div style="width:52px;"></div>
         </div>
-        <div class="mac-body">
+
+        {{-- TAB: PROFILE PRIBADI --}}
+        <div class="mac-body !grid-cols-1" x-show="tab === 'profile'" x-transition>
             <div class="profile-block">
                 <div class="profile-label">Section</div>
-                <h3 class="profile-title"><i class="fas fa-user mr-2"></i>Informasi Akun</h3>
-                <p class="profile-sub">Update nama dan email akun Anda.</p>
+                <h3 class="profile-title"><i class="fas fa-user mr-2"></i>Informasi Akun Pribadi</h3>
+                <p class="profile-sub">Update foto profil, nama, dan email akun Anda.</p>
 
-                <form id="send-verification" method="post" action="{{ route('verification.send') }}">
-                    @csrf
-                </form>
+                <form id="send-verification" method="post" action="{{ route('verification.send') }}"></form>
 
-                <form method="post" action="{{ route('profile.update') }}" class="space-y-4">
+                <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     @method('patch')
 
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-16 h-16 rounded-full bg-gray-200 overflow-hidden shadow-sm shrink-0 border border-gray-300">
+                            @if($user->avatar)
+                                <img src="{{ Storage::url($user->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-xl font-bold bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800">
+                                    {{ substr($user->name, 0, 1) }}
+                                </div>
+                            @endif
+                        </div>
+                        <div class="flex-1">
+                            <label class="form-label mb-1">Foto Profil Pribadi</label>
+                            <input type="file" name="avatar" class="form-input text-xs w-full pb-2 pt-2 h-auto" accept="image/*">
+                            @error('avatar') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="form-label">Nama</label>
+                        <label class="form-label">Nama Lengkap</label>
                         <input type="text" name="name" value="{{ old('name', $user->name) }}" class="form-input" required>
                         @error('name') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
                     </div>
@@ -116,21 +150,6 @@
                                 <button form="send-verification" class="underline ml-1" style="color: var(--accent);">Kirim ulang verifikasi</button>
                             </p>
                         @endif
-                    </div>
-                    <div>
-                        <label class="form-label">Kode Referral Anda</label>
-                        <input type="text" class="form-input" value="{{ $user->referral_code ?? '-' }}" readonly>
-                        <p class="text-xs mt-1" style="color: var(--text-secondary);">Bagikan kode ini untuk program referral/affiliate.</p>
-                        <p class="text-xs mt-1" style="color: var(--text-secondary);">
-                            Link referral: <code>{{ route('referral.visit', ['referralCode' => $user->referral_code]) }}</code>
-                        </p>
-                        <p class="text-xs mt-1" style="color: var(--text-secondary);">
-                            Direferensikan oleh:
-                            <strong>{{ $user->referredBy->name ?? '-' }}</strong>
-                            @if($user->referredBy?->referral_code)
-                                ({{ $user->referredBy->referral_code }})
-                            @endif
-                        </p>
                     </div>
                     <button type="submit" class="btn btn-primary text-sm"><i class="fas fa-save mr-2"></i>Simpan Perubahan</button>
                 </form>
@@ -163,6 +182,63 @@
                     <button type="submit" class="btn btn-primary text-sm"><i class="fas fa-key mr-2"></i>Update Password</button>
                 </form>
             </div>
+        </div>
+
+        {{-- TAB: PERUSAHAAN --}}
+        <div class="mac-body !grid-cols-1" x-show="tab === 'company'" style="display: none;" x-transition>
+            <div class="profile-block">
+                <div class="profile-label">Section</div>
+                <h3 class="profile-title"><i class="fas fa-building mr-2"></i>Profil Perusahaan</h3>
+                <p class="profile-sub">Data ini akan digunakan sebagai brand di dashboard bagian kiri atas.</p>
+
+                <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+                    @method('patch')
+
+                    <input type="hidden" name="name" value="{{ $user->name }}">
+                    <input type="hidden" name="email" value="{{ $user->email }}">
+
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-16 h-16 rounded-xl bg-gray-200 overflow-hidden shadow-sm shrink-0 border border-gray-300">
+                            @if($user->company_logo)
+                                <img src="{{ Storage::url($user->company_logo) }}" alt="Logo Perusahaan" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-2xl font-bold bg-gradient-to-br from-gray-700 to-black text-white">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="flex-1">
+                            <label class="form-label mb-1">Logo Perusahaan</label>
+                            <input type="file" name="company_logo" class="form-input text-xs w-full pb-2 pt-2 h-auto" accept="image/*">
+                            @error('company_logo') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Nama Perusahaan / Brand</label>
+                        <input type="text" name="company_name" value="{{ old('company_name', $user->company_name) }}" class="form-input" placeholder="Contoh: Digital Invitation Vendor">
+                        @error('company_name') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
+                    </div>
+
+                    <button type="submit" class="btn btn-primary text-sm"><i class="fas fa-save mr-2"></i>Simpan Profil Perusahaan</button>
+                </form>
+            </div>
+            
+            <div class="profile-block">
+                <div class="profile-label">Info</div>
+                <h3 class="profile-title"><i class="fas fa-hand-holding-dollar mr-2"></i>Program Affiliate</h3>
+                <p class="profile-sub">Ajak kreator lain menggunakan platform ini dan dapatkan komisi.</p>
+                <div>
+                    <label class="form-label">Kode Referral Anda</label>
+                    <input type="text" class="form-input" value="{{ $user->referral_code ?? '-' }}" readonly>
+                    <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                        Link referral: <code>{{ route('referral.visit', ['referralCode' => $user->referral_code]) }}</code>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
             <div class="profile-block full" style="border-color: rgba(255,59,48,.35);">
                 <div class="profile-label">Section</div>

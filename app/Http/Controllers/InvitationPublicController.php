@@ -2,21 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Invitation;
 use App\Models\Guest;
+use App\Models\Invitation;
 use App\Models\Rsvp;
 use App\Models\Wish;
+use App\Services\GuestPersonalizationService;
+use App\Services\InvitationFunnelService;
+use App\Services\PhoneNormalizerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
 
 class InvitationPublicController extends Controller
 {
+    public function __construct(
+        private readonly PhoneNormalizerService $phoneNormalizer,
+        private readonly GuestPersonalizationService $guestPersonalization,
+        private readonly InvitationFunnelService $funnelService,
+    ) {
+    }
+
     public function show($slug)
     {
         $invitation = $this->preparePublicInvitation($this->getCachedPublicInvitation($slug));
+        $personalization = $this->guestPersonalization->forCategory(null);
 
-        return view($this->resolveTemplate($invitation), compact('invitation'));
+        return view($this->resolveTemplate($invitation), compact('invitation', 'personalization'));
     }
 
     public function showGuest($slug, $token)
@@ -27,7 +38,37 @@ class InvitationPublicController extends Controller
             ->where('invitation_id', $invitation->id)
             ->first();
 
-        return view($this->resolveTemplate($invitation), compact('invitation', 'guest'));
+        $personalization = $this->guestPersonalization->forCategory($guest?->category);
+
+        return view($this->resolveTemplate($invitation), compact('invitation', 'guest', 'personalization'));
+    }
+
+    public function mapClick(Request $request, string $slug)
+    {
+        $invitation = Invitation::query()
+            ->where('slug', $slug)
+            ->active()
+            ->firstOrFail();
+
+        $token = trim((string) $request->query('token', ''));
+        $guest = null;
+        if ($token !== '') {
+            $guest = Guest::query()
+                ->where('invitation_id', $invitation->id)
+                ->where('token', $token)
+                ->first();
+        }
+
+        $this->funnelService->track((int) $invitation->id, 'map_clicked', [
+            'guest_id' => $guest?->id,
+            'guest_token' => $guest?->token,
+            'phone' => $guest?->phone,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'source' => 'public_map',
+        ]);
+
+        return redirect()->away($invitation->maps_deep_link);
     }
 
     private function preparePublicInvitation(Invitation $invitation): Invitation
@@ -43,12 +84,8 @@ class InvitationPublicController extends Controller
         return $invitation;
     }
 
-    /**
-     * Resolve which Blade template to use based on the invitation's template record.
-     */
     private function resolveTemplate(Invitation $invitation): string
     {
-        // Try template's html_path from the database
         if ($invitation->template && $invitation->template->html_path) {
             $viewPath = $invitation->template->html_path;
 
@@ -57,7 +94,6 @@ class InvitationPublicController extends Controller
             }
         }
 
-        // Fallback to default template
         return 'invitations.templates.wedding-elegant.index';
     }
 
@@ -65,7 +101,7 @@ class InvitationPublicController extends Controller
     {
         $invitation = Invitation::query()
             ->where('slug', $slug)
-            ->where('status', 'active')
+            ->active()
             ->select(['id', 'slug'])
             ->firstOrFail();
 
@@ -78,20 +114,73 @@ class InvitationPublicController extends Controller
             'guest_id' => 'nullable|exists:guests,id',
         ]);
 
-        $validated['invitation_id'] = $invitation->id;
-        $validated['ip_address'] = $request->ip();
+        $guest = null;
+        if (!empty($validated['guest_id'])) {
+            $guest = Guest::query()
+                ->where('id', $validated['guest_id'])
+                ->where('invitation_id', $invitation->id)
+                ->first();
+        }
 
-        Rsvp::create($validated);
+        $normalizedPhone = $this->phoneNormalizer->normalizeIndonesia($validated['phone'] ?? null);
+        if (!$guest && empty($normalizedPhone)) {
+            return back()->withErrors([
+                'phone' => 'Nomor HP wajib diisi jika tidak menggunakan link tamu personal.',
+            ])->withInput();
+        }
+
+        $payload = [
+            'name' => $validated['name'],
+            'phone' => $validated['phone'] ?? null,
+            'normalized_phone' => $normalizedPhone,
+            'status' => $validated['status'],
+            'pax' => $validated['pax'],
+            'message' => $validated['message'] ?? null,
+            'ip_address' => $request->ip(),
+            'guest_id' => $guest?->id,
+        ];
+
+        if ($guest) {
+            Rsvp::updateOrCreate(
+                [
+                    'invitation_id' => $invitation->id,
+                    'guest_id' => $guest->id,
+                ],
+                $payload
+            );
+        } else {
+            Rsvp::updateOrCreate(
+                [
+                    'invitation_id' => $invitation->id,
+                    'normalized_phone' => $normalizedPhone,
+                ],
+                $payload
+            );
+        }
+
+        $this->funnelService->track((int) $invitation->id, 'rsvp_submitted', [
+            'guest_id' => $guest?->id,
+            'guest_token' => $guest?->token,
+            'phone' => $normalizedPhone,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'source' => 'public_rsvp',
+            'meta' => [
+                'status' => $validated['status'],
+                'pax' => (int) $validated['pax'],
+            ],
+        ]);
+
         $this->forgetPublicInvitationCache($slug);
 
-        return redirect()->back()->with('success', 'Terima kasih atas konfirmasi kehadiran Anda!');
+        return $this->redirectBackWithAnchor($request, 'Terima kasih, RSVP Anda berhasil disimpan dan bisa diperbarui kapan saja.');
     }
 
     public function wish(Request $request, $slug)
     {
         $invitation = Invitation::query()
             ->where('slug', $slug)
-            ->where('status', 'active')
+            ->active()
             ->select(['id', 'slug'])
             ->firstOrFail();
 
@@ -106,7 +195,7 @@ class InvitationPublicController extends Controller
         Wish::create($validated);
         $this->forgetPublicInvitationCache($slug);
 
-        return redirect()->back()->with('success', 'Ucapan Anda berhasil dikirim!');
+        return $this->redirectBackWithAnchor($request, 'Ucapan Anda berhasil dikirim!');
     }
 
     private function getCachedPublicInvitation(string $slug): Invitation
@@ -116,7 +205,7 @@ class InvitationPublicController extends Controller
         return Cache::remember($cacheKey, now()->addSeconds(30), function () use ($slug) {
             return Invitation::query()
                 ->where('slug', $slug)
-                ->where('status', 'active')
+                ->active()
                 ->with([
                     'template:id,name,html_path',
                     'photos:id,invitation_id,file_path,caption,sort_order',
@@ -148,5 +237,19 @@ class InvitationPublicController extends Controller
     private function publicInvitationCacheKey(string $slug): string
     {
         return "public:invitation:{$slug}:v1";
+    }
+
+    private function redirectBackWithAnchor(Request $request, string $message)
+    {
+        $anchor = trim((string) $request->input('redirect_anchor', ''));
+        $anchor = preg_replace('/[^a-zA-Z0-9\-_]/', '', $anchor ?? '');
+
+        $previousUrl = url()->previous();
+        $target = $previousUrl;
+        if (!empty($anchor)) {
+            $target = rtrim($previousUrl, '#') . '#' . $anchor;
+        }
+
+        return redirect($target)->with('success', $message);
     }
 }

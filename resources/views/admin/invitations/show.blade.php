@@ -5,6 +5,16 @@
 @section('page-subtitle', 'Detail undangan ' . $invitation->user->name)
 
 @section('content')
+@php
+    // Check direct invitation payment OR user's subscription payment for the same package
+    $hasPaid = $invitation->payments->where('payment_status', 'paid')->isNotEmpty();
+    if (!$hasPaid) {
+        $hasPaid = \App\Models\Payment::where('user_id', $invitation->user_id)
+            ->where('package_id', $invitation->package_id)
+            ->where('payment_status', 'paid')
+            ->exists();
+    }
+@endphp
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     {{-- Main Info --}}
     <div class="lg:col-span-2 space-y-6">
@@ -18,6 +28,20 @@
                 <div><span class="text-slate-500">Tanggal:</span><p class="font-semibold">{{ $invitation->event_date->format('d M Y') }}</p></div>
                 <div><span class="text-slate-500">Waktu:</span><p class="font-semibold">{{ $invitation->event_time }}</p></div>
                 <div><span class="text-slate-500">Tempat:</span><p class="font-semibold">{{ $invitation->venue_name }}</p></div>
+                <div>
+                    <span class="text-slate-500">Terbit:</span>
+                    <p class="font-semibold">{{ $invitation->published_at ? $invitation->published_at->format('d M Y H:i') : '-' }}</p>
+                </div>
+                <div>
+                    <span class="text-slate-500">Kadaluarsa:</span>
+                    @if(empty($invitation->expires_at))
+                        <p class="font-semibold text-slate-400">Tanpa batas</p>
+                    @elseif($invitation->expires_at->isPast())
+                        <p class="font-semibold text-red-400">{{ $invitation->expires_at->format('d M Y H:i') }}</p>
+                    @else
+                        <p class="font-semibold text-emerald-400">{{ $invitation->expires_at->format('d M Y H:i') }}</p>
+                    @endif
+                </div>
                 @if($invitation->groom_name)
                 <div><span class="text-slate-500">Mempelai Pria:</span><p class="font-semibold">{{ $invitation->groom_name }}</p></div>
                 @endif
@@ -31,11 +55,16 @@
         @if($invitation->status === 'pending')
         <div class="card p-6">
             <h3 class="font-bold text-base mb-4">Aksi Admin</h3>
+            @if(!$hasPaid)
+                <div class="mb-4 p-3 rounded-lg text-xs" style="background: rgba(255,59,48,.08); color: #ef4444; border: 1px solid rgba(239,68,68,.25);">
+                    Undangan belum bisa di-approve karena pembayaran belum lunas.
+                </div>
+            @endif
             <div class="flex gap-3">
                 <form method="POST" action="{{ route('admin.invitations.approve', $invitation->id) }}">
                     @csrf @method('PATCH')
                     <textarea name="admin_notes" class="form-input mb-3 w-full" placeholder="Catatan (opsional)" rows="2"></textarea>
-                    <button type="submit" class="btn-success text-sm"><i class="fas fa-check mr-2"></i> Approve</button>
+                    <button type="submit" class="btn-success text-sm" {{ $hasPaid ? '' : 'disabled' }} style="{{ $hasPaid ? '' : 'opacity:.5;cursor:not-allowed;' }}"><i class="fas fa-check mr-2"></i> Approve</button>
                 </form>
                 <form method="POST" action="{{ route('admin.invitations.reject', $invitation->id) }}">
                     @csrf @method('PATCH')
@@ -54,6 +83,20 @@
         <div class="card p-6">
             <h3 class="font-bold text-base mb-4">Statistik</h3>
             <div class="space-y-3">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-slate-500"><i class="fas fa-credit-card mr-2"></i>Pembayaran</span>
+                    <span class="font-bold {{ $hasPaid ? 'text-emerald-400' : 'text-amber-400' }}">{{ $hasPaid ? 'Lunas' : 'Belum Lunas' }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-slate-500"><i class="fas fa-hourglass-half mr-2"></i>Masa Aktif</span>
+                    @if(empty($invitation->expires_at))
+                        <span class="font-bold text-slate-300">Tanpa batas</span>
+                    @elseif($invitation->expires_at->isPast())
+                        <span class="font-bold text-red-400">Kadaluarsa</span>
+                    @else
+                        <span class="font-bold text-emerald-400">{{ $invitation->expires_at->diffForHumans() }}</span>
+                    @endif
+                </div>
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-slate-500"><i class="fas fa-eye mr-2"></i>Views</span>
                     <span class="font-bold">{{ number_format($invitation->view_count) }}</span>

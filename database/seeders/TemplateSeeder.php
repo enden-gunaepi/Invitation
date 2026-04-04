@@ -9,9 +9,8 @@ class TemplateSeeder extends Seeder
 {
     public function run(): void
     {
-        Template::create([
+        Template::updateOrCreate(['slug' => 'wedding-elegant'], [
             'name' => 'Wedding Elegant',
-            'slug' => 'wedding-elegant',
             'category' => 'wedding',
             'thumbnail' => 'template-thumbnails/wedding-elegant.svg',
             'html_path' => 'invitations.templates.wedding-elegant.index',
@@ -23,9 +22,8 @@ class TemplateSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        Template::create([
+        Template::updateOrCreate(['slug' => 'wedding-rustic'], [
             'name' => 'Wedding Rustic',
-            'slug' => 'wedding-rustic',
             'category' => 'wedding',
             'thumbnail' => 'template-thumbnails/wedding-rustic.svg',
             'html_path' => 'invitations.templates.wedding-rustic.index',
@@ -37,9 +35,8 @@ class TemplateSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        Template::create([
+        Template::updateOrCreate(['slug' => 'birthday-fun'], [
             'name' => 'Birthday Fun',
-            'slug' => 'birthday-fun',
             'category' => 'birthday',
             'thumbnail' => 'template-thumbnails/birthday-fun.svg',
             'html_path' => 'invitations.templates.birthday-fun.index',
@@ -51,9 +48,8 @@ class TemplateSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        Template::create([
+        Template::updateOrCreate(['slug' => 'wedding-minimalist'], [
             'name' => 'Wedding Minimalist',
-            'slug' => 'wedding-minimalist',
             'category' => 'wedding',
             'thumbnail' => 'template-thumbnails/wedding-minimalist.svg',
             'html_path' => 'invitations.templates.wedding-minimalist.index',
@@ -65,9 +61,8 @@ class TemplateSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        Template::create([
+        Template::updateOrCreate(['slug' => 'wedding-peach'], [
             'name' => 'Wedding Peach Garden',
-            'slug' => 'wedding-peach',
             'category' => 'wedding',
             'thumbnail' => 'template-thumbnails/wedding-peach.svg',
             'html_path' => 'invitations.templates.wedding-peach.index',
@@ -79,9 +74,8 @@ class TemplateSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        Template::create([
+        Template::updateOrCreate(['slug' => 'wedding-gnv1'], [
             'name' => 'Wedding GNV1',
-            'slug' => 'wedding-gnv1',
             'category' => 'wedding',
             'thumbnail' => null,
             'html_path' => 'invitations.templates.wedding-gnv1.index',
@@ -93,9 +87,8 @@ class TemplateSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        Template::create([
+        Template::updateOrCreate(['slug' => 'wedding-gnv2'], [
             'name' => 'Wedding GNV2',
-            'slug' => 'wedding-gnv2',
             'category' => 'wedding',
             'thumbnail' => null,
             'html_path' => 'invitations.templates.wedding-gnv2.index',

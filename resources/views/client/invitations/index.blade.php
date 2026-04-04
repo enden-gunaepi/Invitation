@@ -6,8 +6,8 @@
 @section('content')
 <div class="flex items-center justify-between mb-6">
     <p class="text-sm text-slate-400">{{ $invitations->total() }} undangan</p>
-    <a href="{{ route('client.invitations.create') }}" class="btn-primary text-sm">
-        <i class="fas fa-plus mr-2"></i> Buat Undangan
+    <a href="{{ $hasActivePackage ? route('client.invitations.create') : route('client.packages.select') }}" class="btn-primary text-sm">
+        <i class="fas {{ $hasActivePackage ? 'fa-plus' : 'fa-box-open' }} mr-2"></i> {{ $hasActivePackage ? 'Buat Undangan' : 'Pilih Paket Dulu' }}
     </a>
 </div>
 
@@ -30,8 +30,8 @@
         <i class="fas fa-envelope-open text-5xl text-slate-600 mb-4"></i>
         <h3 class="text-lg font-bold text-slate-400 mb-2">Belum Ada Undangan</h3>
         <p class="text-sm text-slate-500 mb-6">Mulai buat undangan digital pertama Anda!</p>
-        <a href="{{ route('client.invitations.create') }}" class="btn-primary text-sm">
-            <i class="fas fa-plus mr-2"></i> Buat Undangan Sekarang
+        <a href="{{ $hasActivePackage ? route('client.invitations.create') : route('client.packages.select') }}" class="btn-primary text-sm">
+            <i class="fas {{ $hasActivePackage ? 'fa-plus' : 'fa-box-open' }} mr-2"></i> {{ $hasActivePackage ? 'Buat Undangan Sekarang' : 'Pilih Paket Dulu' }}
         </a>
     </div>
     @endforelse

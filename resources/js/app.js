@@ -23,6 +23,7 @@ function createGlobalLoader() {
             display: none;
             align-items: center;
             justify-content: center;
+            pointer-events: none;
             background: rgba(14, 14, 16, 0.22);
             backdrop-filter: blur(2px);
             transition: opacity .18s ease;
@@ -39,6 +40,7 @@ function createGlobalLoader() {
             padding: 14px 16px;
             text-align: center;
             box-shadow: 0 12px 34px rgba(0,0,0,.22);
+            pointer-events: none;
         }
         #${LOADER_ID} .loader-dot {
             width: 34px;
@@ -83,36 +85,9 @@ function hideGlobalLoader() {
     if (loader) loader.classList.remove('show');
 }
 
-function shouldHandleLink(link) {
-    if (!link || !link.getAttribute) return false;
-    const href = link.getAttribute('href') || '';
-    if (!href || href.startsWith('#')) return false;
-    if (link.hasAttribute('download')) return false;
-    if (link.target && link.target.toLowerCase() === '_blank') return false;
-    if (href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return false;
-
-    try {
-        const url = new URL(link.href, window.location.origin);
-        if (url.origin !== window.location.origin) return false;
-    } catch {
-        return false;
-    }
-
-    return true;
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     createGlobalLoader();
-
-    document.addEventListener('click', (event) => {
-        const link = event.target.closest('a');
-        if (!shouldHandleLink(link)) return;
-        showGlobalLoader();
-    });
-
-    document.addEventListener('submit', (event) => {
-        const form = event.target;
-        if (!(form instanceof HTMLFormElement)) return;
+    window.addEventListener('beforeunload', () => {
         showGlobalLoader();
     });
 

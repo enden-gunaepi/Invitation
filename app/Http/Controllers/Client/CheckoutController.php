@@ -235,12 +235,9 @@ class CheckoutController extends Controller
         }
 
         $payment->markAsPaid('MOCK-PAID-' . now()->timestamp);
-        if ($invitation->status !== 'active') {
-            $invitation->update(['status' => 'active']);
-        }
 
         return redirect()->route('client.checkout.status', $invitation)
-            ->with('success', 'Simulasi pembayaran berhasil. Undangan sudah aktif.');
+            ->with('success', 'Simulasi pembayaran berhasil. Selanjutnya submit undangan untuk direview admin.');
     }
 
     private function buildGatewayAndChannels(): array

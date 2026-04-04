@@ -5,13 +5,17 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\InvitationPhoto;
+use App\Services\InvitationAccessService;
 use App\Services\ImageCompressionService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class PhotoController extends Controller
 {
-    public function __construct(private readonly ImageCompressionService $imageCompressionService)
+    public function __construct(
+        private readonly ImageCompressionService $imageCompressionService,
+        private readonly InvitationAccessService $invitationAccessService,
+    )
     {
     }
 
@@ -80,7 +84,7 @@ class PhotoController extends Controller
 
     private function authorize(Invitation $invitation)
     {
-        if ($invitation->user_id !== auth()->id()) {
+        if (!$this->invitationAccessService->isOwnerOrEditor($invitation, (int) auth()->id())) {
             abort(403);
         }
     }

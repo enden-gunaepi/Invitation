@@ -4,13 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Services\ClientPackageService;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
+    public function __construct(
+        private readonly ClientPackageService $clientPackageService,
+    ) {
+    }
+
     public function index(Request $request)
     {
-        $query = Payment::with('user', 'invitation', 'package')->latest();
+        $query = Payment::with('user', 'invitation', 'package', 'clientPackageSubscription')->latest();
 
         if ($request->filled('status')) {
             $query->where('payment_status', $request->status);
@@ -42,13 +48,16 @@ class PaymentController extends Controller
 
     public function show(Payment $payment)
     {
-        $payment->load('user', 'invitation', 'package');
+        $payment->load('user', 'invitation', 'package', 'clientPackageSubscription');
         return view('admin.payments.show', compact('payment'));
     }
 
     public function markPaid(Payment $payment)
     {
         $payment->markAsPaid('MANUAL-' . now()->timestamp);
+        if ($payment->client_package_subscription_id) {
+            $this->clientPackageService->activateFromPayment($payment->fresh(['clientPackageSubscription.package']));
+        }
         return back()->with('success', 'Pembayaran ditandai sebagai lunas.');
     }
 }

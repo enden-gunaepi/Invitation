@@ -26,7 +26,7 @@
 <div class="max-w-7xl edit-layout">
     <aside class="hidden lg:block edit-card edit-nav p-4">
         <p class="text-xs font-bold mb-3" style="color:var(--text-secondary);">Alur Edit (Wedding GNV2)</p>
-        <a href="#sec1">1. Template & Paket</a>
+        <a href="#sec1">1. Template</a>
         <a href="#sec2">2. Cover & Pembuka</a>
         <a href="#sec3">3. Data Mempelai</a>
         <a href="#sec4">4. Countdown</a>
@@ -58,7 +58,7 @@
             @endif
 
             <section id="sec1" class="edit-card">
-                <div class="edit-head"><h3 class="font-semibold flex items-center gap-2"><span class="step">1</span>Template & Paket</h3></div>
+                <div class="edit-head"><h3 class="font-semibold flex items-center gap-2"><span class="step">1</span>Template</h3></div>
                 <div class="edit-body grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="form-label">Template</label>
@@ -72,13 +72,7 @@
                     </div>
                     <div>
                         <label class="form-label">Paket</label>
-                        <select name="package_id" class="form-input" required id="packageSelectEdit" onchange="filterTemplatesByPackageEdit()">
-                            @foreach ($packages as $p)
-                                <option value="{{ $p->id }}" data-templates='@json($p->allowed_template_ids ?? [])' {{ $invitation->package_id == $p->id ? 'selected' : '' }}>
-                                    {{ $p->name }} — Rp{{ number_format($p->price, 0, ',', '.') }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="form-input flex items-center">{{ $invitation->package->name ?? '-' }} — Rp{{ number_format((float) ($invitation->package->price ?? 0), 0, ',', '.') }}</div>
                     </div>
                     <div id="templatePreviewWrapEdit" class="p-3 rounded-lg sm:col-span-2" style="display:none; background: var(--bg-tertiary);">
                         <p class="text-xs mb-2" style="color: var(--text-secondary);">Preview Template</p>
@@ -350,25 +344,7 @@
         img.src = thumb; wrap.style.display = 'block';
     }
 
-    function filterTemplatesByPackageEdit() {
-        const packageSelect = document.getElementById('packageSelectEdit');
-        const templateSelect = document.getElementById('templateSelectEdit');
-        const selectedPackage = packageSelect.options[packageSelect.selectedIndex];
-        const allowed = JSON.parse(selectedPackage?.dataset?.templates || '[]').map((id) => String(id));
-        const useAll = allowed.length === 0;
-        [...templateSelect.options].forEach((opt) => {
-            const isAllowed = useAll || allowed.includes(opt.value);
-            opt.hidden = !isAllowed; opt.disabled = !isAllowed;
-            if (!isAllowed && opt.selected) {
-                const firstAllowed = [...templateSelect.options].find((o) => !o.disabled);
-                if (firstAllowed) firstAllowed.selected = true;
-            }
-        });
-        updateTemplatePreviewEdit();
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
-        filterTemplatesByPackageEdit();
         updateTemplatePreviewEdit();
         const toggle = document.getElementById('livestream_enabled_edit');
         const fields = document.getElementById('livestream_fields_edit');

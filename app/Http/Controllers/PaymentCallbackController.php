@@ -8,6 +8,7 @@ use App\Models\Coupon;
 use App\Models\CouponRedemption;
 use App\Models\Payment;
 use App\Models\PaymentCallbackReceipt;
+use App\Services\ClientPackageService;
 use App\Services\XenditService;
 use App\Services\TripayService;
 use Illuminate\Http\Request;
@@ -15,6 +16,11 @@ use Illuminate\Support\Facades\Log;
 
 class PaymentCallbackController extends Controller
 {
+    public function __construct(
+        private readonly ClientPackageService $clientPackageService,
+    ) {
+    }
+
     /**
      * Handle Xendit webhook callback
      */
@@ -79,7 +85,8 @@ class PaymentCallbackController extends Controller
             }
             $payment->markAsPaid($request->input('id'));
             $this->finalizePostPaid($payment);
-            $this->activateInvitation($payment);
+            $this->activateSubscriptionIfNeeded($payment);
+            $this->markInvitationAsPaidAwaitingReview($payment);
         } elseif ($status === 'EXPIRED') {
             $payment->markAsFailed();
         }
@@ -153,7 +160,8 @@ class PaymentCallbackController extends Controller
             }
             $payment->markAsPaid($request->input('reference'));
             $this->finalizePostPaid($payment);
-            $this->activateInvitation($payment);
+            $this->activateSubscriptionIfNeeded($payment);
+            $this->markInvitationAsPaidAwaitingReview($payment);
         } elseif (in_array($status, ['EXPIRED', 'FAILED'])) {
             $payment->markAsFailed();
         }
@@ -164,14 +172,23 @@ class PaymentCallbackController extends Controller
     }
 
     /**
-     * Auto-activate invitation after successful payment
+     * Mark invitation as paid, but keep activation under admin approval flow.
      */
-    private function activateInvitation(Payment $payment): void
+    private function markInvitationAsPaidAwaitingReview(Payment $payment): void
     {
         $invitation = $payment->invitation;
-        if ($invitation && $invitation->status !== 'active') {
-            $invitation->update(['status' => 'active']);
-            Log::info('Invitation auto-activated', ['invitation_id' => $invitation->id]);
+        if ($invitation) {
+            Log::info('Invitation paid, awaiting admin approval', [
+                'invitation_id' => $invitation->id,
+                'status' => $invitation->status,
+            ]);
+        }
+    }
+
+    private function activateSubscriptionIfNeeded(Payment $payment): void
+    {
+        if ($payment->client_package_subscription_id) {
+            $this->clientPackageService->activateFromPayment($payment->fresh(['clientPackageSubscription.package']));
         }
     }
 

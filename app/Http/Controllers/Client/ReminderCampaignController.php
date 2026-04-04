@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\ReminderCampaign;
+use App\Services\InvitationAccessService;
 use Illuminate\Http\Request;
 
 class ReminderCampaignController extends Controller
 {
+    public function __construct(private readonly InvitationAccessService $invitationAccessService)
+    {
+    }
+
     public function store(Request $request, Invitation $invitation)
     {
         $this->authorizeInvitation($invitation);
@@ -29,6 +34,7 @@ class ReminderCampaignController extends Controller
             'scheduled_at' => $validated['scheduled_at'],
             'notes' => $validated['notes'] ?? null,
             'status' => 'scheduled',
+            'source' => 'manual',
         ]);
 
         return back()->with('success', 'Campaign reminder WhatsApp berhasil dijadwalkan.');
@@ -52,7 +58,7 @@ class ReminderCampaignController extends Controller
 
     private function authorizeInvitation(Invitation $invitation): void
     {
-        if ($invitation->user_id !== auth()->id()) {
+        if (!$this->invitationAccessService->isOwnerOrEditor($invitation, (int) auth()->id())) {
             abort(403);
         }
     }

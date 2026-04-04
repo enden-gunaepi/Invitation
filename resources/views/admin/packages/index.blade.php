@@ -53,6 +53,14 @@
                         {{ ($pkg->billing_type ?? 'one_time') === 'subscription' ? 'Subscription ' . strtoupper($pkg->billing_cycle ?? 'monthly') : 'One-time payment' }}
                     </div>
                     <div class="text-sm text-slate-400">
+                        <i class="fas fa-hourglass-half text-indigo-400 mr-2 w-4"></i>
+                        @if(!empty($pkg->active_duration_value) && !empty($pkg->active_duration_unit))
+                            Aktif {{ $pkg->active_duration_value }} {{ $pkg->active_duration_unit === 'month' ? 'bulan' : 'hari' }}
+                        @else
+                            Aktif tanpa batas
+                        @endif
+                    </div>
+                    <div class="text-sm text-slate-400">
                         <i class="fas fa-percent text-indigo-400 mr-2 w-4"></i>
                         Komisi affiliate: {{ rtrim(rtrim(number_format((float) ($pkg->affiliate_commission_rate ?? 5), 2, '.', ''), '0'), '.') }}%
                     </div>

@@ -147,7 +147,7 @@
                 <form method="POST" action="{{ route('client.invitations.submit', $invitation) }}">
                     @csrf @method('PATCH')
                     <button type="submit" class="btn btn-secondary w-full text-sm py-3" style="color: var(--warning);">
-                        <i class="fas fa-paper-plane mr-2"></i> Submit untuk Review
+                        <i class="fas fa-paper-plane mr-2"></i> Submit Review (Wajib Lunas)
                     </button>
                 </form>
                 @endif
@@ -171,21 +171,14 @@
                 </a>
                 @endif
 
-                {{-- Payment / Checkout --}}
-                @php
-                    $payment = \App\Models\Payment::where('invitation_id', $invitation->id)->latest()->first();
-                @endphp
-                @if($payment && $payment->isPaid())
+                {{-- Paket Akun --}}
+                @if(!empty($activePackage))
                 <div class="p-3 rounded-lg text-center text-xs" style="background: rgba(52,199,89,0.08); color: var(--success);">
-                    <i class="fas fa-check-circle mr-1"></i> Lunas - {{ $payment->paid_at?->format('d M Y') }}
+                    <i class="fas fa-check-circle mr-1"></i> Paket Aktif: {{ $activePackage->name }}
                 </div>
-                @elseif($payment && $payment->isPending())
-                <a href="{{ route('client.checkout.status', $invitation) }}" class="btn w-full text-center block text-sm py-3" style="background: rgba(255,149,0,0.1); color: var(--warning); border: 1px solid var(--warning);">
-                    <i class="fas fa-clock mr-2"></i> Menunggu Pembayaran
-                </a>
                 @else
-                <a href="{{ route('client.checkout.show', $invitation) }}" class="btn w-full text-center block text-sm py-3" style="background: linear-gradient(135deg, var(--accent), #5856d6); color: white;">
-                    <i class="fas fa-credit-card mr-2"></i> Bayar Sekarang
+                <a href="{{ route('client.packages.select') }}" class="btn w-full text-center block text-sm py-3" style="background: linear-gradient(135deg, var(--accent), #5856d6); color: white;">
+                    <i class="fas fa-credit-card mr-2"></i> Pilih Paket Dulu
                 </a>
                 @endif
             </div>
@@ -193,7 +186,7 @@
 
         {{-- Package Info --}}
         <div class="card p-6">
-            <h3 class="font-bold text-base mb-4">Paket - {{ $invitation->package->name ?? '-' }}</h3>
+            <h3 class="font-bold text-base mb-4">Paket - {{ $activePackage->name ?? ($invitation->package->name ?? '-') }}</h3>
             <div class="space-y-3">
                 {{-- Guest Limit --}}
                 <div>
@@ -293,6 +286,16 @@
                 <p class="text-xs font-semibold mb-2" style="color: var(--text-secondary);">Kategori RSVP (Live)</p>
                 <div id="an-categories" class="space-y-1 text-xs" style="color: var(--text-secondary);"></div>
             </div>
+            <div class="mt-4 pt-3" style="border-top:1px solid var(--border);">
+                <p class="text-xs font-semibold mb-2" style="color: var(--text-secondary);">Funnel Undangan</p>
+                <div class="space-y-1 text-xs" style="color: var(--text-secondary);">
+                    <div>Terkirim: <strong id="fn-sent">0</strong></div>
+                    <div>Dibuka: <strong id="fn-opened">0</strong> (<span id="fn-open-rate">0</span>%)</div>
+                    <div>Klik Maps: <strong id="fn-map">0</strong> (<span id="fn-map-rate">0</span>%)</div>
+                    <div>RSVP: <strong id="fn-rsvp">0</strong> (<span id="fn-rsvp-rate">0</span>%)</div>
+                    <div>Check-in: <strong id="fn-checkin">0</strong> (<span id="fn-checkin-rate">0</span>%)</div>
+                </div>
+            </div>
         </div>
 
         {{-- WhatsApp Blast Reminder --}}
@@ -327,7 +330,7 @@
                     @foreach($invitation->reminderCampaigns->take(5) as $campaign)
                         <div class="p-2 rounded-lg text-xs" style="background: var(--bg-tertiary);">
                             <div class="flex items-center justify-between">
-                                <span class="font-semibold">{{ strtoupper($campaign->channel) }} - {{ $campaign->audience }}</span>
+                                <span class="font-semibold">{{ strtoupper($campaign->channel) }} - {{ $campaign->audience }} @if($campaign->source === 'auto') <span class="badge badge-default">AUTO</span> @endif</span>
                                 <span class="badge badge-{{ $campaign->status === 'sent' ? 'success' : ($campaign->status === 'failed' ? 'danger' : ($campaign->status === 'cancelled' ? 'default' : 'warning')) }}">{{ $campaign->status }}</span>
                             </div>
                             <div style="color: var(--text-secondary);">{{ $campaign->scheduled_at?->format('d M Y H:i') }} | Sent {{ $campaign->sent_count }} / Failed {{ $campaign->failed_count }}</div>
@@ -342,6 +345,65 @@
                 </div>
             </div>
             @endif
+        </div>
+
+        {{-- Collaborators --}}
+        <div class="card p-6">
+            <h3 class="font-bold text-base mb-4">Kolaborator Editor</h3>
+            @if((int) auth()->id() === (int) $invitation->user_id)
+            <form method="POST" action="{{ route('client.invitations.collaborators.store', $invitation) }}" class="space-y-2 mb-3">
+                @csrf
+                <input type="email" name="email" class="form-input" placeholder="email client editor" required>
+                <button class="btn btn-primary w-full text-sm">Undang Editor</button>
+            </form>
+            @endif
+            <div class="space-y-2">
+                @forelse($invitation->collaborators as $collab)
+                <div class="p-3 rounded-lg text-xs" style="background: var(--bg-tertiary);">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold">{{ $collab->user->name ?? 'User' }} ({{ $collab->user->email ?? '-' }})</span>
+                        <span class="badge badge-{{ $collab->status === 'accepted' ? 'success' : 'warning' }}">{{ $collab->status }}</span>
+                    </div>
+                    @if((int) auth()->id() === (int) $invitation->user_id)
+                    <form method="POST" action="{{ route('client.invitations.collaborators.destroy', [$invitation, $collab]) }}" class="mt-2">
+                        @csrf @method('DELETE')
+                        <button class="btn btn-danger btn-sm w-full">Hapus</button>
+                    </form>
+                    @elseif((int) auth()->id() === (int) $collab->user_id && $collab->status !== 'accepted')
+                    <form method="POST" action="{{ route('client.collaborators.accept', $collab) }}" class="mt-2">
+                        @csrf @method('PATCH')
+                        <button class="btn btn-secondary btn-sm w-full">Terima Kolaborasi</button>
+                    </form>
+                    @endif
+                </div>
+                @empty
+                <p class="text-xs" style="color: var(--text-secondary);">Belum ada kolaborator.</p>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Backup --}}
+        <div class="card p-6">
+            <h3 class="font-bold text-base mb-4">Backup & Restore</h3>
+            <form method="POST" action="{{ route('client.invitations.backups.store', $invitation) }}" class="space-y-2 mb-3">
+                @csrf
+                <input type="text" name="label" class="form-input" placeholder="Label backup (opsional)">
+                <button class="btn btn-primary w-full text-sm">Buat Backup</button>
+            </form>
+            <div class="space-y-2">
+                @forelse($invitation->backups->take(8) as $backup)
+                <div class="p-3 rounded-lg text-xs" style="background: var(--bg-tertiary);">
+                    <div class="font-semibold">{{ $backup->label ?: 'Backup' }}</div>
+                    <div style="color: var(--text-secondary);">{{ $backup->created_at?->format('d M Y H:i') }}</div>
+                    <form method="POST" action="{{ route('client.invitations.backups.restore', [$invitation, $backup]) }}" class="mt-2">
+                        @csrf
+                        <button class="btn btn-secondary btn-sm w-full">Restore ke Draft Baru</button>
+                    </form>
+                </div>
+                @empty
+                <p class="text-xs" style="color: var(--text-secondary);">Belum ada backup.</p>
+                @endforelse
+            </div>
         </div>
 
         {{-- Vendor CRM --}}
@@ -457,6 +519,22 @@
                         ? rows.map((row) => `<div>${row.category}: <strong>${row.total}</strong></div>`).join('')
                         : '<div>Belum ada data kategori.</div>';
                 }
+
+                const funnel = data.funnel || {};
+                const conv = funnel.conversion || {};
+                const byId = (id, value) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = value ?? 0;
+                };
+                byId('fn-sent', funnel.sent ?? 0);
+                byId('fn-opened', funnel.opened ?? 0);
+                byId('fn-map', funnel.map_clicked ?? 0);
+                byId('fn-rsvp', funnel.rsvp_submitted ?? 0);
+                byId('fn-checkin', funnel.checked_in ?? 0);
+                byId('fn-open-rate', conv.open_rate ?? 0);
+                byId('fn-map-rate', conv.map_rate ?? 0);
+                byId('fn-rsvp-rate', conv.rsvp_rate ?? 0);
+                byId('fn-checkin-rate', conv.checkin_rate ?? 0);
             } catch (e) {
                 // Ignore polling errors
             }

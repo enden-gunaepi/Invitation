@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Payment extends Model
 {
     protected $fillable = [
-        'user_id', 'invitation_id', 'package_id', 'amount', 'payment_method',
+        'user_id', 'invitation_id', 'client_package_subscription_id', 'package_id', 'amount', 'payment_method',
         'payment_gateway', 'payment_channel', 'payment_status', 'transaction_id',
         'gateway_reference', 'callback_token', 'paid_at', 'expired_at',
         'payment_url', 'gateway_response', 'base_amount', 'discount_amount',
@@ -45,6 +45,11 @@ class Payment extends Model
     public function invitation(): BelongsTo
     {
         return $this->belongsTo(Invitation::class);
+    }
+
+    public function clientPackageSubscription(): BelongsTo
+    {
+        return $this->belongsTo(ClientPackageSubscription::class);
     }
 
     public function package(): BelongsTo

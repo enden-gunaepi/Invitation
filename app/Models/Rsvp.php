@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Rsvp extends Model
 {
     protected $fillable = [
-        'invitation_id', 'guest_id', 'name', 'phone', 'status', 'pax', 'message', 'is_shown', 'ip_address',
+        'invitation_id', 'guest_id', 'name', 'phone', 'normalized_phone', 'status', 'pax', 'message', 'is_shown', 'ip_address',
     ];
 
     protected function casts(): array

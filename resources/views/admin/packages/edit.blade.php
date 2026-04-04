@@ -77,7 +77,21 @@
                     <label class="form-label">Max Undangan</label>
                     <input type="number" name="max_invitations" value="{{ old('max_invitations', $package->max_invitations ?? 1) }}" class="form-input" min="1" required>
                 </div>
+                <div>
+                    <label class="form-label">Durasi Aktif</label>
+                    <input type="number" name="active_duration_value" value="{{ old('active_duration_value', $package->active_duration_value ?? '') }}" class="form-input" min="1" max="120" placeholder="Contoh: 30">
+                </div>
+                <div>
+                    <label class="form-label">Satuan Durasi</label>
+                    @php $adu = old('active_duration_unit', $package->active_duration_unit ?? 'day'); @endphp
+                    <select name="active_duration_unit" class="form-input">
+                        <option value="">Tanpa Batas</option>
+                        <option value="day" {{ $adu === 'day' ? 'selected' : '' }}>Hari</option>
+                        <option value="month" {{ $adu === 'month' ? 'selected' : '' }}>Bulan</option>
+                    </select>
+                </div>
             </div>
+            <p class="text-xs mb-5 text-slate-400">Kosongkan durasi jika paket tidak dibatasi masa aktif. Jika diisi, undangan akan aktif sesuai durasi sejak dipublikasikan/diaktifkan.</p>
             <div class="mb-5">
                 <label class="form-label">Fitur Paket (1 baris = 1 fitur)</label>
                 <textarea name="features_input" class="form-input" rows="4">{{ old('features_input', implode("\n", $package->features ?? [])) }}</textarea>

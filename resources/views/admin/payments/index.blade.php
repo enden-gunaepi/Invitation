@@ -82,7 +82,7 @@
                             <span class="text-sm font-semibold">{{ $p->user->name ?? '-' }}</span>
                         </div>
                     </td>
-                    <td class="text-sm">{{ Str::limit($p->invitation->title ?? '-', 25) }}</td>
+                    <td class="text-sm">{{ Str::limit($p->invitation?->title ?? ($p->clientPackageSubscription ? 'Langganan Paket Akun' : '-'), 25) }}</td>
                     <td><span class="badge badge-info">{{ $p->package->name ?? '-' }}</span></td>
                     <td class="font-semibold">Rp{{ number_format($p->amount, 0, ',', '.') }}</td>
                     <td>

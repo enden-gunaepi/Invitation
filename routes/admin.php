@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 // Admin Dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::post('/seeders/initial', [DashboardController::class, 'runInitialSeeders'])->name('seeders.initial');
 
 // User Management
 Route::resource('users', UserController::class);

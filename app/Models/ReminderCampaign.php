@@ -20,6 +20,8 @@ class ReminderCampaign extends Model
         'sent_count',
         'failed_count',
         'notes',
+        'source',
+        'scheduled_key',
     ];
 
     protected function casts(): array

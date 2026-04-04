@@ -7,10 +7,16 @@ use App\Models\Guest;
 use App\Models\Invitation;
 use App\Models\Package;
 use App\Models\Rsvp;
+use App\Services\ClientPackageService;
 use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private readonly ClientPackageService $clientPackageService,
+    ) {
+    }
+
     public function index()
     {
         $user = auth()->user();
@@ -49,14 +55,28 @@ class DashboardController extends Controller
                 ->first();
         });
 
-        $onboarding = $this->buildOnboardingData($latestInvitation);
+        $hasActivePackage = (bool) $this->clientPackageService->getActiveSubscription((int) $user->id);
+        $onboarding = $this->buildOnboardingData($latestInvitation, $hasActivePackage);
         $upsell = $this->buildUpsellData($latestInvitation, $user->id);
 
-        return view('client.dashboard.index', compact('stats', 'invitations', 'onboarding', 'upsell'));
+        return view('client.dashboard.index', compact('stats', 'invitations', 'onboarding', 'upsell', 'hasActivePackage'));
     }
 
-    private function buildOnboardingData(?Invitation $invitation): array
+    private function buildOnboardingData(?Invitation $invitation, bool $hasActivePackage): array
     {
+        if (!$hasActivePackage) {
+            return [
+                'progress' => 0,
+                'items' => [
+                    ['label' => 'Pilih paket langganan', 'done' => false],
+                    ['label' => 'Lakukan pembayaran paket', 'done' => false],
+                    ['label' => 'Mulai buat undangan', 'done' => false],
+                ],
+                'next_label' => 'Pilih Paket Dulu',
+                'next_url' => route('client.packages.select'),
+            ];
+        }
+
         if (!$invitation) {
             return [
                 'progress' => 0,

@@ -21,6 +21,8 @@
 </head>
 <body>
 @php
+    $isDemoMode = (bool) ($demoMode ?? false);
+    $personalization = $personalization ?? ['greeting' => 'Tamu Undangan', 'cta' => 'Konfirmasi Kehadiran', 'rsvp_hint' => 'Mohon konfirmasi kehadiran Anda.'];
     $coverPhoto = $invitation->cover_photo ? asset('storage/' . $invitation->cover_photo) : null;
     $groomPhoto = $invitation->groom_photo ? asset('storage/' . $invitation->groom_photo) : $coverPhoto;
     $bridePhoto = $invitation->bride_photo ? asset('storage/' . $invitation->bride_photo) : $coverPhoto;
@@ -29,6 +31,8 @@
     $eventDateText = $invitation->event_date ? $invitation->event_date->translatedFormat('d F Y') : '-';
     $eventDateIso = $invitation->event_date ? $invitation->event_date->format('Y-m-d') : null;
     $eventTimeIso = $invitation->event_time ? \Carbon\Carbon::parse($invitation->event_time)->format('H:i:s') : '00:00:00';
+    $openingText = $invitation->opening_text
+        ?: 'Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya.';
     $mapsEmbed = $invitation->google_maps_url
         ? str_replace('/maps/', '/maps/embed/', $invitation->google_maps_url)
         : (($invitation->venue_lat && $invitation->venue_lng)
@@ -38,6 +42,10 @@
         ?: (($invitation->venue_lat && $invitation->venue_lng)
             ? 'https://www.google.com/maps?q=' . $invitation->venue_lat . ',' . $invitation->venue_lng
             : null);
+    $mapsTrackedUrl = $isDemoMode
+        ? $mapsUrl
+        : route('invitation.map.click', ['slug' => $invitation->slug, 'token' => $guest->token ?? null]);
+    $guestInvitationUrl = !empty($guest?->token) ? url('/inv/' . $invitation->slug . '/' . $guest->token) : url('/inv/' . $invitation->slug);
     $slideshowImages = $invitation->photos->map(fn($photo) => asset('storage/' . $photo->file_path))->values()->all();
     if (count($slideshowImages) === 0 && $coverPhoto) {
         $slideshowImages[] = $coverPhoto;
@@ -49,6 +57,9 @@
         $slideshowImages[] = $groomPhoto;
     }
 @endphp
+@if($isDemoMode)
+<div class="fixed left-3 top-3 z-[90] bg-amber-400 text-slate-900 text-xs font-bold px-3 py-1 rounded-full">Demo Mode</div>
+@endif
 
 <section id="cover" class="relative min-h-screen flex items-center justify-center text-center px-6 py-20 transition-opacity duration-700">
     <div class="absolute inset-0">
@@ -63,7 +74,7 @@
         <p class="tracking-[0.25em] text-xs md:text-sm mb-4 opacity-90">THE WEDDING OF</p>
         <h1 class="font-title text-4xl md:text-6xl leading-tight mb-4">{{ $coupleName }}</h1>
         <p class="text-sm md:text-lg mb-8">{{ $eventDateText }}</p>
-        <p class="text-sm opacity-80">Kepada Yth.</p>
+        <p class="text-sm opacity-80">{{ $personalization['greeting'] }}</p>
         <p class="text-xl font-semibold mt-1">{{ $guestName }}</p>
         <button type="button" id="openInvite" class="mt-8 bg-rose-700 hover:bg-rose-600 px-6 py-3 rounded-full text-sm font-semibold">
             Buka Undangan
@@ -84,6 +95,14 @@
             <p class="tracking-[0.2em] text-xs mb-3 opacity-85">WE INVITE YOU TO CELEBRATE</p>
             <h2 class="font-title text-4xl md:text-5xl mb-3">{{ $coupleName }}</h2>
             <p class="text-sm opacity-90">{{ $eventDateText }}</p>
+        </article>
+    </section>
+
+    <section class="max-w-5xl mx-auto px-6 pb-16">
+        <article class="glass-card rounded-3xl p-8 md:p-10 text-center">
+            <h3 class="font-title text-3xl mb-4">Pembuka</h3>
+            <p class="text-sm md:text-base leading-relaxed opacity-90">{!! nl2br(e($openingText)) !!}</p>
+            <p class="text-xs mt-4 opacity-75 tracking-wide">QS. Ar-Rum: 21</p>
         </article>
     </section>
 
@@ -159,7 +178,7 @@
                 <iframe src="{{ $mapsEmbed }}" width="100%" height="320" style="border:0;" loading="lazy"></iframe>
             </div>
             @if($mapsUrl)
-                <a href="{{ $mapsUrl }}" target="_blank" class="inline-block mt-5 bg-rose-700 hover:bg-rose-600 px-5 py-3 rounded-full text-sm font-semibold">Gunakan Google Maps</a>
+                <a href="{{ $mapsTrackedUrl }}" target="_blank" class="inline-block mt-5 bg-rose-700 hover:bg-rose-600 px-5 py-3 rounded-full text-sm font-semibold">Gunakan Google Maps</a>
             @endif
         </article>
     </section>
@@ -201,7 +220,7 @@
             <h3 class="font-title text-3xl text-center mb-7">Galeri</h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 @foreach($invitation->photos as $photo)
-                    <img src="{{ asset('storage/' . $photo->file_path) }}" alt="Galeri foto" class="w-full h-44 object-cover rounded-xl">
+                    <img src="{{ asset('storage/' . $photo->file_path) }}" alt="Galeri foto" loading="lazy" decoding="async" data-lightbox="gallery" class="w-full h-44 object-cover rounded-xl cursor-zoom-in">
                 @endforeach
             </div>
         </article>
@@ -231,8 +250,9 @@
     <section id="rsvp" class="max-w-6xl mx-auto px-6 pb-16">
         <div class="grid md:grid-cols-2 gap-6">
             <article class="glass-card rounded-3xl p-7">
-                <h3 class="font-title text-3xl mb-5">RSVP</h3>
-                <form method="POST" action="{{ route('invitation.rsvp', $invitation->slug) }}" class="space-y-3">
+                <h3 class="font-title text-3xl mb-2">RSVP</h3>
+                <p class="text-sm opacity-80 mb-4">{{ $personalization['rsvp_hint'] }}</p>
+                <form method="POST" action="{{ $isDemoMode ? '#' : route('invitation.rsvp', $invitation->slug) }}" class="space-y-3 demo-form">
                     @csrf
                     <input type="text" name="name" value="{{ $guest->name ?? '' }}" placeholder="Nama" class="w-full px-4 py-3 rounded-lg text-slate-900" required>
                     <input type="text" name="phone" placeholder="Nomor HP" class="w-full px-4 py-3 rounded-lg text-slate-900">
@@ -246,11 +266,11 @@
                     @if(!empty($guest?->id))
                         <input type="hidden" name="guest_id" value="{{ $guest->id }}">
                     @endif
-                    <button type="submit" class="w-full bg-rose-700 hover:bg-rose-600 px-4 py-3 rounded-lg font-semibold">Kirim RSVP</button>
+                    <button type="submit" class="w-full bg-rose-700 hover:bg-rose-600 px-4 py-3 rounded-lg font-semibold">{{ $personalization['cta'] }}</button>
                 </form>
                 <div class="mt-4 space-y-2 max-h-64 overflow-y-auto">
                     @foreach($invitation->rsvps as $rsvp)
-                        <article class="bg-white/10 rounded-lg p-3">
+                        <article class="bg-white/10 rounded-lg p-3 list-rsvp-item">
                             <p class="font-semibold text-sm">{{ $rsvp->name }} ({{ $rsvp->pax }} pax)</p>
                             <p class="text-xs opacity-80 mt-1">{{ ucfirst(str_replace('_', ' ', $rsvp->status)) }}</p>
                             @if($rsvp->message)
@@ -258,12 +278,17 @@
                             @endif
                         </article>
                     @endforeach
+                    <div class="flex items-center justify-between pt-1 list-rsvp-pager">
+                        <button type="button" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full" data-prev>Prev</button>
+                        <span class="text-xs opacity-80" data-page-info>Hal 1 / 1</span>
+                        <button type="button" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full" data-next>Next</button>
+                    </div>
                 </div>
             </article>
 
             <article class="glass-card rounded-3xl p-7">
                 <h3 class="font-title text-3xl mb-5">Doa & Ucapan</h3>
-                <form method="POST" action="{{ route('invitation.wish', $invitation->slug) }}" class="space-y-3">
+                <form method="POST" action="{{ $isDemoMode ? '#' : route('invitation.wish', $invitation->slug) }}" class="space-y-3 demo-form">
                     @csrf
                     <input type="text" name="name" value="{{ $guest->name ?? '' }}" placeholder="Nama" class="w-full px-4 py-3 rounded-lg text-slate-900" required>
                     <textarea name="message" rows="4" placeholder="Ucapan untuk mempelai" class="w-full px-4 py-3 rounded-lg text-slate-900" required></textarea>
@@ -271,11 +296,16 @@
                 </form>
                 <div class="mt-4 space-y-2 max-h-64 overflow-y-auto">
                     @foreach($invitation->wishes as $wish)
-                        <article class="bg-white/10 rounded-lg p-3">
+                        <article class="bg-white/10 rounded-lg p-3 list-wish-item">
                             <p class="font-semibold text-sm">{{ $wish->name }}</p>
                             <p class="text-sm mt-1">{{ $wish->message }}</p>
                         </article>
                     @endforeach
+                    <div class="flex items-center justify-between pt-1 list-wish-pager">
+                        <button type="button" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full" data-prev>Prev</button>
+                        <span class="text-xs opacity-80" data-page-info>Hal 1 / 1</span>
+                        <button type="button" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full" data-next>Next</button>
+                    </div>
                 </div>
             </article>
         </div>
@@ -319,7 +349,7 @@
             <p class="opacity-90">{{ $invitation->closing_text ?: 'Merupakan suatu kehormatan bagi kami jika Anda berkenan hadir dan memberikan doa restu.' }}</p>
             <p class="font-title text-2xl mt-6">{{ $coupleName }}</p>
             @if(!empty($guest))
-                <p class="text-xs mt-4 break-all opacity-80">{{ $guest->getInvitationUrl() }}</p>
+                <p class="text-xs mt-4 break-all opacity-80">{{ $guestInvitationUrl }}</p>
             @endif
         </article>
     </section>
@@ -330,6 +360,13 @@
     <source src="{{ asset('storage/' . $invitation->music_url) }}" type="audio/mpeg">
 </audio>
 @endif
+
+<div id="lightboxOverlay" class="hidden fixed inset-0 z-[80] bg-black/90 p-4">
+    <button type="button" id="lightboxPrev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white text-2xl leading-none">&#8249;</button>
+    <button type="button" id="lightboxNext" class="absolute right-4 top-1/2 -translate-y-1/2 text-white text-2xl leading-none">&#8250;</button>
+    <button type="button" id="lightboxClose" class="absolute top-4 right-4 text-white text-2xl leading-none">&times;</button>
+    <img id="lightboxImage" src="" alt="Preview" class="w-full h-full object-contain">
+</div>
 
 <script>
     const openButton = document.getElementById('openInvite');
@@ -355,6 +392,89 @@
     function copyText(text) {
         navigator.clipboard.writeText(text);
     }
+
+    (function initLightbox() {
+        const overlay = document.getElementById('lightboxOverlay');
+        const image = document.getElementById('lightboxImage');
+        const closeBtn = document.getElementById('lightboxClose');
+        const prevBtn = document.getElementById('lightboxPrev');
+        const nextBtn = document.getElementById('lightboxNext');
+        const items = document.querySelectorAll('img[data-lightbox=\"gallery\"]');
+        if (!overlay || !image || !closeBtn || !items.length) return;
+        let index = 0;
+        const show = (i) => {
+            index = (i + items.length) % items.length;
+            image.src = items[index].src;
+            overlay.classList.remove('hidden');
+        };
+        items.forEach((item) => {
+            item.addEventListener('click', () => {
+                const i = Array.from(items).indexOf(item);
+                show(i);
+            });
+        });
+        prevBtn?.addEventListener('click', () => show(index - 1));
+        nextBtn?.addEventListener('click', () => show(index + 1));
+        const close = () => overlay.classList.add('hidden');
+        closeBtn.addEventListener('click', close);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) close();
+        });
+    })();
+
+    @if($isDemoMode)
+    document.querySelectorAll('.demo-form').forEach((form) => {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            alert('Demo Mode: simulasi berhasil, data tidak disimpan.');
+        });
+    });
+    @endif
+
+    function initListPagination(itemSelector, pagerSelector, pageSize = 5) {
+        const items = Array.from(document.querySelectorAll(itemSelector));
+        const pager = document.querySelector(pagerSelector);
+        if (!pager) return;
+
+        const prevBtn = pager.querySelector('[data-prev]');
+        const nextBtn = pager.querySelector('[data-next]');
+        const info = pager.querySelector('[data-page-info]');
+        if (!prevBtn || !nextBtn || !info) return;
+
+        const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+        let page = 1;
+
+        const render = () => {
+            const start = (page - 1) * pageSize;
+            const end = start + pageSize;
+            items.forEach((item, index) => {
+                item.style.display = (index >= start && index < end) ? '' : 'none';
+            });
+            info.textContent = `Hal ${page} / ${totalPages}`;
+            prevBtn.disabled = page <= 1;
+            nextBtn.disabled = page >= totalPages;
+            pager.style.display = items.length > pageSize ? 'flex' : 'none';
+        };
+
+        prevBtn.addEventListener('click', () => {
+            if (page > 1) {
+                page -= 1;
+                render();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (page < totalPages) {
+                page += 1;
+                render();
+            }
+        });
+
+        render();
+    }
+
+    initListPagination('.list-rsvp-item', '.list-rsvp-pager', 5);
+    initListPagination('.list-wish-item', '.list-wish-pager', 5);
 
     function initSlideshow() {
         if (!Array.isArray(slideshowImages) || slideshowImages.length < 2) return;

@@ -38,6 +38,8 @@ class PackageController extends Controller
             'max_guests' => 'required|integer|min:1',
             'max_photos' => 'required|integer|min:1',
             'max_invitations' => 'required|integer|min:1',
+            'active_duration_value' => 'nullable|integer|min:1|max:120|required_with:active_duration_unit',
+            'active_duration_unit' => 'nullable|in:day,month|required_with:active_duration_value',
             'features_input' => 'nullable|string',
             'addons_input' => 'nullable|string',
             'allowed_template_ids' => 'nullable|array',
@@ -51,6 +53,10 @@ class PackageController extends Controller
         $validated['is_recommended'] = $request->has('is_recommended');
         $validated['features'] = $this->parseLinesToArray($request->input('features_input', ''));
         $validated['addons'] = $this->parseLinesToArray($request->input('addons_input', ''));
+        if (empty($validated['active_duration_value']) || empty($validated['active_duration_unit'])) {
+            $validated['active_duration_value'] = null;
+            $validated['active_duration_unit'] = null;
+        }
         unset($validated['features_input'], $validated['addons_input']);
 
         Package::create($validated);
@@ -81,6 +87,8 @@ class PackageController extends Controller
             'max_guests' => 'required|integer|min:1',
             'max_photos' => 'required|integer|min:1',
             'max_invitations' => 'required|integer|min:1',
+            'active_duration_value' => 'nullable|integer|min:1|max:120|required_with:active_duration_unit',
+            'active_duration_unit' => 'nullable|in:day,month|required_with:active_duration_value',
             'features_input' => 'nullable|string',
             'addons_input' => 'nullable|string',
             'allowed_template_ids' => 'nullable|array',
@@ -93,6 +101,10 @@ class PackageController extends Controller
         $validated['is_recommended'] = $request->has('is_recommended');
         $validated['features'] = $this->parseLinesToArray($request->input('features_input', ''));
         $validated['addons'] = $this->parseLinesToArray($request->input('addons_input', ''));
+        if (empty($validated['active_duration_value']) || empty($validated['active_duration_unit'])) {
+            $validated['active_duration_value'] = null;
+            $validated['active_duration_unit'] = null;
+        }
         unset($validated['features_input'], $validated['addons_input']);
 
         $package->update($validated);

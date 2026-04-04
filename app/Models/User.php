@@ -14,7 +14,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'referral_code', 'referred_by_user_id', 'affiliate_rate',
+        'name', 'company_name', 'company_logo', 'email', 'referral_code', 'referred_by_user_id', 'affiliate_rate',
         'password', 'role', 'phone', 'avatar', 'is_active',
         'signup_ip', 'signup_ua_hash', 'referral_clicked_at',
     ];
@@ -96,5 +96,15 @@ class User extends Authenticatable
     public function vendorLeads(): HasMany
     {
         return $this->hasMany(VendorLead::class);
+    }
+
+    public function invitationCollaborations(): HasMany
+    {
+        return $this->hasMany(InvitationCollaborator::class);
+    }
+
+    public function packageSubscriptions(): HasMany
+    {
+        return $this->hasMany(ClientPackageSubscription::class);
     }
 }

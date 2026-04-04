@@ -26,15 +26,30 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+            }
+            $user->avatar = $request->file('avatar')->store('avatars', 'public');
+        }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        if ($request->hasFile('company_logo')) {
+            if ($user->company_logo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->company_logo);
+            }
+            $user->company_logo = $request->file('company_logo')->store('company_logos', 'public');
+        }
+
+        $user->save();
+
+        return Redirect::route('profile.edit')->with('success', 'Profil berhasil diupdate!');
     }
 
     /**

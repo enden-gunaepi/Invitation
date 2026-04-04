@@ -6,6 +6,7 @@ use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicAssetController;
 use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\TemplateDemoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [MarketingController::class, 'home'])->name('marketing.home');
@@ -34,11 +35,17 @@ Route::middleware('auth')->group(function () {
 // Public invitation routes
 Route::middleware(['track.view'])->group(function () {
     Route::get('/inv/{slug}', [InvitationPublicController::class, 'show'])->name('invitation.show');
-    Route::get('/inv/{slug}/{token}', [InvitationPublicController::class, 'showGuest'])->name('invitation.guest');
+});
+Route::get('/inv/{slug}/maps', [InvitationPublicController::class, 'mapClick'])->name('invitation.map.click');
+Route::middleware(['track.view'])->group(function () {
+    Route::get('/inv/{slug}/{token}', [InvitationPublicController::class, 'showGuest'])
+        ->where('token', '^(?!maps$).+')
+        ->name('invitation.guest');
 });
 Route::get('/media/music/{invitation}', [PublicAssetController::class, 'music'])
     ->middleware('signed')
     ->name('media.music');
+Route::get('/templates/demo/{template:slug}', [TemplateDemoController::class, 'show'])->name('templates.demo');
 Route::post('/inv/{slug}/rsvp', [InvitationPublicController::class, 'rsvp'])
     ->middleware('throttle:rsvp-submission')
     ->name('invitation.rsvp');

@@ -98,8 +98,8 @@
 
         <div class="card p-6">
             <h3 class="font-bold text-base mb-4">Undangan</h3>
-            <p class="font-semibold text-sm">{{ $payment->invitation->title ?? '-' }}</p>
-            <p class="text-xs mt-1" style="color: var(--text-secondary);">{{ ucfirst($payment->invitation->event_type ?? '-') }}</p>
+            <p class="font-semibold text-sm">{{ $payment->invitation?->title ?? ($payment->clientPackageSubscription ? 'Langganan Paket Akun' : '-') }}</p>
+            <p class="text-xs mt-1" style="color: var(--text-secondary);">{{ ucfirst($payment->invitation?->event_type ?? '-') }}</p>
             @if($payment->invitation)
             <a href="{{ route('admin.invitations.show', $payment->invitation) }}" class="btn btn-secondary btn-sm mt-3 w-full text-center">
                 <i class="fas fa-eye mr-1"></i> Lihat Undangan

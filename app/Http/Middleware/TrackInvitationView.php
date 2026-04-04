@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\InvitationFunnelEvent;
 use App\Models\InvitationView;
 use Closure;
 use Illuminate\Http\Request;
@@ -31,6 +32,24 @@ class TrackInvitationView
                 ]);
 
                 DB::table('invitations')->where('id', $invitationId)->increment('view_count');
+
+                $openCacheKey = sprintf(
+                    'funnel:opened:%d:%s:%s',
+                    $invitationId,
+                    (string) ($request->route('token') ?? 'guestless'),
+                    sha1((string) $request->ip())
+                );
+
+                if (Cache::add($openCacheKey, true, now()->addMinutes(30))) {
+                    InvitationFunnelEvent::create([
+                        'invitation_id' => $invitationId,
+                        'event' => 'opened',
+                        'guest_token' => $request->route('token'),
+                        'ip_address' => $request->ip(),
+                        'user_agent' => $request->userAgent(),
+                        'source' => 'public_view',
+                    ]);
+                }
             }
         }
 

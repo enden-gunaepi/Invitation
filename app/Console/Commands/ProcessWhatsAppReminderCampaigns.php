@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\ReminderCampaign;
 use App\Models\ReminderLog;
+use App\Services\InvitationFunnelService;
 use App\Services\WhatsAppService;
 use Illuminate\Console\Command;
 
@@ -12,7 +13,7 @@ class ProcessWhatsAppReminderCampaigns extends Command
     protected $signature = 'reminders:process-whatsapp';
     protected $description = 'Process scheduled WhatsApp reminder campaigns for invitation guests';
 
-    public function handle(WhatsAppService $whatsAppService): int
+    public function handle(WhatsAppService $whatsAppService, InvitationFunnelService $funnelService): int
     {
         $campaigns = ReminderCampaign::with(['invitation', 'invitation.guests.rsvps'])
             ->where('channel', 'whatsapp')
@@ -41,7 +42,7 @@ class ProcessWhatsAppReminderCampaigns extends Command
             }
 
             foreach ($guests as $guest) {
-                $body = $this->renderTemplate($campaign->message_template, $campaign, $guest->name);
+                $body = $this->renderTemplate($campaign->message_template, $campaign, $guest);
                 $result = $whatsAppService->sendText((string) $guest->phone, $body);
 
                 ReminderLog::create([
@@ -57,6 +58,17 @@ class ProcessWhatsAppReminderCampaigns extends Command
 
                 if ($result['success']) {
                     $sent++;
+                    $funnelService->track((int) $campaign->invitation_id, 'sent', [
+                        'guest_id' => $guest->id,
+                        'guest_token' => $guest->token,
+                        'phone' => $guest->phone,
+                        'source' => $campaign->source ?? 'manual',
+                        'meta' => [
+                            'campaign_id' => $campaign->id,
+                            'audience' => $campaign->audience,
+                            'scheduled_key' => $campaign->scheduled_key,
+                        ],
+                    ]);
                 } else {
                     $failed++;
                 }
@@ -75,16 +87,20 @@ class ProcessWhatsAppReminderCampaigns extends Command
         return self::SUCCESS;
     }
 
-    private function renderTemplate(string $template, ReminderCampaign $campaign, string $guestName): string
+    private function renderTemplate(string $template, ReminderCampaign $campaign, $guest): string
     {
         $inv = $campaign->invitation;
+        $personalLink = !empty($guest->token)
+            ? url("/inv/{$inv->slug}/{$guest->token}")
+            : $inv->getPublicUrl();
+
         $replace = [
-            '{name}' => $guestName,
+            '{name}' => (string) $guest->name,
             '{event}' => (string) $inv->title,
             '{date}' => optional($inv->event_date)->format('d M Y') ?? '-',
             '{time}' => (string) $inv->event_time,
             '{venue}' => (string) $inv->venue_name,
-            '{link}' => $inv->getPublicUrl(),
+            '{link}' => $personalLink,
         ];
 
         return str_replace(array_keys($replace), array_values($replace), $template);

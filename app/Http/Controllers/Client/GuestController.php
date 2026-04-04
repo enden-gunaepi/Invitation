@@ -5,12 +5,18 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Guest;
 use App\Models\Invitation;
+use App\Services\InvitationAccessService;
+use App\Services\InvitationFunnelService;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Throwable;
 
 class GuestController extends Controller
 {
+    public function __construct(private readonly InvitationAccessService $invitationAccessService)
+    {
+    }
+
     public function index(Invitation $invitation)
     {
         $this->authorize($invitation);
@@ -107,6 +113,15 @@ class GuestController extends Controller
             'checked_in_at' => now(),
             'checkin_method' => 'qr',
             'checked_in_by_user_id' => auth()->id(),
+        ]);
+
+        app(InvitationFunnelService::class)->track((int) $invitation->id, 'checked_in', [
+            'guest_id' => $guest->id,
+            'guest_token' => $guest->token,
+            'phone' => $guest->phone,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'source' => 'checkin_scan',
         ]);
 
         return back()->with('success', "Check-in berhasil: {$guest->name}");
@@ -314,7 +329,7 @@ class GuestController extends Controller
 
     private function authorize(Invitation $invitation)
     {
-        if ($invitation->user_id !== auth()->id()) {
+        if (!$this->invitationAccessService->isOwnerOrEditor($invitation, (int) auth()->id())) {
             abort(403);
         }
     }

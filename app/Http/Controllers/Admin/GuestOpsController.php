@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use Illuminate\Http\Request;
+use App\Services\InvitationFunnelService;
 
 class GuestOpsController extends Controller
 {
@@ -48,7 +49,15 @@ class GuestOpsController extends Controller
             'checked_in_by_user_id' => auth()->id(),
         ]);
 
+        app(InvitationFunnelService::class)->track((int) $invitation->id, 'checked_in', [
+            'guest_id' => $guest->id,
+            'guest_token' => $guest->token,
+            'phone' => $guest->phone,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'source' => 'admin_checkin_scan',
+        ]);
+
         return back()->with('success', "Check-in berhasil: {$guest->name}");
     }
 }
-

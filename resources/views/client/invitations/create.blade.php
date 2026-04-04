@@ -11,7 +11,7 @@
                 <p class="text-sm font-semibold mb-1" style="color: var(--danger);">Ada data yang belum valid:</p>
                 <ul class="text-xs space-y-1" style="color: var(--danger);">
                     @foreach($errors->all() as $error)
-                        <li>• {{ $error }}</li>
+                        <li>- {{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -20,64 +20,31 @@
         <form method="POST" action="{{ route('client.invitations.store') }}" enctype="multipart/form-data">
             @csrf
 
-            <h3 class="font-bold text-base mb-4" style="color: var(--accent);"><i class="fas fa-layer-group mr-2"></i> Template & Paket</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-4">
-                <div>
-                    <label class="form-label">Template</label>
-                    <select name="template_id" class="form-input" required id="templateSelect" onchange="updateTemplatePreview()">
-                        <option value="">Pilih Template</option>
-                        @foreach($templates as $t)
-                            <option value="{{ $t->id }}" data-thumbnail="{{ $t->thumbnail ? asset('storage/' . $t->thumbnail) : '' }}" {{ old('template_id') == $t->id ? 'selected' : '' }}>
-                                {{ $t->name }} ({{ ucfirst($t->category) }}) {{ $t->is_premium ? 'Premium' : '' }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('template_id') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label class="form-label">Paket</label>
-                    <select name="package_id" class="form-input" required id="packageSelect" onchange="updatePackageInfo()">
-                        <option value="">Pilih Paket</option>
-                        @foreach($packages as $p)
-                            <option value="{{ $p->id }}"
-                                data-tier="{{ $p->tier ?? 'starter' }}"
-                                data-badge="{{ $p->badge_text ?? '' }}"
-                                data-support="{{ $p->support_level ?? '' }}"
-                                data-sla="{{ $p->sla_hours ?? '' }}"
-                                data-guests="{{ $p->max_guests }}"
-                                data-photos="{{ $p->max_photos }}"
-                                data-invitations="{{ $p->max_invitations ?? 1 }}"
-                                data-templates='@json($p->allowed_template_ids ?? [])'
-                                data-features='@json($p->features)'
-                                data-addons='@json($p->addons ?? [])'
-                                {{ old('package_id') == $p->id ? 'selected' : '' }}>
-                                {{ $p->name }} - Rp{{ number_format($p->price, 0, ',', '.') }}
-                                ({{ ($p->billing_type ?? 'one_time') === 'subscription' ? 'Subscription ' . strtoupper($p->billing_cycle ?? 'monthly') : 'One-time' }})
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('package_id') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
-                </div>
+            <h3 class="font-bold text-base mb-4" style="color: var(--accent);"><i class="fas fa-layer-group mr-2"></i> Template</h3>
+            <div class="p-4 rounded-lg mb-4" style="background: var(--bg-tertiary); border:1px solid var(--border);">
+                <p class="text-xs mb-1" style="color: var(--text-secondary);">Paket aktif akun</p>
+                <p class="text-sm font-semibold">{{ $activePackage->name }} - Rp{{ number_format($activePackage->price, 0, ',', '.') }}</p>
+                <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                    Kuota undangan: {{ $activePackage->max_invitations ?? 1 }} | Kuota tamu: {{ $activePackage->max_guests ?? 100 }} | Kuota foto: {{ $activePackage->max_photos ?? 10 }}
+                </p>
             </div>
 
-            <div id="templatePreviewWrap" class="p-3 rounded-lg mb-4" style="display:none; background: var(--bg-tertiary);">
+            <div class="mb-4">
+                <label class="form-label">Template</label>
+                <select name="template_id" class="form-input" required id="templateSelect" onchange="updateTemplatePreview()">
+                    <option value="">Pilih Template</option>
+                    @foreach($templates as $t)
+                        <option value="{{ $t->id }}" data-thumbnail="{{ $t->thumbnail ? asset('storage/' . $t->thumbnail) : '' }}" {{ (old('template_id', $preselectedTemplateId ?? null) == $t->id) ? 'selected' : '' }}>
+                            {{ $t->name }} ({{ ucfirst($t->category) }}) {{ $t->is_premium ? 'Premium' : '' }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('template_id') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
+            </div>
+
+            <div id="templatePreviewWrap" class="p-3 rounded-lg mb-6" style="display:none; background: var(--bg-tertiary);">
                 <p class="text-xs mb-2" style="color: var(--text-secondary);">Preview Template</p>
                 <img id="templatePreview" src="" alt="Template Preview" style="width:100%; max-height:200px; object-fit:cover; border-radius:10px; border:1px solid var(--border);">
-            </div>
-
-            <div id="packageInfo" class="p-4 rounded-lg mb-6" style="background: var(--bg-tertiary); display: none;">
-                <div class="mb-2 flex items-center justify-between">
-                    <strong id="pkgTier" style="color: var(--accent);">-</strong>
-                    <span id="pkgBadge" class="text-[11px] px-2 py-1 rounded-full" style="display:none;background:var(--accent-bg);color:var(--accent);"></span>
-                </div>
-                <div class="grid grid-cols-2 gap-4 mb-3">
-                    <div class="text-xs"><span style="color: var(--text-secondary);">Max Tamu:</span> <strong id="pkgGuests">-</strong></div>
-                    <div class="text-xs"><span style="color: var(--text-secondary);">Max Foto:</span> <strong id="pkgPhotos">-</strong></div>
-                    <div class="text-xs"><span style="color: var(--text-secondary);">Max Undangan:</span> <strong id="pkgInvitations">-</strong></div>
-                    <div class="text-xs"><span style="color: var(--text-secondary);">Support:</span> <strong id="pkgSupport">-</strong></div>
-                </div>
-                <div id="pkgFeatures" class="flex flex-wrap gap-1 mb-2"></div>
-                <div id="pkgAddons" class="flex flex-wrap gap-1"></div>
             </div>
 
             <hr style="border-color: var(--border);" class="my-6">
@@ -120,17 +87,17 @@
                 <div><label class="form-label">Link Google Maps</label><input type="url" name="google_maps_url" value="{{ old('google_maps_url') }}" class="form-input"></div>
             </div>
             <div class="mb-5"><label class="form-label">Alamat Lengkap</label><textarea name="venue_address" class="form-input" rows="2" required>{{ old('venue_address') }}</textarea></div>
+
             <div class="mb-3">
                 <label class="inline-flex items-center gap-2 text-sm font-semibold">
                     <input type="hidden" name="livestream_enabled" value="0">
                     <input type="checkbox" name="livestream_enabled" value="1" id="livestream_enabled_create" {{ old('livestream_enabled') ? 'checked' : '' }} style="accent-color: var(--accent); width:16px; height:16px;">
                     Aktifkan Live Streaming
                 </label>
-                <p class="text-xs mt-1" style="color: var(--text-secondary);">Nyalakan hanya jika acara Anda memakai live streaming.</p>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5" id="livestream_fields_create" style="{{ old('livestream_enabled') ? '' : 'display:none;' }}">
-                <div><label class="form-label">Link Live Streaming</label><input type="url" name="livestream_url" value="{{ old('livestream_url') }}" class="form-input" placeholder="https://youtube.com/live/..."></div>
-                <div><label class="form-label">Label Live Streaming</label><input type="text" name="livestream_label" value="{{ old('livestream_label', 'Live Streaming') }}" class="form-input" placeholder="Live Streaming Akad"></div>
+                <div><label class="form-label">Link Live Streaming</label><input type="url" name="livestream_url" value="{{ old('livestream_url') }}" class="form-input"></div>
+                <div><label class="form-label">Label Live Streaming</label><input type="text" name="livestream_label" value="{{ old('livestream_label', 'Live Streaming') }}" class="form-input"></div>
             </div>
 
             <hr style="border-color: var(--border);" class="my-6">
@@ -138,15 +105,14 @@
             <h3 class="font-bold text-base mb-4" style="color: var(--accent);"><i class="fas fa-align-left mr-2"></i> Teks Undangan</h3>
             <div class="mb-5"><label class="form-label">Teks Pembuka</label><textarea name="opening_text" class="form-input" rows="3">{{ old('opening_text') }}</textarea></div>
             <div class="mb-5"><label class="form-label">Teks Penutup</label><textarea name="closing_text" class="form-input" rows="3">{{ old('closing_text') }}</textarea></div>
+
             <div class="mb-6">
                 <label class="form-label">Cover Photo</label>
                 <input type="file" name="cover_photo" class="form-input" accept="image/*">
-                @error('cover_photo') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
             </div>
             <div class="mb-6">
                 <label class="form-label">Upload Musik (max 20MB)</label>
                 <input type="file" name="music_url" class="form-input" accept="audio/*">
-                @error('music_url') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
             </div>
             <div class="mb-6">
                 <label class="form-label">Pilih dari Library Musik</label>
@@ -158,7 +124,6 @@
                         </option>
                     @endforeach
                 </select>
-                @error('music_track_id') <p class="text-xs mt-1" style="color: var(--danger);">{{ $message }}</p> @enderror
             </div>
 
             <hr style="border-color: var(--border);" class="my-6">
@@ -194,47 +159,6 @@
 </div>
 
 <script>
-function updatePackageInfo() {
-    const sel = document.getElementById('packageSelect');
-    const opt = sel.options[sel.selectedIndex];
-    const info = document.getElementById('packageInfo');
-    if (!opt.value) { info.style.display = 'none'; return; }
-    info.style.display = 'block';
-    document.getElementById('pkgTier').textContent = 'Tier ' + (opt.dataset.tier || 'starter').toUpperCase();
-    document.getElementById('pkgGuests').textContent = opt.dataset.guests + ' orang';
-    document.getElementById('pkgPhotos').textContent = opt.dataset.photos + ' foto';
-    document.getElementById('pkgInvitations').textContent = (opt.dataset.invitations || 1) + ' undangan';
-    document.getElementById('pkgSupport').textContent = opt.dataset.support
-        ? (opt.dataset.support + (opt.dataset.sla ? ' (SLA ' + opt.dataset.sla + ' jam)' : ''))
-        : '-';
-    const badge = document.getElementById('pkgBadge');
-    badge.textContent = opt.dataset.badge || '';
-    badge.style.display = opt.dataset.badge ? 'inline-block' : 'none';
-    const features = JSON.parse(opt.dataset.features || '[]');
-    const addons = JSON.parse(opt.dataset.addons || '[]');
-    const container = document.getElementById('pkgFeatures');
-    container.innerHTML = features.map(f => `<span style="background:var(--accent-bg);color:var(--accent);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">${f}</span>`).join('');
-    const addContainer = document.getElementById('pkgAddons');
-    addContainer.innerHTML = addons.map(a => `<span style="background:rgba(250,204,21,.14);color:#b45309;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">⭐ ${a}</span>`).join('');
-    filterTemplatesByPackage(opt.dataset.templates || '[]');
-}
-
-function filterTemplatesByPackage(templateIdsJson) {
-    const templateSelect = document.getElementById('templateSelect');
-    const allowed = JSON.parse(templateIdsJson || '[]').map((id) => String(id));
-    const useAll = allowed.length === 0;
-
-    [...templateSelect.options].forEach((opt, idx) => {
-        if (idx === 0) return;
-        const isAllowed = useAll || allowed.includes(opt.value);
-        opt.hidden = !isAllowed;
-        opt.disabled = !isAllowed;
-        if (!isAllowed && opt.selected) {
-            templateSelect.selectedIndex = 0;
-        }
-    });
-}
-
 function updateTemplatePreview() {
     const sel = document.getElementById('templateSelect');
     const opt = sel.options[sel.selectedIndex];
@@ -247,7 +171,6 @@ function updateTemplatePreview() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    updatePackageInfo();
     updateTemplatePreview();
     const toggle = document.getElementById('livestream_enabled_create');
     const fields = document.getElementById('livestream_fields_create');
@@ -259,4 +182,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endsection
-

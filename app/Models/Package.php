@@ -10,6 +10,7 @@ class Package extends Model
     protected $fillable = [
         'name', 'slug', 'tier', 'description', 'badge_text', 'support_level', 'sla_hours',
         'price', 'affiliate_commission_rate', 'billing_type', 'billing_cycle', 'max_guests', 'max_photos', 'max_invitations',
+        'active_duration_value', 'active_duration_unit',
         'features', 'addons', 'allowed_template_ids', 'is_active', 'is_recommended',
     ];
 
@@ -18,6 +19,7 @@ class Package extends Model
         return [
             'price' => 'decimal:2',
             'affiliate_commission_rate' => 'decimal:2',
+            'active_duration_value' => 'integer',
             'features' => 'array',
             'addons' => 'array',
             'allowed_template_ids' => 'array',
@@ -43,5 +45,10 @@ class Package extends Model
     public function invitations(): HasMany
     {
         return $this->hasMany(Invitation::class);
+    }
+
+    public function clientSubscriptions(): HasMany
+    {
+        return $this->hasMany(ClientPackageSubscription::class);
     }
 }

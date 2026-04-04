@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Invitation;
+use App\Models\ClientPackageSubscription;
 use App\Models\Package;
 use App\Models\Template;
 use App\Models\User;
@@ -24,7 +25,6 @@ class ImageCompressionUploadTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('client.invitations.store'), [
             'template_id' => $template->id,
-            'package_id' => $package->id,
             'event_type' => 'wedding',
             'title' => 'Undangan Test Kompresi',
             'event_date' => now()->addDays(10)->format('Y-m-d'),
@@ -105,6 +105,14 @@ class ImageCompressionUploadTest extends TestCase
             'max_invitations' => 3,
             'features' => ['Semua Template'],
             'is_active' => true,
+        ]);
+
+        ClientPackageSubscription::create([
+            'user_id' => $user->id,
+            'package_id' => $package->id,
+            'status' => 'active',
+            'started_at' => now(),
+            'expires_at' => now()->addMonth(),
         ]);
 
         return [$user, $template, $package];

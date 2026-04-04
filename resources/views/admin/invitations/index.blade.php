@@ -17,6 +17,7 @@
                 <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
                 <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
                 <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif</option>
+                <option value="expired" {{ request('status') === 'expired' ? 'selected' : '' }}>Kadaluarsa</option>
                 <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Ditolak</option>
             </select>
         </form>
@@ -30,6 +31,7 @@
                     <th>Pemilik</th>
                     <th>Template</th>
                     <th>Tanggal</th>
+                    <th>Kadaluarsa</th>
                     <th>Status</th>
                     <th>Views</th>
                     <th class="text-right">Aksi</th>
@@ -47,6 +49,17 @@
                         <td class="text-sm text-slate-400">{{ $inv->user->name }}</td>
                         <td class="text-sm text-slate-400">{{ $inv->template->name ?? '-' }}</td>
                         <td class="text-sm text-slate-400">{{ $inv->event_date->format('d M Y') }}</td>
+                        <td class="text-sm">
+                            @if(empty($inv->expires_at))
+                                <div class="text-slate-400">Tanpa batas</div>
+                            @elseif($inv->expires_at->isPast())
+                                <div class="text-red-400 font-semibold">{{ $inv->expires_at->format('d M Y') }}</div>
+                                <div class="text-xs text-red-300">Kadaluarsa {{ $inv->expires_at->diffForHumans() }}</div>
+                            @else
+                                <div class="text-emerald-400 font-semibold">{{ $inv->expires_at->format('d M Y') }}</div>
+                                <div class="text-xs text-emerald-300">{{ $inv->expires_at->diffForHumans() }}</div>
+                            @endif
+                        </td>
                         <td><span class="badge badge-{{ $inv->status }}">{{ ucfirst($inv->status) }}</span></td>
                         <td class="text-sm text-slate-400">{{ number_format($inv->view_count) }}</td>
                         <td class="text-right">
@@ -76,7 +89,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center py-8 text-slate-500">Tidak ada undangan</td>
+                        <td colspan="8" class="text-center py-8 text-slate-500">Tidak ada undangan</td>
                     </tr>
                 @endforelse
             </tbody>

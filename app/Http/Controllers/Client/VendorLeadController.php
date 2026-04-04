@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\VendorLead;
+use App\Services\InvitationAccessService;
 use Illuminate\Http\Request;
 
 class VendorLeadController extends Controller
 {
+    public function __construct(private readonly InvitationAccessService $invitationAccessService)
+    {
+    }
+
     public function store(Request $request, Invitation $invitation)
     {
         $this->authorizeInvitation($invitation);
@@ -67,7 +72,7 @@ class VendorLeadController extends Controller
 
     private function authorizeInvitation(Invitation $invitation): void
     {
-        if ($invitation->user_id !== auth()->id()) {
+        if (!$this->invitationAccessService->isOwnerOrEditor($invitation, (int) auth()->id())) {
             abort(403);
         }
     }
