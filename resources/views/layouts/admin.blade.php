@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="id" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true', sidebarOpen: false, sidebarExpanded: localStorage.getItem('adminSidebarExpanded') === 'true' }" x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val));
+<html lang="id"
+    x-data="{ darkMode: localStorage.getItem('darkMode') === 'true', sidebarOpen: false, sidebarExpanded: localStorage.getItem('adminSidebarExpanded') === 'true' }"
+    x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val));
 $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', val))" :class="{ 'dark': darkMode }">
 
 <head>
@@ -17,7 +19,10 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
         }
     </script>
     <style>
-        [x-cloak] { display: none !important; }
+        [x-cloak] {
+            display: none !important;
+        }
+
         :root {
             --sidebar-w: 86px;
             --topbar-h: 56px;
@@ -197,9 +202,9 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
             width: 28px;
             height: 28px;
             border-radius: 999px;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            color: rgba(226, 232, 240, 0.95);
-            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -250,8 +255,8 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
             width: 4px;
             height: 24px;
             border-radius: 999px;
-            background: linear-gradient(180deg, #f87171, #b91c1c);
-            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+            background: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-bg);
         }
 
         .admin-shell.sidebar-expanded .sidebar .nav-item.active::before {
@@ -268,8 +273,8 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
         }
 
         .admin-shell .topbar {
-            background: rgba(255, 255, 255, 0.94);
-            border-bottom: 1px solid #e5e5df;
+            background: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border);
             backdrop-filter: blur(14px);
             left: calc(var(--shell-sidebar-left) + var(--sidebar-w) + var(--shell-content-gap));
             top: var(--shell-edge-gap);
@@ -286,16 +291,18 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
 
         .admin-shell .card {
             border-radius: 16px;
-            border-color: #e7e5e4;
+            border-color: var(--border);
             box-shadow: var(--card-shadow);
         }
 
         .admin-shell .btn-primary {
-            background: linear-gradient(135deg, #7f1d1d, #dc2626);
+            background: var(--accent);
+            color: #ffffff;
+            border: none;
         }
 
         .admin-shell .btn-primary:hover {
-            background: linear-gradient(135deg, #6b1414, #b91c1c);
+            background: var(--accent-hover);
         }
 
         /* ===== SIDEBAR ===== */
@@ -326,7 +333,7 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
             width: 32px;
             height: 32px;
             border-radius: 10px;
-            background: linear-gradient(135deg, #7f1d1d, #dc2626);
+            background: var(--accent);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -501,8 +508,8 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
 
         .user-menu {
             margin-top: 10px;
-            border: 1px solid rgba(0, 0, 0, .08);
-            background: #ffffff;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
             border-radius: 18px;
             padding: 10px;
             position: absolute;
@@ -1116,9 +1123,9 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
         }
 
         .mobile-dock-link.active {
-            background: rgba(185, 28, 28, .14);
-            color: #dc2626;
-            box-shadow: inset 0 0 0 1px rgba(185, 28, 28, .26);
+            background: var(--accent-bg);
+            color: var(--accent);
+            box-shadow: inset 0 0 0 1px rgba(0, 113, 227, 0.20);
         }
 
         /* ===== RESPONSIVE ===== */
@@ -1220,13 +1227,16 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
                 <div class="sidebar-profile">
                     @if(auth()->user()->company_logo)
                         <div class="w-8 h-8 rounded-full overflow-hidden shadow-sm shrink-0 border border-gray-300 mr-2">
-                            <img src="{{ Storage::url(auth()->user()->company_logo) }}" alt="Logo" class="w-full h-full object-cover">
+                            <img src="{{ Storage::url(auth()->user()->company_logo) }}" alt="Logo"
+                                class="w-full h-full object-cover">
                         </div>
                     @else
-                        <div class="user-avatar">{{ substr(auth()->user()->company_name ?? auth()->user()->name, 0, 1) }}</div>
+                        <div class="user-avatar">{{ substr(auth()->user()->company_name ?? auth()->user()->name, 0, 1) }}
+                        </div>
                     @endif
                     <div class="sidebar-profile-meta">
-                        <div class="sidebar-profile-name">{{ auth()->user()->company_name ?? auth()->user()->name }}</div>
+                        <div class="sidebar-profile-name">{{ auth()->user()->company_name ?? auth()->user()->name }}
+                        </div>
                         <div class="sidebar-profile-role">Administrator</div>
                     </div>
                 </div>
@@ -1267,8 +1277,7 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
                             <i class="fas fa-credit-card"></i> Pembayaran
                             @php $pendingPayments = \App\Models\Payment::where('payment_status', 'pending')->count(); @endphp
                             @if ($pendingPayments > 0)
-                                <span class="nav-badge"
-                                    style="background: var(--warning);">{{ $pendingPayments }}</span>
+                                <span class="nav-badge" style="background: var(--warning);">{{ $pendingPayments }}</span>
                             @endif
                         </a>
                         <a href="{{ route('admin.affiliate.index') }}" data-tip="Affiliate"
@@ -1276,8 +1285,7 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
                             <i class="fas fa-hand-holding-dollar"></i> Affiliate
                             @php $pendingCommissions = \App\Models\AffiliateCommission::where('status', 'pending')->count(); @endphp
                             @if ($pendingCommissions > 0)
-                                <span class="nav-badge"
-                                    style="background: var(--warning);">{{ $pendingCommissions }}</span>
+                                <span class="nav-badge" style="background: var(--warning);">{{ $pendingCommissions }}</span>
                             @endif
                         </a>
                         <a href="{{ route('admin.affiliate.payouts') }}" data-tip="Affiliate Payout"
@@ -1285,8 +1293,7 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
                             <i class="fas fa-wallet"></i> Affiliate Payout
                             @php $pendingPayouts = \App\Models\PayoutRequest::where('status', 'pending')->count(); @endphp
                             @if ($pendingPayouts > 0)
-                                <span class="nav-badge"
-                                    style="background: var(--warning);">{{ $pendingPayouts }}</span>
+                                <span class="nav-badge" style="background: var(--warning);">{{ $pendingPayouts }}</span>
                             @endif
                         </a>
                     </div>
@@ -1345,15 +1352,16 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
                 <button class="topbar-user-btn" @click="userMenuOpen = !userMenuOpen">
                     @if(auth()->user()->avatar)
                         <div class="w-6 h-6 rounded-full overflow-hidden shadow-sm border border-gray-200">
-                            <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                            <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="Avatar"
+                                class="w-full h-full object-cover">
                         </div>
                     @else
                         <div class="user-avatar">{{ substr(auth()->user()->name, 0, 1) }}</div>
                     @endif
                     <span class="topbar-user-name">{{ auth()->user()->name }}</span>
                 </button>
-                <div class="topbar-user-menu" x-show="userMenuOpen" @click.outside="userMenuOpen = false"
-                    x-transition x-cloak>
+                <div class="topbar-user-menu" x-show="userMenuOpen" @click.outside="userMenuOpen = false" x-transition
+                    x-cloak>
                     <a href="{{ route('admin.settings.index') }}"><i class="fas fa-gear"></i> Pengaturan & Profile</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -1383,8 +1391,7 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
             </div>
             <div class="mobile-dock-slot">
                 <a href="{{ route('admin.users.index') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
-                    title="Users">
+                    class="mobile-dock-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" title="Users">
                     <i class="fas fa-users"></i>
                 </a>
             </div>
@@ -1404,8 +1411,7 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
             </div>
             <div class="mobile-dock-slot">
                 <a href="{{ route('admin.packages.index') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.packages.*') ? 'active' : '' }}"
-                    title="Paket">
+                    class="mobile-dock-link {{ request()->routeIs('admin.packages.*') ? 'active' : '' }}" title="Paket">
                     <i class="fas fa-cube"></i>
                 </a>
             </div>
@@ -1454,7 +1460,7 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
         </div>
     </nav>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const track = document.querySelector('[data-mobile-dock-track]');
             if (!track) return;
 
@@ -1473,7 +1479,7 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
                 }
             }
 
-            track.addEventListener('scroll', function() {
+            track.addEventListener('scroll', function () {
                 localStorage.setItem(key, String(track.scrollLeft));
             }, {
                 passive: true
@@ -1493,44 +1499,49 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
                 this.showAd = false;
                 localStorage.setItem('hideSaweriaAdUntil', Date.now() + (30 * 60 * 1000));
             }
-        }"
-        x-show="showAd"
-        x-cloak
-        x-transition:enter="transition ease-out duration-500"
-        x-transition:enter-start="opacity-0 translate-y-10"
-        x-transition:enter-end="opacity-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-300"
-        x-transition:leave-start="opacity-100 translate-y-0"
+        }" x-show="showAd" x-cloak x-transition:enter="transition ease-out duration-500"
+        x-transition:enter-start="opacity-0 translate-y-10" x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-10"
-        class="fixed bottom-6 left-6 z-[9999] w-[calc(var(--sidebar-w)-48px)] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300" 
+        class="fixed bottom-6 left-6 z-[9999] w-[calc(var(--sidebar-w)-48px)] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300"
         style="border: 1px solid rgba(251,191,36,0.3); min-width: 200px; max-width: 260px;"
         :style="sidebarExpanded ? 'left: 24px; max-width: 260px;' : 'left: 24px; max-width: 60px; min-width: 60px;'">
-        
-        <button x-show="sidebarExpanded" @click="closeAd()" class="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full bg-black/20 text-gray-400 hover:text-white hover:bg-black/40 transition-colors z-10" title="Tutup iklan (muncul lagi 30 mnt)">
+
+        <button x-show="sidebarExpanded" @click="closeAd()"
+            class="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full bg-black/20 text-gray-400 hover:text-white hover:bg-black/40 transition-colors z-10"
+            title="Tutup iklan (muncul lagi 30 mnt)">
             <i class="fas fa-times text-[10px]"></i>
         </button>
-        
+
         {{-- Expanded View --}}
         <div x-show="sidebarExpanded" class="p-4 pt-5 text-center bg-gradient-to-b from-[#1e293b] to-[#0f172a]">
-            <div class="w-12 h-12 mx-auto bg-amber-400 text-slate-900 rounded-full flex items-center justify-center text-xl shadow-[0_0_15px_rgba(251,191,36,0.25)] mb-3 relative animate-bounce" style="animation-duration: 2s;">
+            <div class="w-12 h-12 mx-auto bg-amber-400 text-slate-900 rounded-full flex items-center justify-center text-xl shadow-[0_0_15px_rgba(251,191,36,0.25)] mb-3 relative animate-bounce"
+                style="animation-duration: 2s;">
                 <i class="fas fa-coffee"></i>
                 <span class="absolute -top-1 -right-1 flex h-3 w-3">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
                 </span>
             </div>
             <div class="text-amber-400 text-xs font-bold mb-1 uppercase tracking-wide">Dukung Kami</div>
-            <div class="text-gray-400 text-[10px] leading-relaxed mb-3 px-1">Bantu traktir kopi programmer agar update makin ngebut! ☕</div>
-            <a href="https://saweria.co/gunaepi" target="_blank" class="block w-full py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-900 text-xs font-bold rounded-lg transition-all shadow-md transform hover:-translate-y-0.5">
+            <div class="text-gray-400 text-[10px] leading-relaxed mb-3 px-1">Bantu traktir kopi programmer agar update
+                makin ngebut! ☕</div>
+            <a href="https://saweria.co/gunaepi" target="_blank"
+                class="block w-full py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-900 text-xs font-bold rounded-lg transition-all shadow-md transform hover:-translate-y-0.5">
                 <i class="fas fa-heart text-[#dc2626] mr-1"></i> Donasi Sekarang
             </a>
         </div>
 
         {{-- Mini View (When Sidebar is hidden/collapsed) --}}
-        <div x-show="!sidebarExpanded" class="p-2 py-3 flex justify-center bg-gradient-to-b from-[#1e293b] to-[#0f172a]">
-            <a href="https://saweria.co/gunaepi" target="_blank" title="Traktir Kopi Programmer" class="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-500 text-slate-900 flex items-center justify-center rounded-xl shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:scale-105 transition-transform relative">
+        <div x-show="!sidebarExpanded"
+            class="p-2 py-3 flex justify-center bg-gradient-to-b from-[#1e293b] to-[#0f172a]">
+            <a href="https://saweria.co/gunaepi" target="_blank" title="Traktir Kopi Programmer"
+                class="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-500 text-slate-900 flex items-center justify-center rounded-xl shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:scale-105 transition-transform relative">
                 <i class="fas fa-coffee"></i>
-                <button @click.prevent="closeAd()" class="absolute -top-2 -right-2 w-4 h-4 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors z-[10000]" title="Tutup iklan">
+                <button @click.prevent="closeAd()"
+                    class="absolute -top-2 -right-2 w-4 h-4 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors z-[10000]"
+                    title="Tutup iklan">
                     <i class="fas fa-times text-[8px]"></i>
                 </button>
             </a>
