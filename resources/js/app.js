@@ -18,57 +18,39 @@ function createGlobalLoader() {
     style.textContent = `
         #${LOADER_ID} {
             position: fixed;
-            inset: 0;
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            justify-content: center;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            z-index: 99999;
             pointer-events: none;
-            background: rgba(14, 14, 16, 0.22);
-            backdrop-filter: blur(2px);
-            transition: opacity .18s ease;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         #${LOADER_ID}.show {
-            display: flex;
+            opacity: 1;
         }
-        #${LOADER_ID} .loader-shell {
-            min-width: 160px;
-            border-radius: 14px;
-            border: 1px solid rgba(255,255,255,.22);
-            background: rgba(20, 20, 24, 0.88);
-            color: #fff;
-            padding: 14px 16px;
-            text-align: center;
-            box-shadow: 0 12px 34px rgba(0,0,0,.22);
-            pointer-events: none;
+        #${LOADER_ID} .loader-bar {
+            height: 100%;
+            background: var(--accent, #34c759);
+            width: 0%;
+            box-shadow: 0 0 10px var(--accent, #34c759), 0 0 5px var(--accent, #34c759);
+            transition: width 0.4s ease;
         }
-        #${LOADER_ID} .loader-dot {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            margin: 0 auto 8px;
-            border: 3px solid rgba(255,255,255,.2);
-            border-top-color: rgba(255,255,255,.92);
-            animation: global-spin .8s linear infinite;
+        #${LOADER_ID}.loading .loader-bar {
+            width: 80%;
+            transition: width 10s cubic-bezier(0, 1, 1, 1);
         }
-        #${LOADER_ID} .loader-text {
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: .02em;
-            opacity: .92;
-        }
-        @keyframes global-spin {
-            to { transform: rotate(360deg); }
+        #${LOADER_ID}.done .loader-bar {
+            width: 100%;
+            transition: width 0.3s ease;
         }
     `;
 
     const loader = document.createElement('div');
     loader.id = LOADER_ID;
     loader.innerHTML = `
-        <div class="loader-shell" role="status" aria-live="polite">
-            <div class="loader-dot"></div>
-            <div class="loader-text">Memuat halaman...</div>
-        </div>
+        <div class="loader-bar"></div>
     `;
 
     document.head.appendChild(style);
@@ -77,16 +59,31 @@ function createGlobalLoader() {
 
 function showGlobalLoader() {
     const loader = document.getElementById(LOADER_ID);
-    if (loader) loader.classList.add('show');
+    if (loader) {
+        loader.classList.remove('done');
+        loader.classList.add('show');
+        
+        // Force reflow
+        void loader.offsetWidth;
+        
+        loader.classList.add('loading');
+    }
 }
 
 function hideGlobalLoader() {
     const loader = document.getElementById(LOADER_ID);
-    if (loader) loader.classList.remove('show');
+    if (loader) {
+        loader.classList.add('done');
+        setTimeout(() => {
+            loader.classList.remove('show', 'loading', 'done');
+        }, 300);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     createGlobalLoader();
+    
+    // Support for normal navigation
     window.addEventListener('beforeunload', () => {
         showGlobalLoader();
     });
@@ -94,4 +91,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('pageshow', () => {
         hideGlobalLoader();
     });
+    
+    // Support for AJAX if applicable (e.g., fetch, XMLHTTPRequest)
+    const originalFetch = window.fetch;
+    window.fetch = async function(...args) {
+        showGlobalLoader();
+        try {
+            const response = await originalFetch.apply(this, args);
+            return response;
+        } finally {
+            hideGlobalLoader();
+        }
+    };
 });

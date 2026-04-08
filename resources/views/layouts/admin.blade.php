@@ -18,1443 +18,433 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
             document.documentElement.classList.add('dark');
         }
     </script>
+    @stack('head')
     <style>
-        [x-cloak] {
-            display: none !important;
-        }
-
+        [x-cloak] { display: none !important; }
+        
+        /* Layout Variables for UI Components */
         :root {
-            --sidebar-w: 86px;
-            --topbar-h: 56px;
-            --radius: 12px;
-            --radius-sm: 8px;
-            /* Light */
-            --bg: #f5f5f7;
             --bg-secondary: #ffffff;
-            --bg-tertiary: #f0f0f2;
-            --border: #e5e5ea;
-            --text: #1d1d1f;
-            --text-secondary: #86868b;
-            --text-tertiary: #aeaeb2;
+            --border: #f1f5f9;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
             --accent: #0071e3;
             --accent-hover: #0077ED;
             --accent-bg: rgba(0, 113, 227, 0.08);
-            --sidebar-bg: rgba(245, 245, 247, 0.85);
-            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-            --hover-bg: rgba(0, 0, 0, 0.04);
             --danger: #ff3b30;
             --success: #34c759;
             --warning: #ff9500;
+            --info: #0071e3;
+            --radius-sm: 8px;
+            --hover-bg: rgba(0, 0, 0, 0.04);
         }
 
         .dark {
-            --bg: #1c1c1e;
-            --bg-secondary: #2c2c2e;
-            --bg-tertiary: #3a3a3c;
-            --border: #38383a;
-            --text: #f5f5f7;
-            --text-secondary: #98989d;
-            --text-tertiary: #636366;
-            --accent: #0a84ff;
-            --accent-hover: #409cff;
-            --accent-bg: rgba(10, 132, 255, 0.12);
-            --sidebar-bg: rgba(28, 28, 30, 0.92);
-            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
+            --bg-secondary: #1E293B;
+            --border: #334155;
+            --text: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --text-tertiary: #64748B;
+            --accent: #60A5FA;
+            --accent-hover: #3B82F6;
+            --accent-bg: rgba(96, 165, 250, 0.15);
             --hover-bg: rgba(255, 255, 255, 0.06);
-            --danger: #ff453a;
-            --success: #30d158;
-            --warning: #ff9f0a;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            -webkit-font-smoothing: antialiased;
-            font-size: 14px;
-            overflow-x: hidden;
-        }
-
-        /* ===== APP THEME (White + Blue Accent) ===== */
-        .admin-shell {
-            --sidebar-mini-w: 92px;
-            --sidebar-expanded-w: 248px;
-            --sidebar-w: var(--sidebar-mini-w);
-            --shell-edge-gap: 14px;
-            --shell-sidebar-left: 16px;
-            --shell-content-gap: 34px;
-        }
-
-        .admin-shell .sidebar {
-            top: var(--shell-edge-gap);
-            left: var(--shell-sidebar-left);
-            bottom: var(--shell-edge-gap);
-            transform: none;
-            width: var(--sidebar-w);
-            height: calc(100vh - (var(--shell-edge-gap) * 2));
-            padding: 0;
-            border: 0;
-            background: transparent;
-            display: block;
-            overflow: visible;
-            z-index: 80;
-            transition: width .28s cubic-bezier(.4, 0, .2, 1), transform .28s ease;
-        }
-
-        .admin-shell.sidebar-expanded {
-            --sidebar-w: var(--sidebar-expanded-w);
-        }
-
-        .admin-shell .sidebar-header {
-            display: none;
-        }
-
-        .admin-shell .sidebar-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            width: 100%;
-        }
-
-        .admin-shell .sidebar-panel {
-            width: 100%;
-            padding: 12px 8px;
-            border: 1px solid var(--border);
-            border-radius: 30px;
-            background: var(--sidebar-bg);
-            box-shadow: var(--card-shadow);
-            overflow: visible;
-        }
-
-        .admin-shell .sidebar-nav {
-            padding-top: 6px;
-            padding-bottom: 10px;
-        }
-
-        .admin-shell.sidebar-expanded .sidebar-panel {
-            border-radius: 22px;
-            padding: 12px;
-        }
-
-        .admin-shell .sidebar-profile {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 4px 4px 14px;
-            margin-bottom: 8px;
-        }
-
-        .admin-shell .sidebar-profile-meta {
-            display: none;
-            min-width: 0;
-        }
-
-        .admin-shell .sidebar-profile-name {
-            color: var(--text);
-            font-size: 12px;
-            font-weight: 700;
-            line-height: 1.1;
-        }
-
-        .admin-shell .sidebar-profile-role {
-            color: var(--text-tertiary);
-            font-size: 10px;
-            margin-top: 2px;
-        }
-
-        .admin-shell.sidebar-expanded .sidebar-profile {
-            justify-content: flex-start;
-            padding: 6px 6px 14px;
-        }
-
-        .admin-shell.sidebar-expanded .sidebar-profile-meta {
-            display: block;
-        }
-
-        .admin-shell .nav-section {
-            margin-bottom: 12px;
-        }
-
-        .admin-shell .sidebar-footer {
-            display: block;
-            padding: 10px 8px;
-        }
-
-        .sidebar-toggle-wrap {
-            width: 0;
-            display: flex;
-            justify-content: flex-start;
-            margin: 0;
-            position: absolute;
-            top: 18px;
-            left: calc(100% + 8px);
-            z-index: 12;
-        }
-
-        .sidebar-toggle-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            background: var(--bg-secondary);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: all .22s ease;
-            cursor: pointer;
-            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
-        }
-
-        .sidebar-toggle-btn:hover {
-            background: #fff;
-            color: var(--accent);
-            transform: translateY(-1px);
-        }
-
-        .admin-shell.sidebar-expanded .sidebar-toggle-wrap {
-            justify-content: flex-start;
-        }
-
-        .admin-shell .sidebar-brand,
-        .admin-shell .user-name {
-            color: var(--text);
-        }
-
-        .admin-shell .nav-label {
-            color: var(--text-tertiary);
-        }
-
-        .admin-shell .sidebar .nav-item {
-            color: var(--text-secondary);
-        }
-
-        .admin-shell .sidebar .nav-item:hover {
-            background: var(--hover-bg);
-            color: var(--text);
-        }
-
-        .admin-shell .sidebar .nav-item.active {
-            background: var(--accent-bg);
-            color: var(--accent);
-        }
-
-        .admin-shell .sidebar .nav-item.active::before {
-            content: "";
-            position: absolute;
-            right: -8px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 24px;
-            border-radius: 999px;
-            background: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-bg);
-        }
-
-        .admin-shell.sidebar-expanded .sidebar .nav-item.active::before {
-            right: -12px;
-        }
-
-        .admin-shell .nav-item::after {
-            z-index: 9999;
-            box-shadow: 0 10px 24px rgba(2, 6, 23, 0.4);
-        }
-
-        .admin-shell.sidebar-expanded .nav-item::after {
-            display: none;
-        }
-
-        .admin-shell .topbar {
-            background: var(--sidebar-bg);
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(14px);
-            left: calc(var(--shell-sidebar-left) + var(--sidebar-w) + var(--shell-content-gap));
-            top: var(--shell-edge-gap);
-            right: var(--shell-edge-gap);
-            border-radius: 24px;
-            box-shadow: 0 16px 36px rgba(15, 15, 15, 0.06);
-        }
-
-        .admin-shell .page-content {
-            max-width: none;
-            width: 100%;
-            padding: 20px 24px 24px 0;
-        }
-
-        .admin-shell .card {
-            border-radius: 16px;
-            border-color: var(--border);
-            box-shadow: var(--card-shadow);
-        }
-
-        .admin-shell .btn-primary {
-            background: var(--accent);
-            color: #ffffff;
-            border: none;
-        }
-
-        .admin-shell .btn-primary:hover {
-            background: var(--accent-hover);
-        }
-
-        /* ===== SIDEBAR ===== */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: var(--sidebar-w);
-            z-index: 50;
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(20px) saturate(180%);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sidebar-header {
-            padding: 14px 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0;
-        }
-
-        .sidebar-logo {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            background: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-        }
-
-        .sidebar-brand {
-            display: none;
-        }
-
-        .sidebar-nav {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 10px 8px;
-        }
-
-        .nav-section {
-            margin-bottom: 20px;
-        }
-
-        .nav-label {
-            display: none;
-        }
-
-        .nav-item {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
-            padding: 0;
-            border-radius: 14px;
-            color: var(--text-secondary);
-            font-size: 0;
-            text-decoration: none;
-            transition: all 0.15s ease;
-            margin: 0 auto 8px;
-            cursor: pointer;
-        }
-
-        .nav-item:hover {
-            background: var(--hover-bg);
-            color: var(--text);
-        }
-
-        .nav-item.active {
-            background: var(--accent-bg);
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        .nav-item i {
-            width: 18px;
-            text-align: center;
-            font-size: 15px;
-        }
-
-        .admin-shell.sidebar-expanded .nav-item {
-            width: 100%;
-            height: 40px;
-            justify-content: flex-start;
-            padding: 0 12px;
-            font-size: 12px;
-            gap: 10px;
-            margin: 0 0 8px;
-            border-radius: 12px;
-        }
-
-        .admin-shell.sidebar-expanded .nav-label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            margin: 8px 6px 10px;
-        }
-
-        .nav-badge {
-            position: absolute;
-            top: -3px;
-            right: -3px;
-            margin-left: 0;
-            font-size: 10px;
-            font-weight: 700;
-            background: var(--danger);
-            color: white;
-            padding: 1px 6px;
-            border-radius: 999px;
-            min-width: 16px;
-            text-align: center;
-        }
-
-        .nav-item::after {
-            content: attr(data-tip);
-            position: absolute;
-            left: calc(100% + 10px);
-            top: 50%;
-            transform: translateY(-50%) translateX(-4px);
-            background: #0f172a;
-            color: #f8fafc;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: .01em;
-            padding: 6px 10px;
-            border-radius: 8px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: all .16s ease;
-            z-index: 90;
-        }
-
-        .nav-item:hover::after,
-        .nav-item:focus-visible::after {
-            opacity: 1;
-            transform: translateY(-50%) translateX(0);
-        }
-
-        .sidebar-footer {
-            position: relative;
-            display: flex;
-            justify-content: center;
-        }
-
-        .user-trigger {
-            width: 100%;
-            background: transparent;
-            border: 0;
-            padding: 0;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .user-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .user-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 999px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, .95), rgba(231, 229, 228, .92));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 700;
-            color: #111;
-            box-shadow: 0 10px 24px rgba(0, 0, 0, .2);
-        }
-
-        .user-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-            display: none;
-        }
-
-        .user-role {
-            font-size: 11px;
-            color: var(--text-secondary);
-            display: none;
-        }
-
-        .user-menu {
-            margin-top: 10px;
-            border: 1px solid var(--border);
-            background: var(--bg-secondary);
-            border-radius: 18px;
-            padding: 10px;
-            position: absolute;
-            left: 0;
-            bottom: calc(100% + 10px);
-            min-width: 170px;
-            z-index: 100;
-            box-shadow: 0 20px 40px rgba(15, 15, 15, .12);
-        }
-
-        .user-menu a,
-        .user-menu button {
-            width: 100%;
-            border: 0;
-            background: transparent;
-            color: var(--text-secondary);
-            text-align: left;
-            font-size: 12px;
-            padding: 10px 10px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .user-menu a:hover,
-        .user-menu button:hover {
-            background: var(--hover-bg);
-            color: var(--text);
-        }
-
-        .user-menu .danger {
-            color: var(--danger);
-        }
-
-        /* ===== TOPBAR ===== */
-        .topbar {
-            position: fixed;
-            top: 0;
-            right: 0;
-            left: var(--sidebar-w);
-            height: var(--topbar-h);
-            z-index: 40;
-            background: var(--sidebar-bg);
-            backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-        }
-
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .topbar-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .topbar-subtitle {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .topbar-user-wrap {
-            position: relative;
-        }
-
-        .topbar-user-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-secondary);
-            color: var(--text);
-            border-radius: 999px;
-            padding: 4px 10px 4px 4px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .topbar-user-btn:hover {
-            background: var(--hover-bg);
-            border-color: var(--text-tertiary);
-        }
-
-        .topbar-user-btn .user-avatar {
-            width: 30px;
-            height: 30px;
-            font-size: 12px;
-        }
-
-        .topbar-user-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .topbar-user-menu {
-            margin-top: 10px;
-            border: 1px solid var(--border);
-            background: var(--bg-secondary);
-            border-radius: 10px;
-            padding: 6px;
-            position: absolute;
-            right: 0;
-            top: calc(100% + 6px);
-            min-width: 190px;
-            z-index: 120;
-            box-shadow: 0 14px 26px rgba(2, 6, 23, 0.18);
-        }
-
-        .topbar-user-menu a,
-        .topbar-user-menu button {
-            width: 100%;
-            border: 0;
-            background: transparent;
-            color: var(--text-secondary);
-            text-align: left;
-            font-size: 12px;
-            padding: 7px 8px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .topbar-user-menu a:hover,
-        .topbar-user-menu button:hover {
-            background: var(--hover-bg);
-            color: var(--text);
-        }
-
-        .topbar-user-menu .danger {
-            color: var(--danger);
-        }
-
-        .topbar-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            font-size: 14px;
-        }
-
-        .topbar-btn:hover {
-            background: var(--hover-bg);
-            color: var(--text);
-            border-color: var(--text-tertiary);
-        }
-
-        .mobile-toggle {
-            display: none;
-        }
-
-        /* Dark/Light Toggle */
-        .theme-toggle {
-            position: relative;
-            width: 44px;
-            height: 24px;
-            border-radius: 12px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .theme-toggle .toggle-dot {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--bg-secondary);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-        }
-
-        .dark .theme-toggle {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
-
-        .dark .theme-toggle .toggle-dot {
-            transform: translateX(20px);
-        }
-
-        /* ===== MAIN ===== */
-        .main-content {
-            margin-left: calc(var(--shell-sidebar-left) + var(--sidebar-w) + var(--shell-content-gap));
-            padding-top: calc(var(--topbar-h) + (var(--shell-edge-gap) * 2));
-            min-height: 100vh;
-        }
-
-        .page-content {
-            padding: 24px 24px 24px 0;
-            max-width: 1400px;
-        }
-
-        .page-shell {
-            display: grid;
-            gap: 18px;
-        }
-
-        /* ===== COMPONENTS ===== */
+        /* Core Component Styles */
         .card {
-            background: var(--bg-secondary);
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--card-shadow);
-            transition: all 0.2s ease;
+            padding: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-
-        .card:hover {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        .dark .card {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15);
         }
-
-        .stat-card {
-            padding: 20px;
-        }
-
-        .stat-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text);
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        /* Table */
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead th {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-            padding: 10px 16px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-
-        tbody td {
-            padding: 12px 16px;
-            font-size: 13px;
-            border-bottom: 1px solid var(--border);
-            color: var(--text);
-        }
-
-        tbody tr {
-            transition: background 0.1s ease;
-        }
-
-        tbody tr:hover {
-            background: var(--hover-bg);
-        }
-
-        tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Badges */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 2px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .badge-success {
-            background: rgba(52, 199, 89, 0.12);
-            color: var(--success);
-        }
-
-        .badge-warning {
-            background: rgba(255, 149, 0, 0.12);
-            color: var(--warning);
-        }
-
-        .badge-danger {
-            background: rgba(255, 59, 48, 0.12);
-            color: var(--danger);
-        }
-
-        .badge-info {
-            background: var(--accent-bg);
-            color: var(--accent);
-        }
-
-        .badge-default {
-            background: var(--hover-bg);
-            color: var(--text-secondary);
-        }
-
-        .badge-active {
-            @extend .badge-success;
-            background: rgba(52, 199, 89, 0.12);
-            color: var(--success);
-        }
-
-        .badge-pending {
-            background: rgba(255, 149, 0, 0.12);
-            color: var(--warning);
-        }
-
-        .badge-draft {
-            background: var(--hover-bg);
-            color: var(--text-secondary);
-        }
-
-        .badge-rejected {
-            background: rgba(255, 59, 48, 0.12);
-            color: var(--danger);
-        }
-
-        .badge-admin {
-            background: rgba(88, 86, 214, 0.12);
-            color: #5856d6;
-        }
-
-        .badge-client {
-            background: var(--accent-bg);
-            color: var(--accent);
-        }
-
-        /* Forms */
-        .form-label {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 6px;
-            display: block;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            background: var(--bg-secondary);
-            color: var(--text);
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.2s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-bg);
-        }
-
-        .form-input::placeholder {
-            color: var(--text-tertiary);
-        }
-
-        select.form-input {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2386868b' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.763-3.762L10.825 4z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 32px;
-        }
-
-        /* Buttons */
+        
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 16px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
+            display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px;
+            border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.15s ease; border: none; text-decoration: none;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--hover-bg); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: rgba(0,0,0,0.08); }
+        .dark .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+        .btn-danger { background: rgba(255, 59, 48, 0.1); color: var(--danger); }
+        .btn-danger:hover { background: rgba(255, 59, 48, 0.18); }
+        
+        .form-label { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; display: block; }
+        .form-input {
+            width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); background: var(--bg-secondary);
+            color: var(--text); font-size: 14px; transition: all 0.2s ease;
+        }
+        .form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+
+        .badge {
+            display: inline-flex; align-items: center; padding: 2px 10px;
+            border-radius: 6px; font-size: 11px; font-weight: 600;
+        }
+        .badge-success, .badge-active { background: rgba(52, 199, 89, 0.12); color: var(--success); }
+        .badge-warning, .badge-pending { background: rgba(255, 149, 0, 0.12); color: var(--warning); }
+        .badge-danger { background: rgba(255, 59, 48, 0.12); color: var(--danger); }
+        .badge-info { background: var(--accent-bg); color: var(--accent); }
+        .badge-default, .badge-draft { background: var(--hover-bg); color: var(--text-secondary); }
+
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--text-secondary); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border);
+        }
+        tbody td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text); }
+        tbody tr { transition: background 0.1s ease; }
+        tbody tr:hover { background: var(--hover-bg); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .nav-item-active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60A5FA !important;
             font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            border: none;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-hover);
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--hover-bg);
-            border-color: var(--text-tertiary);
-        }
-
-        .btn-danger {
-            background: rgba(255, 59, 48, 0.1);
-            color: var(--danger);
-        }
-
-        .btn-danger:hover {
-            background: rgba(255, 59, 48, 0.18);
-        }
-
-        .btn-sm {
-            padding: 6px 10px;
-            font-size: 12px;
-        }
-
-        .btn-icon {
-            width: 32px;
-            height: 32px;
-            padding: 0;
-            justify-content: center;
-        }
-
-        /* Search */
-        .search-bar {
             position: relative;
         }
-
-        .search-bar input {
-            padding-left: 36px;
-        }
-
-        .search-bar i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-tertiary);
-            font-size: 13px;
-        }
-
-        /* Pagination */
-        .pagination {
-            display: flex;
-            gap: 4px;
-        }
-
-        .pagination a,
-        .pagination span {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            text-decoration: none;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            z-index: 200;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-            padding: 14px 20px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideIn 0.3s ease, fadeOut 0.3s ease 4s forwards;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-        }
-
-        /* Mobile Overlay */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 45;
-        }
-
-        /* Mobile Bottom Dock */
-        .mobile-dock {
-            position: fixed;
-            left: 50%;
-            bottom: 14px;
-            transform: translateX(-50%);
-            width: min(360px, calc(100% - 24px));
-            height: 62px;
-            border-radius: 22px;
-            background: linear-gradient(180deg, #0f172a, #111827);
-            border: 1px solid rgba(148, 163, 184, .22);
-            box-shadow: 0 16px 35px rgba(2, 6, 23, .45);
-            z-index: 80;
-            display: none;
-            align-items: center;
-            padding: 0 10px;
-        }
-
-        .mobile-dock-track {
-            width: 100%;
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            padding: 0 2px;
-        }
-
-        .mobile-dock-track::-webkit-scrollbar {
-            display: none;
-        }
-
-        .mobile-dock-slot {
-            flex: 0 0 calc((100% - 20px) / 3);
-            display: flex;
-            justify-content: center;
-            scroll-snap-align: start;
-        }
-
-        .mobile-dock-link {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            color: rgba(255, 255, 255, .82);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: all .2s ease;
-        }
-
-        .mobile-dock-link:hover {
-            color: #fff;
-            transform: translateY(-1px);
-        }
-
-        .mobile-dock-link.active {
-            background: var(--accent-bg);
-            color: var(--accent);
-            box-shadow: inset 0 0 0 1px rgba(0, 113, 227, 0.20);
-        }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 1024px) {
-            .sidebar {
-                display: none;
-            }
-
-            .sidebar-stack {
-                gap: 0;
-            }
-
-            .sidebar-panel {
-                border-radius: 0 !important;
-            }
-
-            .sidebar-profile,
-            .sidebar-footer {
-                display: none !important;
-            }
-
-            .sidebar-toggle-wrap {
-                display: none;
-            }
-
-            .sidebar-overlay {
-                display: none !important;
-            }
-
-            .topbar {
-                position: relative;
-                left: 0;
-                right: 0;
-                top: 0;
-                border-radius: 0;
-                box-shadow: none;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding-top: 0;
-            }
-
-            .mobile-toggle {
-                display: none !important;
-            }
-
-            .mobile-dock {
-                display: flex;
-            }
-
-            .main-content {
-                padding-bottom: 88px;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .page-content {
-                padding: 16px;
-            }
-
-            .topbar {
-                padding: 0 16px;
-            }
+        .nav-item-active::before {
+            content: '';
+            position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            background: #3B82F6; border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
         }
     </style>
 </head>
 
-<body class="admin-shell" :class="{ 'sidebar-expanded': sidebarExpanded }">
-    <script>
-        if (localStorage.getItem('adminSidebarExpanded') === 'true') {
-            document.body.classList.add('sidebar-expanded');
-        }
-    </script>
-    {{-- Toast --}}
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased overflow-hidden transition-colors duration-300 lg:p-4">
+    
+    <!-- Toasts -->
     @if (session('success'))
-        <div class="toast"><i class="fas fa-check-circle" style="color: var(--success);"></i> {{ session('success') }}
+        <div class="fixed top-6 right-6 z-[9999] bg-white dark:bg-slate-800 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] flex items-center gap-3 animate-slide-up">
+            <i class="fas fa-check-circle text-lg"></i> <span class="text-sm font-medium">{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="toast"><i class="fas fa-exclamation-circle" style="color: var(--danger);"></i>
-            {{ session('error') }}</div>
+        <div class="fixed top-6 right-6 z-[9999] bg-white dark:bg-slate-800 border border-red-500/30 text-red-600 dark:text-red-400 px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] flex items-center gap-3 animate-slide-up">
+            <i class="fas fa-exclamation-circle text-lg"></i> <span class="text-sm font-medium">{{ session('error') }}</span>
+        </div>
     @endif
 
-    {{-- Mobile Overlay --}}
-    <div class="sidebar-overlay" :class="{ 'open': sidebarOpen }" @click="sidebarOpen = false"></div>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
+         :class="sidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible'" @click="sidebarOpen = false"></div>
 
-    {{-- Sidebar --}}
-    <aside class="sidebar" :class="{ 'open': sidebarOpen, 'expanded': sidebarExpanded }">
-        <div class="sidebar-stack">
-            <div class="sidebar-toggle-wrap">
-                <button type="button" class="sidebar-toggle-btn" @click="sidebarExpanded = !sidebarExpanded"
-                    :title="sidebarExpanded ? 'Kecilkan Sidebar' : 'Perbesar Sidebar'">
-                    <i class="fas" :class="sidebarExpanded ? 'fa-angles-left' : 'fa-angles-right'"></i>
-                </button>
+    <!-- Sidebar -->
+    <aside class="fixed top-0 left-0 h-full lg:top-4 lg:bottom-4 lg:h-auto z-50 bg-[#1B244A] dark:bg-slate-900 shadow-2xl lg:rounded-[24px] lg:rounded-r-[32px] transition-all duration-300 overflow-hidden flex flex-col border-r lg:border border-white/5 dark:border-white/10 group"
+        :class="[
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+            sidebarExpanded ? 'w-[260px]' : 'w-[260px] lg:w-[88px]'
+        ]">
+        
+        <!-- Sidebar Profile -->
+        <div class="p-6 pb-4 flex items-center gap-4 relative shrink-0">
+            @if(auth()->user()->company_logo)
+                <div class="w-11 h-11 rounded-[14px] overflow-hidden shrink-0 border border-white/10 shadow-lg transition-all duration-300"
+                    :class="!sidebarExpanded ? 'lg:mx-auto lg:w-10 lg:h-10' : ''">
+                    <img src="{{ Storage::url(auth()->user()->company_logo) }}" alt="Logo" class="w-full h-full object-cover">
+                </div>
+            @else
+                <div class="w-11 h-11 rounded-[14px] bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xl shrink-0 border border-blue-500/30 shadow-lg transition-all duration-300"
+                    :class="!sidebarExpanded ? 'lg:mx-auto lg:w-10 lg:h-10' : ''">
+                    {{ substr(auth()->user()->company_name ?? auth()->user()->name, 0, 1) }}
+                </div>
+            @endif
+            
+            <div class="flex-1 overflow-hidden transition-all duration-300 whitespace-nowrap"
+                 :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0' : 'opacity-100 w-auto'">
+                <div class="font-bold text-white text-sm truncate">{{ auth()->user()->company_name ?? auth()->user()->name }}</div>
+                <div class="text-[11px] text-blue-300/70 font-medium tracking-wide">Administrator</div>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 overflow-y-auto scrollbar-hide px-3 pb-6 flex flex-col gap-6 w-full">
+            
+            <!-- Menu Utama -->
+            <div class="flex flex-col gap-1 w-full relative">
+                <div class="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 px-3 transition-opacity duration-300"
+                     :class="!sidebarExpanded ? 'lg:opacity-0' : 'opacity-100'">Menu</div>
+                
+                <a href="{{ route('admin.dashboard') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'nav-item-active' : '' }}" title="Dashboard">
+                    <i class="fas fa-house text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Dashboard</span>
+                </a>
             </div>
 
-            <div class="sidebar-panel">
-                <div class="sidebar-profile">
-                    @if(auth()->user()->company_logo)
-                        <div class="w-8 h-8 rounded-full overflow-hidden shadow-sm shrink-0 border border-gray-300 mr-2">
-                            <img src="{{ Storage::url(auth()->user()->company_logo) }}" alt="Logo"
-                                class="w-full h-full object-cover">
-                        </div>
-                    @else
-                        <div class="user-avatar">{{ substr(auth()->user()->company_name ?? auth()->user()->name, 0, 1) }}
-                        </div>
+            <!-- Manajemen -->
+            <div class="flex flex-col gap-1 w-full relative">
+                <div class="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 px-3 transition-opacity duration-300"
+                     :class="!sidebarExpanded ? 'lg:opacity-0' : 'opacity-100'">Manajemen</div>
+                     
+                <a href="{{ route('admin.users.index') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'nav-item-active' : '' }}" title="Users">
+                    <i class="fas fa-users text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Users</span>
+                </a>
+                
+                <a href="{{ route('admin.invitations.index') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.invitations.*') ? 'nav-item-active' : '' }}" title="Undangan">
+                    <i class="fas fa-envelope text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap flex-1 transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Undangan</span>
+                    @php $pendingCount = \App\Models\Invitation::where('status', 'pending')->count(); @endphp
+                    @if ($pendingCount > 0)
+                        <span class="bg-blue-500/20 text-blue-400 font-bold text-[10px] px-2 py-0.5 rounded-full ml-auto" :class="!sidebarExpanded ? 'hidden' : ''">{{ $pendingCount }}</span>
                     @endif
-                    <div class="sidebar-profile-meta">
-                        <div class="sidebar-profile-name">{{ auth()->user()->company_name ?? auth()->user()->name }}
-                        </div>
-                        <div class="sidebar-profile-role">Administrator</div>
-                    </div>
-                </div>
+                </a>
+                
+                <a href="{{ route('admin.templates.index') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.templates.*') ? 'nav-item-active' : '' }}" title="Template">
+                    <i class="fas fa-palette text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Template</span>
+                </a>
+                
+                <a href="{{ route('admin.packages.index') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.packages.*') ? 'nav-item-active' : '' }}" title="Paket">
+                    <i class="fas fa-cube text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Paket</span>
+                </a>
+                
+                <a href="{{ route('admin.payments.index') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.payments.*') ? 'nav-item-active' : '' }}" title="Pembayaran">
+                    <i class="fas fa-credit-card text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap flex-1 transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Pembayaran</span>
+                    @php $pendingPayments = \App\Models\Payment::where('payment_status', 'pending')->count(); @endphp
+                    @if ($pendingPayments > 0)
+                        <span class="bg-amber-500/20 text-amber-500 font-bold text-[10px] px-2 py-0.5 rounded-full ml-auto" :class="!sidebarExpanded ? 'hidden' : ''">{{ $pendingPayments }}</span>
+                    @endif
+                </a>
 
-                <nav class="sidebar-nav">
-                    <div class="nav-section">
-                        <div class="nav-label">Menu</div>
-                        <a href="{{ route('admin.dashboard') }}" data-tip="Dashboard"
-                            class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                            <i class="fas fa-house"></i> Dashboard
-                        </a>
-                    </div>
+                <a href="{{ route('admin.affiliate.index') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.affiliate.index') ? 'nav-item-active' : '' }}" title="Affiliate">
+                    <i class="fas fa-hand-holding-dollar text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap flex-1 transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Affiliate</span>
+                    @php $pendingCommissions = \App\Models\AffiliateCommission::where('status', 'pending')->count(); @endphp
+                    @if ($pendingCommissions > 0)
+                        <span class="bg-amber-500/20 text-amber-500 font-bold text-[10px] px-2 py-0.5 rounded-full ml-auto" :class="!sidebarExpanded ? 'hidden' : ''">{{ $pendingCommissions }}</span>
+                    @endif
+                </a>
 
-                    <div class="nav-section">
-                        <div class="nav-label">Manajemen</div>
-                        <a href="{{ route('admin.users.index') }}" data-tip="Users"
-                            class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                            <i class="fas fa-users"></i> Users
-                        </a>
-                        <a href="{{ route('admin.invitations.index') }}" data-tip="Undangan"
-                            class="nav-item {{ request()->routeIs('admin.invitations.*') ? 'active' : '' }}">
-                            <i class="fas fa-envelope"></i> Undangan
-                            @php $pendingCount = \App\Models\Invitation::where('status', 'pending')->count(); @endphp
-                            @if ($pendingCount > 0)
-                                <span class="nav-badge">{{ $pendingCount }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('admin.templates.index') }}" data-tip="Template"
-                            class="nav-item {{ request()->routeIs('admin.templates.*') ? 'active' : '' }}">
-                            <i class="fas fa-palette"></i> Template
-                        </a>
-                        <a href="{{ route('admin.packages.index') }}" data-tip="Paket"
-                            class="nav-item {{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
-                            <i class="fas fa-cube"></i> Paket
-                        </a>
-                        <a href="{{ route('admin.payments.index') }}" data-tip="Pembayaran"
-                            class="nav-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
-                            <i class="fas fa-credit-card"></i> Pembayaran
-                            @php $pendingPayments = \App\Models\Payment::where('payment_status', 'pending')->count(); @endphp
-                            @if ($pendingPayments > 0)
-                                <span class="nav-badge" style="background: var(--warning);">{{ $pendingPayments }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('admin.affiliate.index') }}" data-tip="Affiliate"
-                            class="nav-item {{ request()->routeIs('admin.affiliate.index') ? 'active' : '' }}">
-                            <i class="fas fa-hand-holding-dollar"></i> Affiliate
-                            @php $pendingCommissions = \App\Models\AffiliateCommission::where('status', 'pending')->count(); @endphp
-                            @if ($pendingCommissions > 0)
-                                <span class="nav-badge" style="background: var(--warning);">{{ $pendingCommissions }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('admin.affiliate.payouts') }}" data-tip="Affiliate Payout"
-                            class="nav-item {{ request()->routeIs('admin.affiliate.payouts*') ? 'active' : '' }}">
-                            <i class="fas fa-wallet"></i> Affiliate Payout
-                            @php $pendingPayouts = \App\Models\PayoutRequest::where('status', 'pending')->count(); @endphp
-                            @if ($pendingPayouts > 0)
-                                <span class="nav-badge" style="background: var(--warning);">{{ $pendingPayouts }}</span>
-                            @endif
-                        </a>
-                    </div>
-
-                    <div class="nav-section">
-                        <div class="nav-label">Sistem</div>
-                        <a href="{{ route('admin.payment-gateway.index') }}" data-tip="Payment Gateway"
-                            class="nav-item {{ request()->routeIs('admin.payment-gateway.*') ? 'active' : '' }}">
-                            <i class="fas fa-plug"></i> Payment Gateway
-                        </a>
-                        <a href="{{ route('admin.system.reliability') }}" data-tip="Reliability"
-                            class="nav-item {{ request()->routeIs('admin.system.reliability') ? 'active' : '' }}">
-                            <i class="fas fa-heart-pulse"></i> Reliability
-                            @php $failedJobsCount = \Illuminate\Support\Facades\DB::table('failed_jobs')->count(); @endphp
-                            @if ($failedJobsCount > 0)
-                                <span class="nav-badge">{{ $failedJobsCount }}</span>
-                            @endif
-                        </a>
-                    </div>
-                </nav>
+                <a href="{{ route('admin.affiliate.payouts') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.affiliate.payouts*') ? 'nav-item-active' : '' }}" title="Affiliate Payout">
+                    <i class="fas fa-wallet text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap flex-1 transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Affiliate Payout</span>
+                    @php $pendingPayouts = \App\Models\PayoutRequest::where('status', 'pending')->count(); @endphp
+                    @if ($pendingPayouts > 0)
+                        <span class="bg-amber-500/20 text-amber-500 font-bold text-[10px] px-2 py-0.5 rounded-full ml-auto" :class="!sidebarExpanded ? 'hidden' : ''">{{ $pendingPayouts }}</span>
+                    @endif
+                </a>
             </div>
-
-            <div class="sidebar-panel sidebar-footer">
-                <div class="user-info">
-                    <a href="{{ route('admin.settings.index') }}" data-tip="Pengaturan"
-                        class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                        <i class="fas fa-gear"></i> Pengaturan
-                    </a>
-                </div>
+            
+            <!-- Sistem -->
+            <div class="flex flex-col gap-1 w-full relative">
+                <div class="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 px-3 transition-opacity duration-300"
+                     :class="!sidebarExpanded ? 'lg:opacity-0' : 'opacity-100'">Sistem</div>
+                     
+                <a href="{{ route('admin.payment-gateway.index') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.payment-gateway.*') ? 'nav-item-active' : '' }}" title="Payment Gateway">
+                    <i class="fas fa-plug text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Payment Gateway</span>
+                </a>
+                <a href="{{ route('admin.system.reliability') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.system.reliability') ? 'nav-item-active' : '' }}" title="Reliability">
+                    <i class="fas fa-heart-pulse text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap flex-1 transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Reliability</span>
+                    @php $failedJobsCount = \Illuminate\Support\Facades\DB::table('failed_jobs')->count(); @endphp
+                    @if ($failedJobsCount > 0)
+                        <span class="bg-red-500/20 text-red-400 font-bold text-[10px] px-2 py-0.5 rounded-full ml-auto" :class="!sidebarExpanded ? 'hidden' : ''">{{ $failedJobsCount }}</span>
+                    @endif
+                </a>
             </div>
+        </nav>
+
+        <!-- Footer Profile -->
+        <div class="px-3 py-4 mt-auto border-t border-white/5 bg-black/10 shrink-0">
+            <a href="{{ route('admin.settings.index') }}"
+                class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-[14px] bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 {{ request()->routeIs('admin.settings.*') ? 'ring-1 ring-white/20' : '' }}" title="Pengaturan">
+                <i class="fas fa-gear text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
+                      :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Pengaturan</span>
+            </a>
         </div>
     </aside>
 
-    {{-- Topbar --}}
-    <header class="topbar">
-        <div class="topbar-left">
-            <button class="topbar-btn mobile-toggle" @click="sidebarOpen = !sidebarOpen">
-                <i class="fas fa-bars"></i>
-            </button>
-            <div>
-                <div class="topbar-title">@yield('page-title', 'Dashboard')</div>
-                @hasSection('page-subtitle')
-                    <div class="topbar-subtitle">@yield('page-subtitle')</div>
-                @endif
-            </div>
-        </div>
-        <div class="topbar-right" x-data="{ userMenuOpen: false }">
-            {{-- Theme toggle --}}
-            <div class="theme-toggle" @click="darkMode = !darkMode" title="Toggle Dark/Light Mode">
-                <div class="toggle-dot">
-                    <span x-show="!darkMode">&#9728;</span>
-                    <span x-show="darkMode">&#9790;</span>
-                </div>
-            </div>
-            <div class="topbar-user-wrap">
-                <button class="topbar-user-btn" @click="userMenuOpen = !userMenuOpen">
-                    @if(auth()->user()->avatar)
-                        <div class="w-6 h-6 rounded-full overflow-hidden shadow-sm border border-gray-200">
-                            <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="Avatar"
-                                class="w-full h-full object-cover">
-                        </div>
-                    @else
-                        <div class="user-avatar">{{ substr(auth()->user()->name, 0, 1) }}</div>
-                    @endif
-                    <span class="topbar-user-name">{{ auth()->user()->name }}</span>
+    <!-- App Wrapper -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300"
+        :class="sidebarExpanded ? 'lg:ml-[268px]' : 'lg:ml-[96px]'">
+        
+        <!-- Topbar -->
+        <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-b border-slate-200/60 dark:border-slate-800/60 lg:rounded-b-[20px] shadow-sm px-5 h-[64px] flex items-center justify-between transition-colors duration-300 shrink-0">
+            <div class="flex items-center gap-3.5 relative z-10">
+                <button @click="window.innerWidth > 1024 ? sidebarExpanded = !sidebarExpanded : sidebarOpen = !sidebarOpen"
+                    class="w-[38px] h-[38px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-all hover:shadow-sm focus:outline-none active:scale-95" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
                 </button>
-                <div class="topbar-user-menu" x-show="userMenuOpen" @click.outside="userMenuOpen = false" x-transition
-                    x-cloak>
-                    <a href="{{ route('admin.settings.index') }}"><i class="fas fa-gear"></i> Pengaturan & Profile</a>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="danger"><i class="fas fa-arrow-right-from-bracket"></i>
-                            Logout</button>
-                    </form>
+                <div class="flex flex-col justify-center">
+                    <h1 class="text-[15px] font-bold text-slate-800 dark:text-slate-100 leading-tight">@yield('page-title', 'Dashboard')</h1>
+                    @hasSection('page-subtitle')
+                        <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">@yield('page-subtitle')</p>
+                    @endif
                 </div>
             </div>
-        </div>
-    </header>
 
-    {{-- Main Content --}}
-    <main class="main-content">
-        <div class="page-content page-shell">
-            @yield('content')
-        </div>
-    </main>
+            <div class="flex items-center gap-3 relative z-10" x-data="{ userMenuOpen: false }">
+                <!-- Theme Toggle -->
+                <button @click="darkMode = !darkMode"
+                    class="w-[38px] h-[38px] rounded-full bg-slate-100 dark:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center hover:text-blue-600 dark:hover:text-blue-400 transition-all focus:outline-none group">
+                    <i class="fas transition-transform group-hover:scale-110" :class="darkMode ? 'fa-sun text-amber-500' : 'fa-moon'"></i>
+                </button>
 
-    <nav class="mobile-dock" aria-label="Mobile Navigation">
-        <div class="mobile-dock-track" data-mobile-dock-track>
-            <div class="mobile-dock-slot">
+                <!-- User Dropdown Menu -->
+                <div class="relative">
+                    <button @click="userMenuOpen = !userMenuOpen"
+                        class="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm transition-all focus:outline-none">
+                        @if(auth()->user()->avatar)
+                            <div class="w-7 h-7 rounded-full overflow-hidden border border-slate-200 dark:border-slate-600 shrink-0">
+                                <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
+                            </div>
+                        @else
+                            <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center font-bold text-[11px] shrink-0">
+                                {{ substr(auth()->user()->name, 0, 1) }}
+                            </div>
+                        @endif
+                        <span class="text-[13px] font-semibold text-slate-700 dark:text-slate-200 hidden sm:block tracking-tight">{{ auth()->user()->name }}</span>
+                        <i class="fas fa-chevron-down text-[10px] text-slate-400 pl-1"></i>
+                    </button>
+                    
+                    <div x-show="userMenuOpen" @click.outside="userMenuOpen = false"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                        class="absolute right-0 mt-3 w-56 rounded-[18px] bg-white dark:bg-slate-800 shadow-[0_10px_40px_rgba(0,0,0,0.12)] border border-slate-100 dark:border-slate-700 py-2 z-50 overflow-hidden"
+                        x-cloak>
+                        <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-700 mb-1 bg-slate-50 dark:bg-slate-800/80">
+                            <p class="text-[13px] font-bold text-slate-800 dark:text-white truncate">{{ auth()->user()->name }}</p>
+                            <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate mt-0.5">{{ auth()->user()->email }}</p>
+                        </div>
+                        <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                            <i class="fas fa-gear w-4 text-center"></i> Pengaturan
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="block w-full m-0">
+                            @csrf
+                            <button type="submit" class="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300 transition-colors text-left">
+                                <i class="fas fa-arrow-right-from-bracket w-4 text-center"></i> Keluar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto scrollbar-hide bg-white dark:bg-[#0B1120] lg:rounded-tl-[32px] lg:shadow-[-5px_-5px_25px_rgba(0,0,0,0.02)] lg:border-l lg:border-t border-slate-200/50 dark:border-slate-800 mt-4 relative z-10 transition-colors duration-300">
+            <div class="p-5 pb-28 lg:pb-12 min-h-full">
+                @yield('content')
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation Dock -->
+    <nav class="lg:hidden fixed bottom-4 left-4 right-4 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 p-2 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.3)]">
+        <div class="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-1" data-mobile-dock-track>
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
                 <a href="{{ route('admin.dashboard') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
-                    title="Dashboard">
-                    <i class="fas fa-house"></i>
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-house text-lg"></i>
                 </a>
             </div>
-            <div class="mobile-dock-slot">
-                <a href="{{ route('admin.users.index') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" title="Users">
-                    <i class="fas fa-users"></i>
-                </a>
-            </div>
-            <div class="mobile-dock-slot">
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
                 <a href="{{ route('admin.invitations.index') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.invitations.*') ? 'active' : '' }}"
-                    title="Undangan">
-                    <i class="fas fa-envelope"></i>
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.invitations.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-envelope text-lg"></i>
                 </a>
             </div>
-            <div class="mobile-dock-slot">
-                <a href="{{ route('admin.templates.index') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.templates.*') ? 'active' : '' }}"
-                    title="Template">
-                    <i class="fas fa-palette"></i>
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
+                <a href="{{ route('admin.users.index') }}"
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.users.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-users text-lg"></i>
                 </a>
             </div>
-            <div class="mobile-dock-slot">
-                <a href="{{ route('admin.packages.index') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.packages.*') ? 'active' : '' }}" title="Paket">
-                    <i class="fas fa-cube"></i>
-                </a>
-            </div>
-            <div class="mobile-dock-slot">
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
                 <a href="{{ route('admin.payments.index') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}"
-                    title="Pembayaran">
-                    <i class="fas fa-credit-card"></i>
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.payments.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-credit-card text-lg"></i>
                 </a>
             </div>
-            <div class="mobile-dock-slot">
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
                 <a href="{{ route('admin.affiliate.index') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.affiliate.index') ? 'active' : '' }}"
-                    title="Affiliate">
-                    <i class="fas fa-hand-holding-dollar"></i>
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.affiliate.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-hand-holding-dollar text-lg"></i>
                 </a>
             </div>
-            <div class="mobile-dock-slot">
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
                 <a href="{{ route('admin.affiliate.payouts') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.affiliate.payouts*') ? 'active' : '' }}"
-                    title="Payout">
-                    <i class="fas fa-wallet"></i>
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.affiliate.payouts*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-wallet text-lg"></i>
                 </a>
             </div>
-            <div class="mobile-dock-slot">
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
+                <a href="{{ route('admin.templates.index') }}"
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.templates.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-palette text-lg"></i>
+                </a>
+            </div>
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
+                <a href="{{ route('admin.packages.index') }}"
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.packages.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-cube text-lg"></i>
+                </a>
+            </div>
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
                 <a href="{{ route('admin.payment-gateway.index') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.payment-gateway.*') ? 'active' : '' }}"
-                    title="Gateway">
-                    <i class="fas fa-plug"></i>
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.payment-gateway.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-plug text-lg"></i>
                 </a>
             </div>
-            <div class="mobile-dock-slot">
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
                 <a href="{{ route('admin.system.reliability') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.system.reliability') ? 'active' : '' }}"
-                    title="Reliability">
-                    <i class="fas fa-heart-pulse"></i>
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.system.reliability') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-heart-pulse text-lg"></i>
                 </a>
             </div>
-            <div class="mobile-dock-slot">
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
                 <a href="{{ route('admin.settings.index') }}"
-                    class="mobile-dock-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"
-                    title="Pengaturan">
-                    <i class="fas fa-gear"></i>
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.settings.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-gear text-lg"></i>
                 </a>
             </div>
         </div>
@@ -1463,37 +453,24 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
         document.addEventListener('DOMContentLoaded', function () {
             const track = document.querySelector('[data-mobile-dock-track]');
             if (!track) return;
-
-            const key = 'admin_mobile_dock_scroll';
+            const key = 'admin_mobile_dock_scroll_new';
             const saved = localStorage.getItem(key);
-            if (saved !== null) {
-                track.scrollLeft = parseInt(saved, 10) || 0;
-            } else {
-                const active = track.querySelector('.mobile-dock-link.active');
-                if (active) {
-                    active.scrollIntoView({
-                        behavior: 'auto',
-                        inline: 'center',
-                        block: 'nearest'
-                    });
-                }
+            if (saved !== null) { track.scrollLeft = parseInt(saved, 10) || 0; }
+            else {
+                const active = track.querySelector('.bg-blue-600');
+                if (active) active.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
             }
-
-            track.addEventListener('scroll', function () {
-                localStorage.setItem(key, String(track.scrollLeft));
-            }, {
-                passive: true
-            });
+            track.addEventListener('scroll', () => localStorage.setItem(key, String(track.scrollLeft)), { passive: true });
         });
     </script>
-    {{-- Floating Donation Ad Card (Shows every 30 mins if closed) --}}
+    @stack('scripts')
+
+    {{-- Floating Donation Ad Card --}}
     <div x-data="{ 
             showAd: false, 
             init() {
                 const hideUntil = localStorage.getItem('hideSaweriaAdUntil');
-                if (!hideUntil || Date.now() > parseInt(hideUntil)) {
-                    this.showAd = true;
-                }
+                if (!hideUntil || Date.now() > parseInt(hideUntil)) { this.showAd = true; }
             },
             closeAd() {
                 this.showAd = false;
@@ -1503,50 +480,34 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
         x-transition:enter-start="opacity-0 translate-y-10" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-10"
-        class="fixed bottom-6 left-6 z-[9999] w-[calc(var(--sidebar-w)-48px)] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300"
-        style="border: 1px solid rgba(251,191,36,0.3); min-width: 200px; max-width: 260px;"
-        :style="sidebarExpanded ? 'left: 24px; max-width: 260px;' : 'left: 24px; max-width: 60px; min-width: 60px;'">
+        class="fixed bottom-6 left-6 z-[9999] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 border border-amber-400/30"
+        :style="sidebarExpanded ? 'width: 212px;' : 'width: 56px; height: 56px; border-radius: 16px;'">
 
         <button x-show="sidebarExpanded" @click="closeAd()"
             class="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full bg-black/20 text-gray-400 hover:text-white hover:bg-black/40 transition-colors z-10"
-            title="Tutup iklan (muncul lagi 30 mnt)">
+            title="Tutup iklan">
             <i class="fas fa-times text-[10px]"></i>
         </button>
 
-        {{-- Expanded View --}}
-        <div x-show="sidebarExpanded" class="p-4 pt-5 text-center bg-gradient-to-b from-[#1e293b] to-[#0f172a]">
-            <div class="w-12 h-12 mx-auto bg-amber-400 text-slate-900 rounded-full flex items-center justify-center text-xl shadow-[0_0_15px_rgba(251,191,36,0.25)] mb-3 relative animate-bounce"
-                style="animation-duration: 2s;">
+        <div x-show="sidebarExpanded" class="p-4 pt-5 text-center bg-gradient-to-b from-slate-800 to-slate-900 border-t border-slate-700">
+            <div class="w-10 h-10 mx-auto bg-amber-400 text-slate-900 rounded-full flex items-center justify-center text-lg shadow-[0_0_15px_rgba(251,191,36,0.25)] mb-3 relative animate-bounce">
                 <i class="fas fa-coffee"></i>
-                <span class="absolute -top-1 -right-1 flex h-3 w-3">
-                    <span
-                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-                </span>
             </div>
-            <div class="text-amber-400 text-xs font-bold mb-1 uppercase tracking-wide">Dukung Kami</div>
-            <div class="text-gray-400 text-[10px] leading-relaxed mb-3 px-1">Bantu traktir kopi programmer agar update
-                makin ngebut! ☕</div>
+            <div class="text-amber-400 text-[11px] font-bold mb-1 uppercase tracking-wider">Dukung Kami</div>
+            <div class="text-gray-400 text-[10px] leading-relaxed mb-3">Traktir kopi agar update makin ngebut! ☕</div>
             <a href="https://saweria.co/gunaepi" target="_blank"
-                class="block w-full py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-900 text-xs font-bold rounded-lg transition-all shadow-md transform hover:-translate-y-0.5">
-                <i class="fas fa-heart text-[#dc2626] mr-1"></i> Donasi Sekarang
+                class="block w-full py-1.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-900 text-[11px] font-bold rounded-lg transition-all shadow-md hover:-translate-y-0.5">
+                Donasi
             </a>
         </div>
 
-        {{-- Mini View (When Sidebar is hidden/collapsed) --}}
-        <div x-show="!sidebarExpanded"
-            class="p-2 py-3 flex justify-center bg-gradient-to-b from-[#1e293b] to-[#0f172a]">
-            <a href="https://saweria.co/gunaepi" target="_blank" title="Traktir Kopi Programmer"
-                class="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-500 text-slate-900 flex items-center justify-center rounded-xl shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:scale-105 transition-transform relative">
-                <i class="fas fa-coffee"></i>
-                <button @click.prevent="closeAd()"
-                    class="absolute -top-2 -right-2 w-4 h-4 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors z-[10000]"
-                    title="Tutup iklan">
-                    <i class="fas fa-times text-[8px]"></i>
-                </button>
-            </a>
+        <div x-show="!sidebarExpanded" class="w-full h-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center relative cursor-pointer hover:scale-105 transition-transform" @click="window.open('https://saweria.co/gunaepi')">
+            <i class="fas fa-coffee text-slate-900 text-xl shadow-[0_0_15px_rgba(251,191,36,0.3)]"></i>
+            <button @click.prevent.stop="closeAd()"
+                class="absolute -top-1.5 -right-1.5 w-4 h-4 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm">
+                <i class="fas fa-times text-[8px]"></i>
+            </button>
         </div>
     </div>
 </body>
-
 </html>

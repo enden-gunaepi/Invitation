@@ -9,6 +9,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
         html {
             scroll-behavior: smooth;
@@ -239,6 +240,55 @@
             50% {
                 transform: translateY(-8px);
             }
+        }
+
+        #map {
+            width: 100%;
+            height: 280px;
+            border-radius: 1rem;
+            z-index: 10;
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 100;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 0.875rem;
+        }
+
+        .toast-notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        button:disabled .loading-spinner {
+            display: inline-block;
+        }
+
+        button:disabled .btn-text {
+            display: none;
         }
     </style>
 </head>
@@ -554,12 +604,17 @@
                 <p class="text-sm opacity-80 mb-6">{{ $eventDateText }}</p>
                 <h3 class="font-title text-2xl mb-2">{{ $invitation->venue_name }}</h3>
                 <p class="text-sm mb-6 leading-relaxed">{{ $invitation->venue_address }}</p>
-                @if ($mapsEmbed)
-                    <div class="rounded-2xl overflow-hidden shadow-xl border border-white/30 mb-6">
-                        <iframe src="{{ $mapsEmbed }}" width="100%" height="250" style="border:0;"
-                            loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-                    </div>
-                @endif
+                <div class="rounded-2xl overflow-hidden shadow-xl border border-white/30 mb-4">
+                    <div id="map"></div>
+                </div>
+                <div id="userDistance" class="text-xs opacity-90 mb-6 bg-black/20 py-2 px-3 rounded-lg hidden">
+                    <span class="flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                        </svg>
+                        <span id="distanceText">Menghitung jarak...</span>
+                    </span>
+                </div>
                 @if ($mapsUrl)
                     <a href="{{ $mapsUrl }}" target="_blank"
                         class="inline-block bg-white/20 backdrop-blur-md px-6 py-3 rounded-full hover:bg-white/30 transition mb-6">Gunakan
@@ -596,7 +651,7 @@
             <div class="relative z-10 w-full max-w-xl">
                 <h2 class="font-title text-2xl mb-2">Konfirmasi Kehadiran</h2>
                 <p class="text-sm opacity-80 mb-8">Mohon kesediaannya untuk mengisi konfirmasi kehadiran</p>
-                <form method="POST" action="{{ route('invitation.rsvp', $invitation->slug) }}" class="space-y-4">
+                <form id="rsvpForm" method="POST" action="{{ route('invitation.rsvp', $invitation->slug) }}" class="space-y-4">
                     @csrf
                     <div class="wish-form">
                         <label class="wish-label" for="rsvpName">Nama :</label>
@@ -606,6 +661,10 @@
                         <label class="wish-label mt-4 block" for="rsvpPax">Jumlah Tamu :</label>
                         <input id="rsvpPax" type="number" name="pax" min="1" max="10"
                             value="1" placeholder="Jumlah tamu hadir" class="wish-line-input" required>
+
+                        <label class="wish-label mt-4 block" for="rsvpWhatsapp">Nomor WhatsApp :</label>
+                        <input id="rsvpWhatsapp" type="tel" name="phone"
+                            placeholder="628123456789" class="wish-line-input" required>
 
                         <label class="wish-label mt-4 block" for="rsvpStatus">Konfirmasi :</label>
                         <select id="rsvpStatus" name="status" class="wish-select" required>
@@ -622,10 +681,13 @@
                             <input type="hidden" name="guest_id" value="{{ $guest->id }}">
                         @endif
 
-                        <button type="submit" class="wish-submit">KIRIM KONFIRMASI &#9992;</button>
+                        <button type="submit" class="wish-submit flex items-center justify-center gap-2">
+                            <span class="btn-text">KIRIM KONFIRMASI &#9992;</span>
+                            <div class="loading-spinner"></div>
+                        </button>
                     </div>
                 </form>
-                <div
+                <div id="rsvpListContainer"
                     class="mt-8 bg-white/30 backdrop-blur-md rounded-2xl p-4 max-h-[280px] overflow-y-auto text-left space-y-4">
                     <h3 class="text-sm font-semibold">Daftar Konfirmasi Kehadiran</h3>
                     @php
@@ -701,7 +763,7 @@
             <div class="relative z-10 w-full max-w-xl">
                 <h2 class="font-title text-2xl mb-2">Ucapan & Doa</h2>
                 <p class="text-sm opacity-80 mb-8">Tulis ucapan terbaik untuk mempelai</p>
-                <form method="POST" action="{{ route('invitation.wish', $invitation->slug) }}"
+                <form id="wishForm" method="POST" action="{{ route('invitation.wish', $invitation->slug) }}"
                     class="wish-form mt-2">
                     @csrf
                     <label class="wish-label" for="wishName">Nama :</label>
@@ -709,9 +771,12 @@
                         placeholder="Nama Anda" class="wish-line-input" required>
                     <label class="wish-label mt-5 block" for="wishMessage">Pesan untuk Mempelai :</label>
                     <textarea id="wishMessage" name="message" placeholder="Tulis ucapan dan doa..." class="wish-line-textarea" required></textarea>
-                    <button type="submit" class="wish-submit">KIRIM &#9992;</button>
+                    <button type="submit" class="wish-submit flex items-center justify-center gap-2">
+                        <span class="btn-text">KIRIM &#9992;</span>
+                        <div class="loading-spinner"></div>
+                    </button>
                 </form>
-                <div
+                <div id="wishListContainer"
                     class="mt-8 bg-white/30 backdrop-blur-md rounded-2xl p-4 max-h-[280px] overflow-y-auto text-left space-y-4">
                     <h3 class="text-sm font-semibold">Daftar Ucapan & Doa</h3>
                     @foreach ($invitation->wishes as $wish)
@@ -837,6 +902,9 @@
         </button>
     </div>
 
+    <div id="toast" class="toast-notification">Berhasil disalin!</div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         const bgMusic = document.getElementById("bgMusic");
         const soundToggle = document.getElementById("soundToggle");
@@ -891,11 +959,26 @@
             });
         }
 
-        function openInvitation() {
+        function showToast(message = "Berhasil disalin!") {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.classList.add("show");
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Berhasil disalin ke clipboard!");
+            });
+        }
+
+        function openInvitation(instant = false) {
             const cover = document.getElementById("cover");
             const main = document.getElementById("mainContent");
-            cover.classList.add("opacity-0");
-            setTimeout(() => {
+            
+            const doOpen = () => {
                 cover.style.display = "none";
                 main.classList.remove("hidden");
                 initVisualEffects();
@@ -909,12 +992,149 @@
                 if (!autoScrollFrame) {
                     runAutoScroll();
                 }
-            }, 700);
+                initMap();
+            };
+
+            if (instant) {
+                doOpen();
+            } else {
+                cover.classList.add("opacity-0");
+                setTimeout(doOpen, 700);
+            }
         }
 
-        function copyText(text) {
-            navigator.clipboard.writeText(text);
+        // Leaflet Map Initialization
+        let mapInited = false;
+        function initMap() {
+            if (mapInited) return;
+            const lat = @json($invitation->venue_lat);
+            const lng = @json($invitation->venue_lng);
+            
+            // If no coordinates saved, hide the map container
+            if (lat === null || lng === null || (lat === 0 && lng === 0)) {
+                const mapContainer = document.getElementById('map');
+                if (mapContainer) {
+                    mapContainer.parentElement.style.display = 'none';
+                }
+                return;
+            }
+            
+            const map = L.map('map').setView([lat, lng], 16);
+
+            const hybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '&copy; Google Maps'
+            });
+
+            const streets = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '&copy; Google Maps'
+            });
+
+            const satellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '&copy; Google Maps'
+            });
+
+            hybrid.addTo(map);
+
+            const baseMaps = {
+                "Hybrid": hybrid,
+                "Satellite": satellite,
+                "Streets": streets
+            };
+
+            L.control.layers(baseMaps).addTo(map);
+
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup("<b>{{ $invitation->venue_name }}</b><br>{{ $invitation->venue_address }}").openPopup();
+            mapInited = true;
+
+            // Geolocation and Distance Calculation
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const userPos = L.latLng(position.coords.latitude, position.coords.longitude);
+                    const venuePos = L.latLng(lat, lng);
+                    const distance = userPos.distanceTo(venuePos); // In meters
+                    const distanceKm = (distance / 1000).toFixed(1);
+                    
+                    const distanceEl = document.getElementById("userDistance");
+                    const distanceText = document.getElementById("distanceText");
+                    if (distanceEl && distanceText) {
+                        distanceEl.classList.remove("hidden");
+                        distanceText.textContent = `Anda berjarak sekitar ${distanceKm} km dari lokasi acara.`;
+                    }
+                }, (error) => {
+                    console.warn("Geolocation permission denied or error.");
+                });
+            }
         }
+
+        // AJAX Form Submission
+        async function handleFormSubmit(formId, listContainerId, pagerClass) {
+            const form = document.getElementById(formId);
+            if (!form) return;
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+
+                try {
+                    const formData = new FormData(form);
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showToast(result.message || "Data berhasil dikirim!");
+                        form.reset();
+                        // Reload the page content part (simplified: fetch the same page and extract the list)
+                        const refreshRes = await fetch(window.location.href);
+                        const html = await refreshRes.text();
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        
+                        const newList = doc.getElementById(listContainerId);
+                        if (newList) {
+                            document.getElementById(listContainerId).innerHTML = newList.innerHTML;
+                            // Re-init pagination
+                            if (formId === 'rsvpForm') {
+                                initListPagination(".list-rsvp-item", ".list-rsvp-pager", 5);
+                            } else {
+                                initListPagination(".list-wish-item", ".list-wish-pager", 5);
+                            }
+                        }
+                    } else {
+                        // Handle validation errors from Laravel
+                        let errorMsg = result.message || "Terjadi kesalahan!";
+                        if (result.errors) {
+                            const firstKey = Object.keys(result.errors)[0];
+                            errorMsg = result.errors[firstKey][0];
+                        }
+                        showToast(errorMsg);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showToast("Gagal mengirim data.");
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+
+        handleFormSubmit('rsvpForm', 'rsvpListContainer', '.list-rsvp-pager');
+        handleFormSubmit('wishForm', 'wishListContainer', '.list-wish-pager');
 
         function updateSoundLabel() {
             if (soundToggle) {
@@ -974,6 +1194,21 @@
 
         updateSoundLabel();
         updateScrollLabel();
+
+        // Pause auto-scroll when user focuses on an input to type
+        const formInputs = document.querySelectorAll('input, select, textarea');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                if (autoScrollOn) {
+                    autoScrollOn = false;
+                    updateScrollLabel();
+                    if (autoScrollFrame) {
+                        window.cancelAnimationFrame(autoScrollFrame);
+                        autoScrollFrame = null;
+                    }
+                }
+            });
+        });
 
         function initListPagination(itemSelector, pagerSelector, pageSize = 5) {
             const items = Array.from(document.querySelectorAll(itemSelector));

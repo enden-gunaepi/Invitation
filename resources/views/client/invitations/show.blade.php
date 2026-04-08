@@ -1,4 +1,4 @@
-﻿@extends('layouts.client')
+@extends('layouts.client')
 @section('title', $invitation->title)
 @section('page-title', $invitation->title)
 @section('page-subtitle', ucfirst($invitation->event_type) . ' - ' . $invitation->event_date->format('d M Y'))
@@ -99,7 +99,15 @@
                         {{ $rsvp->status === 'attending' ? 'OK' : ($rsvp->status === 'maybe' ? '?' : 'X') }}
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm font-semibold">{{ $rsvp->name }}</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold">{{ $rsvp->name }}</span>
+                            @if($rsvp->phone || $rsvp->normalized_phone)
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $rsvp->normalized_phone ?: $rsvp->phone) }}" 
+                               target="_blank" class="text-green-500 hover:text-green-600 transition-colors" title="Kirim WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            @endif
+                        </div>
                         <p class="text-xs" style="color: var(--text-secondary);">{{ $rsvp->pax }} orang - {{ $rsvp->created_at->diffForHumans() }}</p>
                     </div>
                     @if($rsvp->message)

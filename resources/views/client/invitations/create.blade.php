@@ -4,6 +4,11 @@
 @section('page-subtitle', 'Isi form di bawah untuk membuat undangan digital')
 
 @section('content')
+
+@push('head')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+@endpush
+
 <div class="max-w-3xl">
     <div class="card p-6">
         @if($errors->any())
@@ -87,6 +92,17 @@
                 <div><label class="form-label">Link Google Maps</label><input type="url" name="google_maps_url" value="{{ old('google_maps_url') }}" class="form-input"></div>
             </div>
             <div class="mb-5"><label class="form-label">Alamat Lengkap</label><textarea name="venue_address" class="form-input" rows="2" required>{{ old('venue_address') }}</textarea></div>
+            
+            <div class="mb-5">
+                <label class="form-label font-semibold" style="color:var(--accent);">Pin Lokasi Peta (opsional)</label>
+                <p class="text-xs mb-2" style="color:var(--text-secondary);">Geser marker merah pada peta ke titik lokasi yang tepat. Koordinat akan diperbarui otomatis.</p>
+                <div id="locationPickerMapCreate" style="height: 300px; border-radius: 10px; border: 1px solid var(--border); z-index: 1;"></div>
+                <div class="grid grid-cols-2 gap-4 mt-3">
+                    <div><label class="form-label text-xs">Latitude</label><input type="text" id="venue_lat" name="venue_lat" value="{{ old('venue_lat') }}" class="form-input bg-gray-100" readonly></div>
+                    <div><label class="form-label text-xs">Longitude</label><input type="text" id="venue_lng" name="venue_lng" value="{{ old('venue_lng') }}" class="form-input bg-gray-100" readonly></div>
+                </div>
+            </div>
+
 
             <div class="mb-3">
                 <label class="inline-flex items-center gap-2 text-sm font-semibold">
@@ -179,6 +195,38 @@ document.addEventListener('DOMContentLoaded', () => {
         toggle.addEventListener('change', refreshLive);
         refreshLive();
     }
+
+    // Init Location Picker Map
+    if (typeof L !== 'undefined') {
+        const latInput = document.getElementById('venue_lat');
+        const lngInput = document.getElementById('venue_lng');
+        let initialLat = parseFloat(latInput.value);
+        let initialLng = parseFloat(lngInput.value);
+
+        // Default to Jakarta if not set
+        if (isNaN(initialLat) || isNaN(initialLng)) {
+            initialLat = -6.200000;
+            initialLng = 106.816666;
+        }
+
+        const map = L.map('locationPickerMapCreate').setView([initialLat, initialLng], 13);
+        L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '&copy; Google Maps'
+        }).addTo(map);
+
+        const marker = L.marker([initialLat, initialLng], {draggable: true}).addTo(map);
+
+        marker.on('dragend', function(e) {
+            const position = marker.getLatLng();
+            latInput.value = position.lat.toFixed(8);
+            lngInput.value = position.lng.toFixed(8);
+        });
+    }
 });
 </script>
+@push('head')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+@endpush
 @endsection

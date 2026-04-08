@@ -124,6 +124,13 @@ class InvitationPublicController extends Controller
 
         $normalizedPhone = $this->phoneNormalizer->normalizeIndonesia($validated['phone'] ?? null);
         if (!$guest && empty($normalizedPhone)) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Nomor WhatsApp wajib diisi jika tidak menggunakan link tamu personal.',
+                    'errors' => ['phone' => ['Nomor WhatsApp wajib diisi.']]
+                ], 422);
+            }
             return back()->withErrors([
                 'phone' => 'Nomor HP wajib diisi jika tidak menggunakan link tamu personal.',
             ])->withInput();
@@ -173,6 +180,14 @@ class InvitationPublicController extends Controller
 
         $this->forgetPublicInvitationCache($slug);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Terima kasih, RSVP Anda berhasil disimpan.',
+                'rsvp' => Rsvp::where('invitation_id', $invitation->id)->latest()->first() // Optional: return the latest RSVP
+            ]);
+        }
+
         return $this->redirectBackWithAnchor($request, 'Terima kasih, RSVP Anda berhasil disimpan dan bisa diperbarui kapan saja.');
     }
 
@@ -194,6 +209,13 @@ class InvitationPublicController extends Controller
 
         Wish::create($validated);
         $this->forgetPublicInvitationCache($slug);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Ucapan Anda berhasil dikirim!'
+            ]);
+        }
 
         return $this->redirectBackWithAnchor($request, 'Ucapan Anda berhasil dikirim!');
     }
