@@ -419,7 +419,17 @@ $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', v
     </script>
     @stack('scripts')
 
-    {{-- Floating Donation Ad Card --}}
+    {{-- Floating Donation Ad Card (Only for Free Users) --}}
+    @php
+        $hasPaidSubscription = auth()->check() && (
+            auth()->user()->isAdmin() || 
+            auth()->user()->packageSubscriptions()->where('status', 'active')->whereHas('package', function($q) {
+                $q->where('price', '>', 0);
+            })->exists()
+        );
+    @endphp
+
+    @if(!$hasPaidSubscription)
     <div x-data="{ 
             showAd: false, 
             init() {
@@ -428,13 +438,13 @@ $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', v
             },
             closeAd() {
                 this.showAd = false;
-                localStorage.setItem('hideSaweriaAdUntil', Date.now() + (30 * 60 * 1000));
+                localStorage.setItem('hideSaweriaAdUntil', Date.now() + (10 * 60 * 1000));
             }
         }" x-show="showAd" x-cloak x-transition:enter="transition ease-out duration-500"
         x-transition:enter-start="opacity-0 translate-y-10" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-10"
-        class="fixed bottom-6 left-6 z-[9999] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 border border-amber-400/30"
+        class="fixed bottom-6 right-6 z-[9999] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 border border-amber-400/30"
         :style="sidebarExpanded ? 'width: 212px;' : 'width: 56px; height: 56px; border-radius: 16px;'">
 
         <button x-show="sidebarExpanded" @click="closeAd()"
@@ -463,5 +473,6 @@ $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', v
             </button>
         </div>
     </div>
+    @endif
 </body>
 </html>

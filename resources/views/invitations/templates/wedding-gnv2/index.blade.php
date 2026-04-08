@@ -673,9 +673,8 @@
                             <option value="maybe">Masih Ragu</option>
                         </select>
 
-                        <label class="wish-label mt-4 block" for="rsvpAddress">Alamat :</label>
-                        <input id="rsvpAddress" type="text" name="message" placeholder="Alamat" maxlength="500"
-                            class="wish-line-input">
+                        <label class="wish-label mt-4 block" for="rsvpAddress">Ucapan & Doa :</label>
+                        <textarea id="rsvpAddress" name="message" placeholder="Tulis ucapan dan doa untuk mempelai..." class="wish-line-textarea" required></textarea>
 
                         @if (!empty($guest?->id))
                             <input type="hidden" name="guest_id" value="{{ $guest->id }}">
@@ -703,7 +702,7 @@
                             <p class="message-meta">{{ $rsvp->pax }} pax •
                                 {{ $statusLabels[$rsvp->status] ?? $rsvp->status }}</p>
                             @if ($rsvp->message)
-                                <p class="message-body"><span class="opacity-80">Alamat:</span> {{ $rsvp->message }}
+                                <p class="message-body"><span class="opacity-80">Pesan:</span> {{ $rsvp->message }}
                                 </p>
                             @endif
                         </article>
@@ -755,44 +754,7 @@
             </section>
         @endif
 
-        <section
-            class="relative min-h-screen flex items-center justify-center text-center text-white px-6 bg-[#9fbfd6] overflow-hidden">
-            <div class="absolute top-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
-            <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png" alt="">
-            </div>
-            <div class="relative z-10 w-full max-w-xl">
-                <h2 class="font-title text-2xl mb-2">Ucapan & Doa</h2>
-                <p class="text-sm opacity-80 mb-8">Tulis ucapan terbaik untuk mempelai</p>
-                <form id="wishForm" method="POST" action="{{ route('invitation.wish', $invitation->slug) }}"
-                    class="wish-form mt-2">
-                    @csrf
-                    <label class="wish-label" for="wishName">Nama :</label>
-                    <input id="wishName" type="text" name="name" value="{{ $guest->name ?? '' }}"
-                        placeholder="Nama Anda" class="wish-line-input" required>
-                    <label class="wish-label mt-5 block" for="wishMessage">Pesan untuk Mempelai :</label>
-                    <textarea id="wishMessage" name="message" placeholder="Tulis ucapan dan doa..." class="wish-line-textarea" required></textarea>
-                    <button type="submit" class="wish-submit flex items-center justify-center gap-2">
-                        <span class="btn-text">KIRIM &#9992;</span>
-                        <div class="loading-spinner"></div>
-                    </button>
-                </form>
-                <div id="wishListContainer"
-                    class="mt-8 bg-white/30 backdrop-blur-md rounded-2xl p-4 max-h-[280px] overflow-y-auto text-left space-y-4">
-                    <h3 class="text-sm font-semibold">Daftar Ucapan & Doa</h3>
-                    @foreach ($invitation->wishes as $wish)
-                        <article class="message-card list-wish-item">
-                            <p class="message-author">{{ $wish->name }}</p>
-                            <p class="message-body">{{ $wish->message }}</p>
-                        </article>
-                    @endforeach
-                    <div class="flex items-center justify-between pt-1 list-wish-pager">
-                        <button type="button" class="pager-btn" data-prev>Prev</button>
-                        <span class="text-xs opacity-90" data-page-info>Hal 1 / 1</span>
-                        <button type="button" class="pager-btn" data-next>Next</button>
-                    </div>
-                </div>
-            </div>
-        </section>
+
 
         <section
             class="relative min-h-screen flex items-center justify-center text-center text-white px-6 bg-[#9fbfd6] overflow-hidden">
@@ -1134,7 +1096,6 @@
         }
 
         handleFormSubmit('rsvpForm', 'rsvpListContainer', '.list-rsvp-pager');
-        handleFormSubmit('wishForm', 'wishListContainer', '.list-wish-pager');
 
         function updateSoundLabel() {
             if (soundToggle) {
@@ -1253,7 +1214,6 @@
         }
 
         initListPagination(".list-rsvp-item", ".list-rsvp-pager", 5);
-        initListPagination(".list-wish-item", ".list-wish-pager", 5);
 
         @if ($eventDateIso)
             const targetDate = new Date("{{ $eventDateIso }}T{{ $eventTimeIso }}").getTime();

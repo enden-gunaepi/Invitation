@@ -57,7 +57,7 @@
                     <div class="relative group" style="aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden;">
                         <img src="{{ asset('storage/' . $photo->file_path) }}" alt="{{ $photo->caption }}" class="w-full h-full object-cover">
                         <form method="POST" action="{{ route('client.invitations.photos.destroy', [$invitation, $photo]) }}" onsubmit="return confirm('Hapus foto ini?')"
-                              class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition">
+                               class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition">
                             @csrf @method('DELETE')
                             <button class="w-6 h-6 rounded-full flex items-center justify-center" style="background: rgba(0,0,0,0.6);">
                                 <i class="fas fa-times text-white text-xs"></i>
@@ -85,58 +85,46 @@
             </div>
         </div>
 
-        {{-- RSVP List --}}
+        {{-- RSVP & Ucapan combined --}}
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color: var(--border);">
-                <h3 class="font-bold text-base">RSVP ({{ $invitation->rsvps->count() }})</h3>
+                <h3 class="font-bold text-base">RSVP & Ucapan ({{ $invitation->rsvps->count() }})</h3>
             </div>
             <div class="p-4">
                 @forelse($invitation->rsvps as $rsvp)
-                <div class="flex items-center gap-3 p-3 rounded-lg transition mb-1"
+                <div class="flex flex-col gap-2 p-3 rounded-lg transition mb-1 border-b last:border-0"
+                     style="border-color: var(--border);"
                      onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='transparent'">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                        style="{{ $rsvp->status === 'attending' ? 'background:rgba(52,199,89,0.12);color:var(--success)' : ($rsvp->status === 'maybe' ? 'background:rgba(255,149,0,0.12);color:var(--warning)' : 'background:rgba(255,59,48,0.12);color:var(--danger)') }}">
-                        {{ $rsvp->status === 'attending' ? 'OK' : ($rsvp->status === 'maybe' ? '?' : 'X') }}
-                    </div>
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-semibold">{{ $rsvp->name }}</span>
-                            @if($rsvp->phone || $rsvp->normalized_phone)
-                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $rsvp->normalized_phone ?: $rsvp->phone) }}" 
-                               target="_blank" class="text-green-500 hover:text-green-600 transition-colors" title="Kirim WhatsApp">
-                                <i class="fab fa-whatsapp"></i>
-                            </a>
-                            @endif
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+                            style="{{ $rsvp->status === 'attending' ? 'background:rgba(52,199,89,0.12);color:var(--success)' : ($rsvp->status === 'maybe' ? 'background:rgba(255,149,0,0.12);color:var(--warning)' : 'background:rgba(255,59,48,0.12);color:var(--danger)') }}">
+                            {{ $rsvp->status === 'attending' ? 'OK' : ($rsvp->status === 'maybe' ? '?' : 'X') }}
                         </div>
-                        <p class="text-xs" style="color: var(--text-secondary);">{{ $rsvp->pax }} orang - {{ $rsvp->created_at->diffForHumans() }}</p>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold truncate">{{ $rsvp->name }}</span>
+                                @if($rsvp->phone || $rsvp->normalized_phone)
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $rsvp->normalized_phone ?: $rsvp->phone) }}" 
+                                   target="_blank" class="text-green-500 hover:text-green-600 transition-colors" title="Kirim WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+                                @endif
+                                <span class="text-[10px] ml-auto whitespace-nowrap" style="color: var(--text-tertiary);">{{ $rsvp->created_at->diffForHumans() }}</span>
+                            </div>
+                            <p class="text-[11px]" style="color: var(--text-secondary);">{{ $rsvp->pax }} orang — {{ $rsvp->status === 'attending' ? 'Hadir' : ($rsvp->status === 'maybe' ? 'Ragu' : 'Tidak Hadir') }}</p>
+                        </div>
                     </div>
                     @if($rsvp->message)
-                    <p class="text-xs max-w-xs truncate" style="color: var(--text-secondary);">{{ $rsvp->message }}</p>
+                    <div class="pl-11 pr-2 pb-1">
+                        <div class="p-2.5 rounded-lg text-xs border bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700/50" style="color: var(--text-secondary);">
+                            <i class="fas fa-quote-left text-[9px] opacity-20 mr-1"></i>
+                            {{ $rsvp->message }}
+                        </div>
+                    </div>
                     @endif
                 </div>
                 @empty
-                <p class="text-center text-sm py-6" style="color: var(--text-secondary);">Belum ada RSVP</p>
-                @endforelse
-            </div>
-        </div>
-
-        {{-- Wishes --}}
-        <div class="card overflow-hidden">
-            <div class="px-6 py-4 border-b" style="border-color: var(--border);">
-                <h3 class="font-bold text-base">Ucapan ({{ $invitation->wishes->count() }})</h3>
-            </div>
-            <div class="p-4">
-                @forelse($invitation->wishes as $wish)
-                <div class="p-3 rounded-lg transition mb-2"
-                     onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='transparent'">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="text-sm font-semibold">{{ $wish->name }}</span>
-                        <span class="text-xs" style="color: var(--text-secondary);">{{ $wish->created_at->diffForHumans() }}</span>
-                    </div>
-                    <p class="text-sm" style="color: var(--text-secondary);">{{ $wish->message }}</p>
-                </div>
-                @empty
-                <p class="text-center text-sm py-6" style="color: var(--text-secondary);">Belum ada ucapan</p>
+                <p class="text-center text-sm py-6" style="color: var(--text-secondary);">Belum ada data</p>
                 @endforelse
             </div>
         </div>
