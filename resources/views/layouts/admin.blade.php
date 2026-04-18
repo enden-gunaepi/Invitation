@@ -269,6 +269,13 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
             <div class="flex flex-col gap-1 w-full relative">
                 <div class="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 px-3 transition-opacity duration-300"
                      :class="!sidebarExpanded ? 'lg:opacity-0' : 'opacity-100'">Sistem</div>
+                
+                <a href="{{ route('admin.integration.telegram') }}"
+                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.integration.*') ? 'nav-item-active' : '' }}" title="Integrasi">
+                    <i class="fas fa-puzzle-piece text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
+                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
+                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Integrasi</span>
+                </a>
                      
                 <a href="{{ route('admin.payment-gateway.index') }}"
                     class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('admin.payment-gateway.*') ? 'nav-item-active' : '' }}" title="Payment Gateway">
@@ -427,6 +434,12 @@ $watch('sidebarExpanded', val => localStorage.setItem('adminSidebarExpanded', va
                 <a href="{{ route('admin.packages.index') }}"
                     class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.packages.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
                     <i class="fas fa-cube text-lg"></i>
+                </a>
+            </div>
+            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
+                <a href="{{ route('admin.integration.telegram') }}"
+                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('admin.integration.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
+                    <i class="fas fa-puzzle-piece text-lg"></i>
                 </a>
             </div>
             <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">

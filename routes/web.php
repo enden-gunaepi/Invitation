@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicAssetController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\TemplateDemoController;
+use App\Http\Controllers\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [MarketingController::class, 'home'])->name('marketing.home');
@@ -56,5 +57,8 @@ Route::post('/inv/{slug}/wish', [InvitationPublicController::class, 'wish'])
 // Payment Gateway Callbacks (no auth - called by gateways)
 Route::post('/callback/xendit', [PaymentCallbackController::class, 'xenditCallback'])->name('callback.xendit');
 Route::post('/callback/tripay', [PaymentCallbackController::class, 'tripayCallback'])->name('callback.tripay');
+
+// Telegram Webhook (no auth - called by Telegram)
+Route::post('/webhook/telegram', [TelegramWebhookController::class, 'handle'])->name('telegram.webhook');
 
 require __DIR__.'/auth.php';

@@ -11,11 +11,12 @@ use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory;
+    use Notifiable;
 
     protected $fillable = [
         'name', 'company_name', 'company_logo', 'email', 'referral_code', 'referred_by_user_id', 'affiliate_rate',
-        'password', 'role', 'phone', 'avatar', 'is_active',
+        'password', 'role', 'phone', 'avatar', 'is_active', 'balance',
         'signup_ip', 'signup_ua_hash', 'referral_clicked_at',
     ];
 
@@ -29,6 +30,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'balance' => 'decimal:2',
             'affiliate_rate' => 'decimal:2',
             'referral_clicked_at' => 'datetime',
         ];
