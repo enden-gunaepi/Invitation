@@ -6,6 +6,23 @@
 
 @section('content')
 <div class="space-y-6">
+    <div class="card p-6 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative" style="background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(248,250,252,.8)); border: 1px solid rgba(148, 163, 184, .22);">
+        <div class="space-y-2 z-10">
+            <h2 class="text-lg font-bold text-primary">💍 Wedding Planner Dashboard</h2>
+            <p class="text-sm max-w-lg" style="color: var(--text-secondary);">Pantau progres persiapan pernikahan Anda, kelola budget pengeluaran, checklist tugas penting, dan dapatkan rekomendasi cerdas dari AI Advisor.</p>
+        </div>
+        <div class="shrink-0 z-10">
+            <img src="{{ asset('assets/maskot/Favorit.png') }}" alt="Wedding Planner Mascot" class="h-28 w-auto drop-shadow-sm transition-transform duration-300 hover:scale-105" style="animation: float 4s ease-in-out infinite;">
+        </div>
+    </div>
+
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+    </style>
+
     {{-- Top Row: Countdown + Health Score --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {{-- Countdown --}}

@@ -26,8 +26,8 @@
         </div>
     </a>
     @empty
-    <div class="col-span-3 text-center py-16">
-        <i class="fas fa-envelope-open text-5xl text-slate-600 mb-4"></i>
+    <div class="col-span-3 text-center py-16 flex flex-col items-center">
+        <img src="{{ asset('assets/maskot/lihatundangan.png') }}" alt="Mascot Belum Ada Undangan" class="h-32 w-auto mb-4 drop-shadow-md" style="animation: float 4s ease-in-out infinite;">
         <h3 class="text-lg font-bold text-slate-400 mb-2">Belum Ada Undangan</h3>
         <p class="text-sm text-slate-500 mb-6">Mulai buat undangan digital pertama Anda!</p>
         <a href="{{ $hasActivePackage ? route('client.invitations.create') : route('client.packages.select') }}" class="btn-primary text-sm">
@@ -38,4 +38,11 @@
 </div>
 
 <div class="mt-6">{{ $invitations->links() }}</div>
+
+<style>
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+</style>
 @endsection

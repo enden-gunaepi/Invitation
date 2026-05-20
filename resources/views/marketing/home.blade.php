@@ -176,6 +176,10 @@
                 transform: translateX(-100%);
             }
         }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
     </style>
 </head>
 
@@ -217,7 +221,8 @@
         <!-- Hero Section -->
         <section class="relative min-h-screen flex flex-col items-center justify-center pt-32 px-gutter overflow-hidden"
             id="hero">
-            <div class="text-center max-w-[900px] z-10 mb-16">
+            <div class="text-center max-w-[900px] z-10 mb-16 flex flex-col items-center">
+                <img src="{{ asset('assets/maskot/Landingpage.png') }}" alt="Mascot Janji Suci Kita" class="h-28 w-auto mb-6 drop-shadow-md transition-transform duration-500 hover:scale-110" style="animation: float 4s ease-in-out infinite;">
                 <h1
                     class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary text-balanced mb-internal-md">
                     Perayaan Seumur Hidup Anda
@@ -518,7 +523,8 @@
         <!-- Event Details / Template Showcase Section -->
         <section class="py-section-gap bg-surface-container-low" id="details">
             <div class="max-w-container-max mx-auto px-gutter">
-                <div class="text-center mb-16">
+                <div class="text-center mb-16 flex flex-col items-center">
+                    <img src="{{ asset('assets/maskot/fiturunggulan.png') }}" alt="Mascot Fitur Unggulan" class="h-24 w-auto mb-4 drop-shadow-md" style="animation: float 4s ease-in-out infinite; animation-delay: 1s;">
                     <h2 class="font-headline-md text-headline-md text-primary mb-4">Fitur Unggulan</h2>
                     <p class="font-body-md text-body-md text-on-surface-variant">Semua yang Anda butuhkan untuk
                         undangan digital yang sempurna.</p>
@@ -677,9 +683,13 @@
         </div>
         <div
             class="flex flex-col items-center gap-internal-lg text-center px-gutter pt-8 border-t border-outline-variant/30">
+            <div class="flex flex-col items-center mb-2">
+                <img src="{{ asset('assets/maskot/hubungikami.png') }}" alt="Mascot Hubungi Kami" class="h-16 w-auto mb-2 drop-shadow-sm transition-transform duration-300 hover:scale-110" style="animation: float 4s ease-in-out infinite; animation-delay: 2s;">
+                <span class="text-xs uppercase tracking-wider text-on-surface-variant/70 font-medium">Hubungi Kami</span>
+            </div>
             <div class="flex flex-wrap justify-center gap-6">
                 <a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200 underline underline-offset-4"
-                    href="https://www.instagram.com/1112.project" target="_blank"
+                    href="https://www.instagram.com/1112Project" target="_blank"
                     rel="noopener noreferrer">Instagram</a>
                 <a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200 underline underline-offset-4"
                     href="https://wa.me/6282119904113" target="_blank" rel="noopener noreferrer">WhatsApp</a>

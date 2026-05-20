@@ -144,7 +144,8 @@
         <!-- Visual & Animation Side -->
         <div class="visual-side">
             <canvas id="particleCanvas"></canvas>
-            <div class="visual-content">
+            <div class="visual-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <img src="{{ asset('assets/maskot/kirimemail.png') }}" alt="Forgot Password Mascot" style="height: 180px; width: auto; object-contain; margin-bottom: 2rem; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.08));">
                 <h2>The Standard</h2>
                 <p>Ensuring operational continuity with advanced access recovery protocols. Restore your pipeline with ease.</p>
             </div>

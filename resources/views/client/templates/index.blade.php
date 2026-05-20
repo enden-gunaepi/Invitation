@@ -5,6 +5,23 @@
 @section('page-subtitle', 'Lihat demo template sebelum dipakai')
 
 @section('content')
+    <div class="card p-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative" style="background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(248,250,252,.8)); border: 1px solid rgba(148, 163, 184, .22);">
+        <div class="space-y-2 z-10">
+            <h2 class="text-lg font-bold text-primary">Katalog Template Undangan</h2>
+            <p class="text-sm max-w-lg" style="color: var(--text-secondary);">Temukan berbagai macam desain eksklusif dan premium untuk hari bahagia Anda. Anda bisa melihat demo secara langsung sebelum memilih template yang cocok.</p>
+        </div>
+        <div class="shrink-0 z-10">
+            <img src="{{ asset('assets/maskot/pilihtemplate.png') }}" alt="Pilih Template Mascot" class="h-28 w-auto drop-shadow-sm transition-transform duration-300 hover:scale-105" style="animation: float 4s ease-in-out infinite;">
+        </div>
+    </div>
+
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+    </style>
+
     <div class="flex items-center justify-between mb-6">
         <p class="text-sm" style="color: var(--text-secondary);">{{ $templates->total() }} template aktif</p>
         <a href="{{ $hasActivePackage ? route('client.invitations.create') : route('client.packages.select') }}" class="btn btn-primary text-sm">

@@ -4,6 +4,23 @@
 @section('page-subtitle', ucfirst($invitation->event_type) . ' - ' . $invitation->event_date->format('d M Y'))
 
 @section('content')
+<div class="card p-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative" style="background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(248,250,252,.8)); border: 1px solid rgba(148, 163, 184, .22);">
+    <div class="space-y-2 z-10">
+        <h2 class="text-lg font-bold text-primary">Detail Undangan: {{ $invitation->title }}</h2>
+        <p class="text-sm max-w-lg" style="color: var(--text-secondary);">Pantau analitik kunjungan, konfirmasi RSVP dari tamu, kelola daftar kolaborator, dan jadwalkan blast WhatsApp reminder secara real-time.</p>
+    </div>
+    <div class="shrink-0 z-10">
+        <img src="{{ asset('assets/maskot/lihatundangan.png') }}" alt="Lihat Undangan Mascot" class="h-24 w-auto drop-shadow-sm transition-transform duration-300 hover:scale-105" style="animation: float 4s ease-in-out infinite;">
+    </div>
+</div>
+
+<style>
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+</style>
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     {{-- Main Content --}}
     <div class="lg:col-span-2 space-y-6">
