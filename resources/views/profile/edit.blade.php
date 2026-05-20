@@ -83,12 +83,12 @@
     <div class="flex gap-2 p-1 bg-gray-100/50 rounded-xl max-w-sm backdrop-blur-sm border border-gray-200/50">
         <button @click="tab = 'profile'"
             class="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all"
-            :class="tab === 'profile' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+            :class="tab === 'profile' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
             <i class="fas fa-user mr-2"></i>Profile Pribadi
         </button>
         <button @click="tab = 'company'"
              class="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all"
-            :class="tab === 'company' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+            :class="tab === 'company' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
             <i class="fas fa-building mr-2"></i>Perusahaan
         </button>
     </div>
@@ -123,7 +123,7 @@
                                 @if($user->avatar)
                                     <img src="{{ Storage::url($user->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
                                 @else
-                                    <div class="w-full h-full flex items-center justify-center text-xl font-bold bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800">
+                                    <div class="w-full h-full flex items-center justify-center text-xl font-bold bg-gradient-to-br from-pink-100 to-rose-100 text-pink-800">
                                         {{ substr($user->name, 0, 1) }}
                                     </div>
                                 @endif

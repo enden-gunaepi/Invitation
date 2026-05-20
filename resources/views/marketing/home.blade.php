@@ -193,6 +193,7 @@
 
     <!-- TopNavBar -->
     <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-3xl border-b border-outline-variant/30">
+        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent opacity-70"></div>
         <div class="flex justify-between items-center px-gutter py-4 max-w-container-max mx-auto">
             <div class="flex items-center gap-3">
                 @if ($companyLogo)
@@ -201,17 +202,17 @@
                 <span class="text-[20px] font-semibold text-primary tracking-tight leading-none">Janji Suci Kita</span>
             </div>
             <div class="hidden md:flex gap-internal-lg">
-                <a class="font-button text-button text-primary border-b-2 border-primary pb-1 transition-colors duration-300"
+                <a class="font-button text-button text-primary border-b-2 border-pink-500 pb-1 transition-colors duration-300"
                     href="#hero">Beranda</a>
-                <a class="font-button text-button text-on-secondary-container hover:text-primary transition-colors duration-300"
+                <a class="font-button text-button text-on-secondary-container hover:text-pink-600 transition-colors duration-300"
                     href="#paket">Paket</a>
-                <a class="font-button text-button text-on-secondary-container hover:text-primary transition-colors duration-300"
+                <a class="font-button text-button text-on-secondary-container hover:text-pink-600 transition-colors duration-300"
                     href="#details">Detail</a>
-                <a class="font-button text-button text-on-secondary-container hover:text-primary transition-colors duration-300"
+                <a class="font-button text-button text-on-secondary-container hover:text-pink-600 transition-colors duration-300"
                     href="#gallery">Galeri</a>
             </div>
             <a href="{{ route('login') }}"
-                class="bg-primary text-on-primary font-button text-button px-6 py-2 rounded-full active:scale-95 transition-transform">
+                class="bg-primary hover:bg-pink-600 text-on-primary font-button text-button px-6 py-2 rounded-full active:scale-95 transition-all">
                 Dashboard
             </a>
         </div>
@@ -221,11 +222,15 @@
         <!-- Hero Section -->
         <section class="relative min-h-screen flex flex-col items-center justify-center pt-32 px-gutter overflow-hidden"
             id="hero">
+            <!-- Subtle pink glows -->
+            <div class="absolute top-1/4 left-1/3 -translate-x-1/2 w-[350px] h-[350px] bg-pink-300/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+            <div class="absolute bottom-1/4 right-1/3 translate-x-1/2 w-[300px] h-[300px] bg-rose-300/10 rounded-full blur-[90px] pointer-events-none z-0"></div>
+            
             <div class="text-center max-w-[900px] z-10 mb-16 flex flex-col items-center">
                 <img src="{{ asset('assets/maskot/Landingpage.png') }}" alt="Mascot Janji Suci Kita" class="h-28 w-auto mb-6 drop-shadow-md transition-transform duration-500 hover:scale-110" style="animation: float 4s ease-in-out infinite;">
                 <h1
                     class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary text-balanced mb-internal-md">
-                    Perayaan Seumur Hidup Anda
+                    Perayaan <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-pink-600 to-pink-500">Seumur Hidup</span> Anda
                 </h1>
                 <p class="font-body-md text-body-md text-on-surface-variant max-w-[600px] mx-auto">
                     Platform undangan digital yang menghadirkan pengalaman premium — dari desain elegan, RSVP real-time,
@@ -233,11 +238,11 @@
                 </p>
                 <div class="flex flex-wrap justify-center gap-4 mt-internal-lg">
                     <a href="{{ route('register') }}"
-                        class="bg-primary text-on-primary font-button text-button px-8 py-3 rounded-full active:scale-95 transition-transform inline-block">
+                        class="bg-primary hover:bg-pink-600 text-on-primary font-button text-button px-8 py-3 rounded-full active:scale-95 transition-all inline-block shadow-md hover:shadow-pink-500/10">
                         Mulai Buat Undangan
                     </a>
-                    <a href="{{ route('marketing.trial') }}"
-                        class="border border-primary text-primary font-button text-button px-8 py-3 rounded-full hover:bg-primary hover:text-on-primary transition-colors inline-block">
+                    <a href="{{ route('marketing.comingsoon') }}"
+                        class="border border-pink-500 text-pink-600 font-button text-button px-8 py-3 rounded-full hover:bg-pink-500 hover:text-white transition-all duration-300 inline-block shadow-sm shadow-pink-500/10">
                         Lihat Demo
                     </a>
                 </div>
@@ -330,9 +335,9 @@
                     @if ($isPopular)
                         <!-- Popular / Featured Package -->
                         <div
-                            class="bg-primary text-on-primary p-internal-lg rounded-xl flex flex-col shadow-2xl relative overflow-hidden scale-105">
+                            class="bg-primary text-on-primary p-internal-lg rounded-xl flex flex-col shadow-2xl relative overflow-hidden scale-105 border-t-[3px] border-pink-500">
                             <div
-                                class="absolute top-0 right-0 bg-white/20 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
+                                class="absolute top-0 right-0 bg-pink-500 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
                                 Populer</div>
                             <h3 class="font-title-lg text-title-lg mb-2">{{ $package->name }}</h3>
                             <div class="mb-6">
@@ -343,22 +348,22 @@
                             </div>
                             <ul class="space-y-4 mb-10 flex-grow">
                                 <li class="flex items-center gap-2 text-body-md"><span
-                                        class="material-symbols-outlined text-sm">check_circle</span> Max
+                                        class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Max
                                     {{ number_format((int) $package->max_guests) }} tamu</li>
                                 <li class="flex items-center gap-2 text-body-md"><span
-                                        class="material-symbols-outlined text-sm">check_circle</span>
+                                        class="material-symbols-outlined text-pink-400 text-sm">check_circle</span>
                                     {{ number_format((int) $package->max_photos) }} foto galeri</li>
                                 <li class="flex items-center gap-2 text-body-md"><span
-                                        class="material-symbols-outlined text-sm">check_circle</span>
+                                        class="material-symbols-outlined text-pink-400 text-sm">check_circle</span>
                                     {{ number_format((int) ($package->max_invitations ?? 1)) }} link aktif</li>
                                 @foreach (array_slice($package->features ?? [], 0, 4) as $feature)
                                     <li class="flex items-center gap-2 text-body-md"><span
-                                            class="material-symbols-outlined text-sm">check_circle</span>
+                                            class="material-symbols-outlined text-pink-400 text-sm">check_circle</span>
                                         {{ $feature }}</li>
                                 @endforeach
                             </ul>
                             <a href="{{ route('register') }}"
-                                class="w-full bg-white text-primary font-button py-3 rounded-full active:scale-95 transition-transform text-center block">Pilih
+                                class="w-full bg-pink-500 text-white font-button py-3 rounded-full hover:bg-pink-600 active:scale-95 transition-all text-center block shadow-lg shadow-pink-500/20">Pilih
                                 Paket</a>
                         </div>
                     @else
@@ -374,22 +379,22 @@
                             </div>
                             <ul class="space-y-4 mb-10 flex-grow">
                                 <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                        class="material-symbols-outlined text-primary text-sm">check_circle</span> Max
+                                        class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Max
                                     {{ number_format((int) $package->max_guests) }} tamu</li>
                                 <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                        class="material-symbols-outlined text-primary text-sm">check_circle</span>
+                                        class="material-symbols-outlined text-pink-500 text-sm">check_circle</span>
                                     {{ number_format((int) $package->max_photos) }} foto galeri</li>
                                 <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                        class="material-symbols-outlined text-primary text-sm">check_circle</span>
+                                        class="material-symbols-outlined text-pink-500 text-sm">check_circle</span>
                                     {{ number_format((int) ($package->max_invitations ?? 1)) }} link aktif</li>
                                 @foreach (array_slice($package->features ?? [], 0, 4) as $feature)
                                     <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                            class="material-symbols-outlined text-primary text-sm">check_circle</span>
+                                            class="material-symbols-outlined text-pink-500 text-sm">check_circle</span>
                                         {{ $feature }}</li>
                                 @endforeach
                             </ul>
                             <a href="{{ route('register') }}"
-                                class="w-full border border-primary text-primary font-button py-3 rounded-full hover:bg-primary hover:text-on-primary transition-colors text-center block">Pilih
+                                class="w-full border border-pink-500 text-pink-600 font-button py-3 rounded-full hover:bg-pink-500 hover:text-white transition-all duration-300 text-center block">Pilih
                                 Paket</a>
                         </div>
                     @endif
@@ -405,27 +410,27 @@
                         </div>
                         <ul class="space-y-4 mb-10 flex-grow">
                             <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                    class="material-symbols-outlined text-primary text-sm">check_circle</span> Undangan
+                                    class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Undangan
                                 Digital Standar</li>
                             <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                    class="material-symbols-outlined text-primary text-sm">check_circle</span> Fitur
+                                    class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Fitur
                                 RSVP Dasar</li>
                             <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                    class="material-symbols-outlined text-primary text-sm">check_circle</span> Galeri
+                                    class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Galeri
                                 10 Foto</li>
                             <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                    class="material-symbols-outlined text-primary text-sm">check_circle</span> Masa
+                                    class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Masa
                                 Aktif 1 Bulan</li>
                         </ul>
                         <a href="{{ route('register') }}"
-                            class="w-full border border-primary text-primary font-button py-3 rounded-full hover:bg-primary hover:text-on-primary transition-colors text-center block">Pilih
+                            class="w-full border border-pink-500 text-pink-600 font-button py-3 rounded-full hover:bg-pink-500 hover:text-white transition-all duration-300 text-center block">Pilih
                             Paket</a>
                     </div>
                     <!-- Gold -->
                     <div
-                        class="bg-primary text-on-primary p-internal-lg rounded-xl flex flex-col shadow-2xl relative overflow-hidden scale-105">
+                        class="bg-primary text-on-primary p-internal-lg rounded-xl flex flex-col shadow-2xl relative overflow-hidden scale-105 border-t-[3px] border-pink-500">
                         <div
-                            class="absolute top-0 right-0 bg-white/20 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
+                            class="absolute top-0 right-0 bg-pink-500 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
                             Populer</div>
                         <h3 class="font-title-lg text-title-lg mb-2">Gold</h3>
                         <div class="mb-6">
@@ -434,23 +439,23 @@
                         </div>
                         <ul class="space-y-4 mb-10 flex-grow">
                             <li class="flex items-center gap-2 text-body-md"><span
-                                    class="material-symbols-outlined text-sm">check_circle</span> Desain Premium &amp;
+                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Desain Premium &amp;
                                 Eksklusif</li>
                             <li class="flex items-center gap-2 text-body-md"><span
-                                    class="material-symbols-outlined text-sm">check_circle</span> RSVP &amp; Manajemen
+                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> RSVP &amp; Manajemen
                                 Tamu</li>
                             <li class="flex items-center gap-2 text-body-md"><span
-                                    class="material-symbols-outlined text-sm">check_circle</span> Galeri Foto &amp;
+                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Galeri Foto &amp;
                                 Video Tanpa Batas</li>
                             <li class="flex items-center gap-2 text-body-md"><span
-                                    class="material-symbols-outlined text-sm">check_circle</span> Integrasi Musik &amp;
+                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Integrasi Musik &amp;
                                 Maps</li>
                             <li class="flex items-center gap-2 text-body-md"><span
-                                    class="material-symbols-outlined text-sm">check_circle</span> Masa Aktif 1 Tahun
+                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Masa Aktif 1 Tahun
                             </li>
                         </ul>
                         <a href="{{ route('register') }}"
-                            class="w-full bg-white text-primary font-button py-3 rounded-full active:scale-95 transition-transform text-center block">Pilih
+                            class="w-full bg-pink-500 text-white font-button py-3 rounded-full hover:bg-pink-600 active:scale-95 transition-all text-center block shadow-lg shadow-pink-500/20">Pilih
                             Paket</a>
                     </div>
                     <!-- Platinum -->
@@ -463,20 +468,20 @@
                         </div>
                         <ul class="space-y-4 mb-10 flex-grow">
                             <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                    class="material-symbols-outlined text-primary text-sm">check_circle</span> Semua
+                                    class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Semua
                                 Fitur Paket Gold</li>
                             <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                    class="material-symbols-outlined text-primary text-sm">check_circle</span> Custom
+                                    class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Custom
                                 Domain</li>
                             <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                    class="material-symbols-outlined text-primary text-sm">check_circle</span> Buku
+                                    class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Buku
                                 Tamu Digital QR Code</li>
                             <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                    class="material-symbols-outlined text-primary text-sm">check_circle</span> Masa
+                                    class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Masa
                                 Aktif Selamanya</li>
                         </ul>
                         <a href="{{ route('register') }}"
-                            class="w-full border border-primary text-primary font-button py-3 rounded-full hover:bg-primary hover:text-on-primary transition-colors text-center block">Pilih
+                            class="w-full border border-pink-500 text-pink-600 font-button py-3 rounded-full hover:bg-pink-500 hover:text-white transition-all duration-300 text-center block">Pilih
                             Paket</a>
                     </div>
                 @endforelse
@@ -532,19 +537,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-internal-md">
                     <!-- Feature 1 -->
                     <div
-                        class="bg-white p-internal-lg rounded-xl border border-outline-variant transition-all hover:shadow-md">
-                        <div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center mb-6">
-                            <span class="material-symbols-outlined text-primary">devices</span>
+                        class="bg-white p-internal-lg rounded-xl border border-outline-variant hover:border-pink-300 transition-all hover:shadow-md">
+                        <div class="w-12 h-12 bg-pink-50 rounded-lg flex items-center justify-center mb-6">
+                            <span class="material-symbols-outlined text-pink-600">devices</span>
                         </div>
                         <h3 class="font-title-lg text-title-lg mb-2">Template Premium</h3>
                         <p class="font-body-md text-on-surface-variant">Pilihan desain eksklusif yang responsif di
-                            semua perangkat. Tampilan elegan yang mencerminkan keunikan cinta Anda.</p>
+                        semua perangkat. Tampilan elegan yang mencerminkan keunikan cinta Anda.</p>
                     </div>
                     <!-- Feature 2 -->
                     <div
-                        class="bg-white p-internal-lg rounded-xl border border-outline-variant transition-all hover:shadow-md">
-                        <div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center mb-6">
-                            <span class="material-symbols-outlined text-primary">group</span>
+                        class="bg-white p-internal-lg rounded-xl border border-outline-variant hover:border-pink-300 transition-all hover:shadow-md">
+                        <div class="w-12 h-12 bg-pink-50 rounded-lg flex items-center justify-center mb-6">
+                            <span class="material-symbols-outlined text-pink-600">group</span>
                         </div>
                         <h3 class="font-title-lg text-title-lg mb-2">Manajemen Tamu</h3>
                         <p class="font-body-md text-on-surface-variant">Kelola daftar tamu, konfirmasi RSVP real-time,
@@ -552,9 +557,9 @@
                     </div>
                     <!-- Feature 3 -->
                     <div
-                        class="bg-white p-internal-lg rounded-xl border border-outline-variant transition-all hover:shadow-md">
-                        <div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center mb-6">
-                            <span class="material-symbols-outlined text-primary">music_note</span>
+                        class="bg-white p-internal-lg rounded-xl border border-outline-variant hover:border-pink-300 transition-all hover:shadow-md">
+                        <div class="w-12 h-12 bg-pink-50 rounded-lg flex items-center justify-center mb-6">
+                            <span class="material-symbols-outlined text-pink-600">music_note</span>
                         </div>
                         <h3 class="font-title-lg text-title-lg mb-2">Musik &amp; Maps</h3>
                         <p class="font-body-md text-on-surface-variant">Tambahkan musik latar romantis dan integrasi
@@ -599,14 +604,18 @@
         @endif
 
         <!-- Strong CTA Section -->
-        <section class="py-32 px-gutter bg-primary text-center">
-            <div class="max-w-3xl mx-auto">
+        <section class="py-32 px-gutter bg-primary text-center relative overflow-hidden">
+            <!-- Background pink gradient decorative blur -->
+            <div class="absolute -top-24 -left-24 w-80 h-80 bg-pink-500/15 rounded-full blur-[80px] pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-pink-500/15 rounded-full blur-[80px] pointer-events-none"></div>
+            
+            <div class="max-w-3xl mx-auto relative z-10">
                 <h2 class="font-display-lg-mobile md:text-headline-md text-on-primary mb-8 leading-tight">Abadikan
                     Momen Indah Anda Selamanya</h2>
                 <p class="font-body-md text-on-primary/80 mb-12">Rancang undangan pernikahan digital yang mewakili
                     keunikan cinta Anda bersama {{ $companyName }}.</p>
                 <a href="{{ route('register') }}"
-                    class="bg-white text-primary font-button px-12 py-5 rounded-full text-lg hover:bg-surface-container transition-colors active:scale-95 duration-200 inline-block">
+                    class="bg-white hover:bg-pink-500 hover:text-white text-primary font-button px-12 py-5 rounded-full text-lg transition-all duration-300 active:scale-95 inline-block shadow-lg shadow-black/20 hover:shadow-pink-500/30">
                     Mulai Buat Undangan
                 </a>
             </div>
@@ -663,20 +672,20 @@
             <div>
                 <h4 class="font-label-caps text-label-caps mb-6 uppercase tracking-wider">Platform</h4>
                 <ul class="space-y-4">
-                    <li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200"
+                    <li><a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200"
                             href="#paket">Paket</a></li>
-                    <li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200"
+                    <li><a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200"
                             href="#templates">Template</a></li>
-                    <li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200"
-                            href="{{ route('marketing.trial') }}">Demo Trial</a></li>
+                    <li><a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200"
+                            href="{{ route('marketing.comingsoon') }}">Demo Trial</a></li>
                 </ul>
             </div>
             <div>
                 <h4 class="font-label-caps text-label-caps mb-6 uppercase tracking-wider">Akun</h4>
                 <ul class="space-y-4">
-                    <li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200"
+                    <li><a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200"
                             href="{{ route('login') }}">Masuk</a></li>
-                    <li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200"
+                    <li><a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200"
                             href="{{ route('register') }}">Daftar</a></li>
                 </ul>
             </div>
@@ -688,12 +697,12 @@
                 <span class="text-xs uppercase tracking-wider text-on-surface-variant/70 font-medium">Hubungi Kami</span>
             </div>
             <div class="flex flex-wrap justify-center gap-6">
-                <a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200 underline underline-offset-4"
+                <a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200 underline underline-offset-4"
                     href="https://www.instagram.com/1112Project" target="_blank"
                     rel="noopener noreferrer">Instagram</a>
-                <a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200 underline underline-offset-4"
+                <a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200 underline underline-offset-4"
                     href="https://wa.me/6282119904113" target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                <a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200 underline underline-offset-4"
+                <a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200 underline underline-offset-4"
                     href="#">Email</a>
             </div>
             <div class="font-body-md text-on-surface-variant/60 text-sm">

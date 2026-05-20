@@ -44,7 +44,7 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
 
-        /* Design tokens — same palette as landing page */
+        /* Design tokens â€” same palette as landing page */
         :root {
             --surface: #f9f9f9;
             --surface-lowest: #ffffff;
@@ -54,10 +54,10 @@
             --outline-variant: #cfc4c5;
             --on-surface: #1a1c1c;
             --on-surface-variant: #4c4546;
-            --primary: #000000;
+            --primary: #db2777; /* Pink accent */
             --on-primary: #ffffff;
-            --secondary-container: #e1dfdf;
-            --on-secondary-container: #636262;
+            --secondary-container: #fce7f3; /* Pink-100 */
+            --on-secondary-container: #be185d; /* Pink-700 */
             --error: #ba1a1a;
             --success: #15803d;
             --warning: #a16207;
@@ -68,15 +68,15 @@
             --text: #1a1c1c;
             --text-secondary: #4c4546;
             --text-tertiary: #7e7576;
-            --accent: #000000;
-            --accent-hover: #333333;
-            --accent-bg: rgba(0, 0, 0, 0.06);
+            --accent: #db2777;
+            --accent-hover: #be185d;
+            --accent-bg: rgba(219, 39, 119, 0.08);
             --danger: #ba1a1a;
             --success-clr: #15803d;
             --warning-clr: #a16207;
-            --info: #000000;
+            --info: #db2777;
             --radius-sm: 8px;
-            --hover-bg: rgba(0, 0, 0, 0.04);
+            --hover-bg: rgba(219, 39, 119, 0.04);
         }
 
         .dark {
@@ -88,19 +88,19 @@
             --outline-variant: #3a3a3a;
             --on-surface: #e8e8e8;
             --on-surface-variant: #9e9e9e;
-            --primary: #e8e8e8;
+            --primary: #f472b6; /* Pink-400 */
             --on-primary: #1a1a1a;
-            --secondary-container: #2a2a2a;
-            --on-secondary-container: #b0b0b0;
+            --secondary-container: rgba(244, 114, 182, 0.15); /* Pink tint */
+            --on-secondary-container: #fbcfe8; /* Pink-200 */
 
             --bg-secondary: #1a1c1c;
             --border: #2a2a2a;
             --text: #e8e8e8;
             --text-secondary: #9e9e9e;
             --text-tertiary: #6e6e6e;
-            --accent: #e8e8e8;
-            --accent-hover: #c8c8c8;
-            --accent-bg: rgba(232, 232, 232, 0.08);
+            --accent: #f472b6;
+            --accent-hover: #f9a8d4;
+            --accent-bg: rgba(244, 114, 182, 0.12);
             --hover-bg: rgba(255, 255, 255, 0.05);
         }
 

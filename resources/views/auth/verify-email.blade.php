@@ -103,7 +103,7 @@
             cursor: pointer; 
             transition: all 0.2s ease; 
         }
-        .btn-auth:hover { background: var(--btn-hover); transform: translateY(-1px); }
+        .btn-auth:hover { background: #db2777; transform: translateY(-1px); }
 
         .btn-secondary-auth {
             background: transparent;
@@ -114,6 +114,10 @@
             border: none;
             cursor: pointer;
             padding: 0.5rem 0;
+            transition: color 0.2s ease;
+        }
+        .btn-secondary-auth:hover {
+            color: #db2777;
         }
 
         .auth-footer { margin-top: 2rem; font-size: 0.9rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
@@ -214,18 +218,17 @@
                         const y = j * spacing + spacing / 2;
                         const normalizedX = x / width;
                         const normalizedY = y / height;
-                        let hue = 260; // purple base
+                        let hue = 320; 
                         if (normalizedX < 0.5) {
-                            hue = 260 + (normalizedY * 100); 
-                            if (hue > 360) hue = hue - 360; 
+                            hue = 320 + (normalizedY * 30); 
                         } else {
-                            hue = 220 + (normalizedX * 40);
+                            hue = 320 + (normalizedX * 30);
                         }
                         const probability = 1 - (normalizedX * 0.7);
                         if (Math.random() < probability) {
                             particles.push({
                                 baseX: x, baseY: y, x: x, y: y, size: 1.5,
-                                color: `hsl(${hue}, 80%, 55%)`,
+                                color: `hsl(${hue}, 85%, 60%)`,
                                 angle: Math.PI / 4,
                                 floatingAngle: Math.random() * Math.PI * 2
                             });

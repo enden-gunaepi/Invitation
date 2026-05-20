@@ -104,7 +104,7 @@
             font-family: inherit; 
             transition: all 0.2s ease; 
         }
-        .form-input:focus { outline: none; border-color: #111; background: #fff; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
+        .form-input:focus { outline: none; border-color: #db2777; background: #fff; box-shadow: 0 0 0 3px rgba(219,39,119,0.12); }
         .form-input::placeholder { color: #aaa; }
         
         .btn-auth { 
@@ -119,10 +119,11 @@
             cursor: pointer; 
             transition: all 0.2s ease; 
         }
-        .btn-auth:hover { background: var(--btn-hover); transform: translateY(-1px); }
+        .btn-auth:hover { background: #db2777; transform: translateY(-1px); }
 
         .auth-footer { margin-top: 2rem; font-size: 0.9rem; color: var(--text-muted); }
-        .auth-footer a { color: var(--text-main); text-decoration: underline; font-weight: 500; }
+        .auth-footer a { color: var(--text-main); text-decoration: underline; font-weight: 500; transition: color 0.2s ease; }
+        .auth-footer a:hover { color: #db2777; }
 
         .error-msg { font-size: 0.8rem; color: #ff3b30; margin-top: 6px; }
         .status-msg { padding: 12px 16px; border-radius: 8px; background: rgba(52,199,89,0.08); border: 1px solid rgba(52,199,89,0.15); color: #34c759; font-size: 0.85rem; margin-bottom: 1.5rem; }
@@ -219,18 +220,17 @@
                         const y = j * spacing + spacing / 2;
                         const normalizedX = x / width;
                         const normalizedY = y / height;
-                        let hue = 260; // purple base
+                        let hue = 320; 
                         if (normalizedX < 0.5) {
-                            hue = 260 + (normalizedY * 100); 
-                            if (hue > 360) hue = hue - 360; 
+                            hue = 320 + (normalizedY * 30); 
                         } else {
-                            hue = 220 + (normalizedX * 40);
+                            hue = 320 + (normalizedX * 30);
                         }
                         const probability = 1 - (normalizedX * 0.7);
                         if (Math.random() < probability) {
                             particles.push({
                                 baseX: x, baseY: y, x: x, y: y, size: 1.5,
-                                color: `hsl(${hue}, 80%, 55%)`,
+                                color: `hsl(${hue}, 85%, 60%)`,
                                 angle: Math.PI / 4,
                                 floatingAngle: Math.random() * Math.PI * 2
                             });
