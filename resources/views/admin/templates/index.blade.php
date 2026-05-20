@@ -33,12 +33,18 @@
                 <div class="p-5">
                     <div class="flex items-center justify-between mb-2">
                         <h4 class="font-bold text-sm">{{ $template->name }}</h4>
-                        <span class="badge {{ $template->is_active ? 'badge-active' : 'badge-draft' }}">
-                            {{ $template->is_active ? 'Aktif' : 'Nonaktif' }}
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="badge badge-info">{{ $template->render_mode === \App\Models\Template::RENDER_MODE_BUILDER ? 'Builder' : 'Blade' }}</span>
+                            <span class="badge {{ $template->is_active ? 'badge-active' : 'badge-draft' }}">
+                                {{ $template->is_active ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                        </div>
                     </div>
-                    <p class="text-xs text-slate-500 mb-4">
-                        <i class="fas fa-tag mr-1"></i> {{ ucfirst($template->category) }}
+                    <p class="text-xs text-slate-500 mb-4 space-y-1">
+                        <span class="block"><i class="fas fa-tag mr-1"></i> {{ ucfirst($template->category) }}</span>
+                        <span class="block"><i class="fas fa-layer-group mr-1"></i>
+                            {{ $template->render_mode === \App\Models\Template::RENDER_MODE_BUILDER ? ($template->builder_layout ?: '-') : ($template->html_path ?: '-') }}
+                        </span>
                     </p>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('templates.demo', $template->slug) }}" target="_blank"

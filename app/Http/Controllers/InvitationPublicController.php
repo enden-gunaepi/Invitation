@@ -9,6 +9,7 @@ use App\Models\Wish;
 use App\Services\GuestPersonalizationService;
 use App\Services\InvitationFunnelService;
 use App\Services\PhoneNormalizerService;
+use App\Services\TemplateRenderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
@@ -19,6 +20,7 @@ class InvitationPublicController extends Controller
         private readonly PhoneNormalizerService $phoneNormalizer,
         private readonly GuestPersonalizationService $guestPersonalization,
         private readonly InvitationFunnelService $funnelService,
+        private readonly TemplateRenderService $templateRenderService,
     ) {
     }
 
@@ -27,7 +29,13 @@ class InvitationPublicController extends Controller
         $invitation = $this->preparePublicInvitation($this->getCachedPublicInvitation($slug));
         $personalization = $this->guestPersonalization->forCategory(null);
 
-        return view($this->resolveTemplate($invitation), compact('invitation', 'personalization'));
+        return view(
+            $this->templateRenderService->resolveView($invitation->template),
+            array_merge(
+                compact('invitation', 'personalization'),
+                $this->templateRenderService->resolveData($invitation->template)
+            )
+        );
     }
 
     public function showGuest($slug, $token)
@@ -40,7 +48,13 @@ class InvitationPublicController extends Controller
 
         $personalization = $this->guestPersonalization->forCategory($guest?->category);
 
-        return view($this->resolveTemplate($invitation), compact('invitation', 'guest', 'personalization'));
+        return view(
+            $this->templateRenderService->resolveView($invitation->template),
+            array_merge(
+                compact('invitation', 'guest', 'personalization'),
+                $this->templateRenderService->resolveData($invitation->template)
+            )
+        );
     }
 
     public function mapClick(Request $request, string $slug)
@@ -82,19 +96,6 @@ class InvitationPublicController extends Controller
         }
 
         return $invitation;
-    }
-
-    private function resolveTemplate(Invitation $invitation): string
-    {
-        if ($invitation->template && $invitation->template->html_path) {
-            $viewPath = $invitation->template->html_path;
-
-            if (view()->exists($viewPath)) {
-                return $viewPath;
-            }
-        }
-
-        return 'invitations.templates.wedding-elegant.index';
     }
 
     public function rsvp(Request $request, $slug)
@@ -229,7 +230,7 @@ class InvitationPublicController extends Controller
                 ->where('slug', $slug)
                 ->active()
                 ->with([
-                    'template:id,name,html_path',
+                    'template:id,name,html_path,render_mode,builder_config,builder_layout,category,schema_version',
                     'photos:id,invitation_id,file_path,caption,sort_order',
                     'events:id,invitation_id,event_name,event_description,event_date,event_time,event_end_time,venue_name,venue_address,venue_maps_url,sort_order',
                     'loveStories:id,invitation_id,year,title,description,photo_path,sort_order',

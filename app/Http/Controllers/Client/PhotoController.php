@@ -33,33 +33,67 @@ class PhotoController extends Controller
                 ->with('error', "Batas foto untuk paket {$invitation->package->name} adalah {$maxPhotos} foto. Upgrade paket untuk menambah foto.");
         }
 
-        $request->validate([
-            'photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'caption' => 'nullable|string|max:200',
-        ]);
-
-        try {
-            $path = $this->imageCompressionService->compressAndStore(
-                $request->file('photo'),
-                'invitations/photos'
-            );
-        } catch (\Throwable $e) {
-            throw ValidationException::withMessages([
-                'photo' => 'Gagal memproses gambar. Coba upload gambar lain.',
+        // Validate multiple files if 'photos' array is present, otherwise fallback to single 'photo'
+        if ($request->hasFile('photos')) {
+            $request->validate([
+                'photos' => 'required|array',
+                'photos.*' => 'image|mimes:jpg,jpeg,png,webp|max:10240',
+                'caption' => 'nullable|string|max:200',
             ]);
+            $files = $request->file('photos');
+        } else {
+            $request->validate([
+                'photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
+                'caption' => 'nullable|string|max:200',
+            ]);
+            $files = [$request->file('photo')];
         }
 
-        InvitationPhoto::create([
-            'invitation_id' => $invitation->id,
-            'file_path' => $path,
-            'caption' => $request->caption,
-            'sort_order' => $currentPhotos + 1,
-        ]);
+        $uploadedCount = 0;
+        $skippedCount = 0;
 
-        $remaining = $maxPhotos - $currentPhotos - 1;
+        foreach ($files as $file) {
+            if ($currentPhotos >= $maxPhotos) {
+                $skippedCount++;
+                continue;
+            }
 
-        return redirect()->back()
-            ->with('success', "Foto berhasil diupload! (Sisa: {$remaining} foto)");
+            try {
+                $path = $this->imageCompressionService->compressAndStore(
+                    $file,
+                    'invitations/photos'
+                );
+
+                InvitationPhoto::create([
+                    'invitation_id' => $invitation->id,
+                    'file_path' => $path,
+                    'caption' => $request->caption,
+                    'sort_order' => $currentPhotos + 1,
+                ]);
+
+                $currentPhotos++;
+                $uploadedCount++;
+            } catch (\Throwable $e) {
+                if (count($files) === 1) {
+                    throw ValidationException::withMessages([
+                        'photo' => 'Gagal memproses gambar. Coba upload gambar lain.',
+                    ]);
+                }
+            }
+        }
+
+        $remaining = $maxPhotos - $currentPhotos;
+
+        if ($uploadedCount > 0) {
+            $msg = "{$uploadedCount} foto berhasil diupload!";
+            if ($skippedCount > 0) {
+                $msg .= " ({$skippedCount} foto dilewati karena batas paket tercapai).";
+            }
+            $msg .= " (Sisa: {$remaining} foto)";
+            return redirect()->back()->with('success', $msg);
+        }
+
+        return redirect()->back()->with('error', 'Tidak ada foto yang berhasil diupload.');
     }
 
     public function destroy(Invitation $invitation, InvitationPhoto $photo)

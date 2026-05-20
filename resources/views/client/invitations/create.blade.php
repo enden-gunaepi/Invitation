@@ -40,7 +40,7 @@
                     <option value="">Pilih Template</option>
                     @foreach($templates as $t)
                         <option value="{{ $t->id }}" data-thumbnail="{{ $t->thumbnail ? asset('storage/' . $t->thumbnail) : '' }}" {{ (old('template_id', $preselectedTemplateId ?? null) == $t->id) ? 'selected' : '' }}>
-                            {{ $t->name }} ({{ ucfirst($t->category) }}) {{ $t->is_premium ? 'Premium' : '' }}
+                            {{ $t->name }} ({{ ucfirst($t->category) }}, {{ $t->render_mode === \App\Models\Template::RENDER_MODE_BUILDER ? 'Builder' : 'Blade' }}) {{ $t->is_premium ? 'Premium' : '' }}
                         </option>
                     @endforeach
                 </select>
@@ -93,6 +93,14 @@
             </div>
             <div class="mb-5"><label class="form-label">Alamat Lengkap</label><textarea name="venue_address" class="form-input" rows="2" required>{{ old('venue_address') }}</textarea></div>
             
+            <div class="mb-5">
+                <label class="inline-flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                    <input type="checkbox" id="useCurrentLocation" style="accent-color: var(--accent); width:16px; height:16px;">
+                    Gunakan Lokasi Anda Saat Ini (Auto Map & Input Google Maps Link)
+                </label>
+                <span id="locateStatus" class="text-xs ml-2" style="color:var(--text-secondary);"></span>
+            </div>
+
             <div class="mb-5">
                 <label class="form-label font-semibold" style="color:var(--accent);">Pin Lokasi Peta (opsional)</label>
                 <p class="text-xs mb-2" style="color:var(--text-secondary);">Geser marker merah pada peta ke titik lokasi yang tepat. Koordinat akan diperbarui otomatis.</p>
@@ -200,6 +208,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof L !== 'undefined') {
         const latInput = document.getElementById('venue_lat');
         const lngInput = document.getElementById('venue_lng');
+        const mapsUrlInput = document.getElementsByName('google_maps_url')[0];
+        const currentLocChk = document.getElementById('useCurrentLocation');
+        const statusEl = document.getElementById('locateStatus');
+
         let initialLat = parseFloat(latInput.value);
         let initialLng = parseFloat(lngInput.value);
 
@@ -210,19 +222,118 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const map = L.map('locationPickerMapCreate').setView([initialLat, initialLng], 13);
-        L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        
+        const hybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
             maxZoom: 20,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             attribution: '&copy; Google Maps'
-        }).addTo(map);
+        });
+
+        const streets = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '&copy; Google Maps'
+        });
+
+        streets.addTo(map);
+        L.control.layers({ "Streets": streets, "Hybrid": hybrid }).addTo(map);
 
         const marker = L.marker([initialLat, initialLng], {draggable: true}).addTo(map);
 
+        function updateCoords(lat, lng) {
+            latInput.value = lat.toFixed(8);
+            lngInput.value = lng.toFixed(8);
+        }
+
         marker.on('dragend', function(e) {
             const position = marker.getLatLng();
-            latInput.value = position.lat.toFixed(8);
-            lngInput.value = position.lng.toFixed(8);
+            updateCoords(position.lat, position.lng);
+            if (currentLocChk && currentLocChk.checked) {
+                mapsUrlInput.value = `https://maps.google.com/?q=${position.lat.toFixed(8)},${position.lng.toFixed(8)}`;
+            }
         });
+
+        // Click on map to move marker
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            updateCoords(e.latlng.lat, e.latlng.lng);
+            if (currentLocChk && currentLocChk.checked) {
+                mapsUrlInput.value = `https://maps.google.com/?q=${e.latlng.lat.toFixed(8)},${e.latlng.lng.toFixed(8)}`;
+            }
+        });
+
+        // Parse Coordinates from Google Maps URL
+        function parseCoordsFromUrl(url) {
+            let match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            
+            match = url.match(/[?&](q|query)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (match) return { lat: parseFloat(match[2]), lng: parseFloat(match[3]) };
+            
+            match = url.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            
+            match = url.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+            if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+            
+            return null;
+        }
+
+        // Listen for Google Maps URL manually typed/pasted
+        if (mapsUrlInput) {
+            mapsUrlInput.addEventListener('input', function() {
+                const url = this.value.trim();
+                const coords = parseCoordsFromUrl(url);
+                if (coords) {
+                    updateCoords(coords.lat, coords.lng);
+                    map.setView([coords.lat, coords.lng], 17);
+                    marker.setLatLng([coords.lat, coords.lng]);
+                    if (currentLocChk) currentLocChk.checked = false;
+                }
+            });
+        }
+
+        // Listen for "Use Current Location" checkbox
+        if (currentLocChk) {
+            currentLocChk.addEventListener('change', function() {
+                if (this.checked) {
+                    if (!("geolocation" in navigator)) {
+                        statusEl.textContent = '❌ Browser tidak mendukung geolokasi.';
+                        this.checked = false;
+                        return;
+                    }
+
+                    statusEl.textContent = '⏳ Mencari lokasi Anda...';
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+
+                            updateCoords(lat, lng);
+                            map.setView([lat, lng], 17);
+                            marker.setLatLng([lat, lng]);
+
+                            // Auto-populate manual URL field with current location coordinates
+                            mapsUrlInput.value = `https://maps.google.com/?q=${lat.toFixed(8)},${lng.toFixed(8)}`;
+
+                            statusEl.textContent = '✅ Lokasi Anda berhasil dipetakan!';
+                        },
+                        (error) => {
+                            const msgs = {
+                                1: '❌ Izin lokasi ditolak.',
+                                2: '❌ Lokasi tidak tersedia.',
+                                3: '❌ Waktu mencari lokasi habis.'
+                            };
+                            statusEl.textContent = msgs[error.code] || '❌ Gagal mendapatkan lokasi.';
+                            this.checked = false;
+                        },
+                        { enableHighAccuracy: true, timeout: 10000 }
+                    );
+                } else {
+                    statusEl.textContent = '';
+                }
+            });
+        }
     }
 });
 </script>

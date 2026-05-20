@@ -11,15 +11,20 @@ use App\Models\LoveStory;
 use App\Models\Rsvp;
 use App\Models\Template;
 use App\Models\Wish;
+use App\Services\TemplateRenderService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class TemplateDemoController extends Controller
 {
+    public function __construct(
+        private readonly TemplateRenderService $templateRenderService,
+    ) {
+    }
+
     public function show(Request $request, Template $template)
     {
         abort_if(!$template->is_active, 404);
-        abort_unless(view()->exists($template->html_path), 404);
 
         $now = Carbon::now();
         $eventDate = $now->copy()->addDays(30);
@@ -114,10 +119,10 @@ class TemplateDemoController extends Controller
         ]);
         $guest->setRelation('invitation', $invitation);
 
-        return view($template->html_path, [
+        return view($this->templateRenderService->resolveView($template), array_merge([
             'invitation' => $invitation,
             'guest' => $guest,
             'demoMode' => true,
-        ]);
+        ], $this->templateRenderService->resolveData($template)));
     }
 }

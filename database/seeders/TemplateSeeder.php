@@ -14,6 +14,7 @@ class TemplateSeeder extends Seeder
             'category' => 'wedding',
             'thumbnail' => 'template-thumbnails/wedding-elegant.svg',
             'html_path' => 'invitations.templates.wedding-elegant.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
             'color_schemes' => [
                 ['primary' => '#D4AF37', 'secondary' => '#1a1a2e', 'accent' => '#f5f0e1'],
                 ['primary' => '#C9B037', 'secondary' => '#2d132c', 'accent' => '#faf0e6'],
@@ -27,6 +28,7 @@ class TemplateSeeder extends Seeder
             'category' => 'wedding',
             'thumbnail' => 'template-thumbnails/wedding-rustic.svg',
             'html_path' => 'invitations.templates.wedding-rustic.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
             'color_schemes' => [
                 ['primary' => '#8B6914', 'secondary' => '#2c1810', 'accent' => '#f4e8d1'],
                 ['primary' => '#6B4423', 'secondary' => '#1a0f0a', 'accent' => '#e8d5b7'],
@@ -40,6 +42,7 @@ class TemplateSeeder extends Seeder
             'category' => 'birthday',
             'thumbnail' => 'template-thumbnails/birthday-fun.svg',
             'html_path' => 'invitations.templates.birthday-fun.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
             'color_schemes' => [
                 ['primary' => '#FF6B6B', 'secondary' => '#4ECDC4', 'accent' => '#FFE66D'],
                 ['primary' => '#7C4DFF', 'secondary' => '#00BCD4', 'accent' => '#FF9800'],
@@ -53,6 +56,7 @@ class TemplateSeeder extends Seeder
             'category' => 'wedding',
             'thumbnail' => 'template-thumbnails/wedding-minimalist.svg',
             'html_path' => 'invitations.templates.wedding-minimalist.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
             'color_schemes' => [
                 ['primary' => '#000000', 'secondary' => '#fafaf9', 'accent' => '#a8a29e'],
                 ['primary' => '#1a1a1a', 'secondary' => '#ffffff', 'accent' => '#9ca3af'],
@@ -66,6 +70,7 @@ class TemplateSeeder extends Seeder
             'category' => 'wedding',
             'thumbnail' => 'template-thumbnails/wedding-peach.svg',
             'html_path' => 'invitations.templates.wedding-peach.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
             'color_schemes' => [
                 ['primary' => '#E89570', 'secondary' => '#FFF7F2', 'accent' => '#D97979'],
                 ['primary' => '#F6B494', 'secondary' => '#FFFFFF', 'accent' => '#9C6246'],
@@ -79,6 +84,7 @@ class TemplateSeeder extends Seeder
             'category' => 'wedding',
             'thumbnail' => null,
             'html_path' => 'invitations.templates.wedding-gnv1.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
             'color_schemes' => [
                 ['primary' => '#BE123C', 'secondary' => '#111827', 'accent' => '#FCE7F3'],
                 ['primary' => '#7F1D1D', 'secondary' => '#0F172A', 'accent' => '#FFE4E6'],
@@ -92,9 +98,59 @@ class TemplateSeeder extends Seeder
             'category' => 'wedding',
             'thumbnail' => null,
             'html_path' => 'invitations.templates.wedding-gnv2.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
             'color_schemes' => [
                 ['primary' => '#9fbfd6', 'secondary' => '#000000', 'accent' => '#e2f1ff'],
                 ['primary' => '#89adc6', 'secondary' => '#111827', 'accent' => '#f4faff'],
+            ],
+            'is_premium' => false,
+            'is_active' => true,
+        ]);
+
+        Template::updateOrCreate(['slug' => 'wedding-builder-atelier'], [
+            'name' => 'Wedding Builder Atelier',
+            'category' => 'wedding',
+            'thumbnail' => 'template-thumbnails/wedding-peach.svg',
+            'render_mode' => Template::RENDER_MODE_BUILDER,
+            'html_path' => null,
+            'builder_layout' => 'gnv2-signature',
+            'builder_config' => Template::normalizeBuilderConfig([
+                'theme' => [
+                    'primary' => '#9FBFD6',
+                    'secondary' => '#9FBFD6',
+                    'accent' => '#DCECF8',
+                    'background' => '#000000',
+                    'text' => '#FFFFFF',
+                    'heading_font' => 'playfair',
+                    'body_font' => 'inter',
+                    'spacing' => 'comfortable',
+                    'radius' => 'rounded',
+                ],
+                'sections' => [
+                    ['key' => 'hero', 'enabled' => true, 'variant' => 'cover-split', 'sort_order' => 1, 'settings' => []],
+                    ['key' => 'couple', 'enabled' => true, 'variant' => 'side-by-side', 'sort_order' => 2, 'settings' => []],
+                    ['key' => 'event_schedule', 'enabled' => true, 'variant' => 'timeline', 'sort_order' => 3, 'settings' => []],
+                    ['key' => 'gallery', 'enabled' => true, 'variant' => 'mosaic', 'sort_order' => 4, 'settings' => []],
+                    ['key' => 'love_story', 'enabled' => true, 'variant' => 'cards', 'sort_order' => 5, 'settings' => []],
+                    ['key' => 'gift', 'enabled' => true, 'variant' => 'cards', 'sort_order' => 6, 'settings' => []],
+                    ['key' => 'rsvp', 'enabled' => true, 'variant' => 'panel', 'sort_order' => 7, 'settings' => []],
+                    ['key' => 'wishes', 'enabled' => true, 'variant' => 'feed', 'sort_order' => 8, 'settings' => []],
+                    ['key' => 'map', 'enabled' => true, 'variant' => 'card', 'sort_order' => 9, 'settings' => []],
+                    ['key' => 'footer', 'enabled' => true, 'variant' => 'signature', 'sort_order' => 10, 'settings' => []],
+                ],
+                'content_rules' => [
+                    'supported_event_types' => ['wedding'],
+                    'features' => [
+                        'gallery' => true,
+                        'love_story' => true,
+                        'gift' => true,
+                        'livestream' => true,
+                    ],
+                ],
+            ], 'wedding'),
+            'schema_version' => 1,
+            'color_schemes' => [
+                ['primary' => '#9FBFD6', 'secondary' => '#000000', 'accent' => '#DCECF8'],
             ],
             'is_premium' => false,
             'is_active' => true,

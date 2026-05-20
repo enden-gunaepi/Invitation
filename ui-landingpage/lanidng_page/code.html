@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Janji Suci Kita | Perayaan Seumur Hidup</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#dadada",
+                    "on-secondary-container": "#636262",
+                    "inverse-surface": "#2f3131",
+                    "inverse-on-surface": "#f1f1f1",
+                    "outline": "#7e7576",
+                    "primary-fixed": "#e2e2e2",
+                    "secondary-fixed-dim": "#c7c6c6",
+                    "surface-bright": "#f9f9f9",
+                    "surface-lowest": "#FFFFFF",
+                    "surface-container": "#eeeeee",
+                    "primary-container": "#1b1b1b",
+                    "surface-variant": "#e2e2e2",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f3f3f3",
+                    "tertiary": "#000000",
+                    "editor-bg": "#111318",
+                    "error": "#ba1a1a",
+                    "surface-low": "#F3F3F3",
+                    "on-primary-fixed": "#1b1b1b",
+                    "wave-active": "#000000",
+                    "tertiary-fixed": "#e1e0ff",
+                    "on-tertiary-container": "#7073fe",
+                    "primary-fixed-dim": "#c6c6c6",
+                    "secondary": "#5e5e5e",
+                    "surface-container-high": "#e8e8e8",
+                    "outline-variant": "#cfc4c5",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#1a1c1c",
+                    "surface-tint": "#5e5e5e",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed-variant": "#464747",
+                    "on-primary": "#ffffff",
+                    "outline-muted": "#E2E2E2",
+                    "surface": "#ffffff",
+                    "inverse-primary": "#c6c6c6",
+                    "on-surface-variant": "#4c4546",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#07006c",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#e4e2e2",
+                    "on-error-container": "#93000a",
+                    "on-primary-container": "#848484",
+                    "on-primary-fixed-variant": "#474747",
+                    "secondary-container": "#e1dfdf",
+                    "tertiary-container": "#07006c",
+                    "on-tertiary-fixed-variant": "#2f2ebe",
+                    "primary": "#000000",
+                    "background": "#ffffff",
+                    "surface-container-highest": "#e2e2e2",
+                    "tertiary-fixed-dim": "#c0c1ff",
+                    "on-secondary-fixed": "#1b1c1c",
+                    "on-background": "#1a1c1c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "container-max": "1280px",
+                    "section-gap": "150px",
+                    "internal-md": "24px",
+                    "internal-sm": "12px",
+                    "internal-lg": "32px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Geist"],
+                    "label-caps": ["Geist"],
+                    "body-md": ["Geist"],
+                    "title-lg": ["Geist"],
+                    "code": ["jetbrainsMono"],
+                    "display-lg-mobile": ["Geist"],
+                    "button": ["Geist"],
+                    "headline-md": ["Geist"]
+            },
+            "fontSize": {
+                    "display-lg": ["84px", {"lineHeight": "0.95", "letterSpacing": "-0.04em", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["17px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                    "title-lg": ["28px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                    "code": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "display-lg-mobile": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "button": ["14px", {"lineHeight": "1.0", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-md": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .text-balanced {
+            text-wrap: balance;
+        }
+        .marquee-container {
+            overflow: hidden;
+            user-select: none;
+            display: flex;
+            gap: 4rem;
+        }
+        .marquee-content {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-around;
+            min-width: 100%;
+            gap: 4rem;
+            animation: scroll 30s linear infinite;
+        }
+        @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary selection:text-white">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-3xl border-b border-outline-variant/30">
+<div class="flex justify-between items-center px-gutter py-4 max-w-container-max mx-auto">
+<div class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tighter leading-none">
+            Janji Suci Kita
+        </div>
+<div class="hidden md:flex gap-internal-lg">
+<a class="font-button text-button text-primary border-b-2 border-primary pb-1 transition-colors duration-300" href="#hero">Beranda</a>
+<a class="font-button text-button text-on-secondary-container hover:text-primary transition-colors duration-300" href="#paket">Paket</a>
+<a class="font-button text-button text-on-secondary-container hover:text-primary transition-colors duration-300" href="#details">Detail Acara</a>
+<a class="font-button text-button text-on-secondary-container hover:text-primary transition-colors duration-300" href="#rsvp">RSVP</a>
+</div>
+<button class="bg-primary text-on-primary font-button text-button px-6 py-2 rounded-full active:scale-95 transition-transform">
+            Mulai Buat
+        </button>
+</div>
+</nav>
+<main>
+<!-- Hero Section -->
+<section class="relative min-h-screen flex flex-col items-center justify-center pt-32 px-gutter overflow-hidden" id="hero">
+<div class="text-center max-w-[900px] z-10 mb-16">
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary text-balanced mb-internal-md">
+                Perayaan Seumur Hidup Anda
+            </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[600px] mx-auto">
+                Kami mengundang Anda untuk menjadi bagian dari babak baru dalam perjalanan cinta kami yang abadi melalui Janji Suci Kita.
+            </p>
+</div>
+<div class="w-full max-w-container-max h-[600px] relative rounded-xl overflow-hidden shadow-sm">
+<img alt="Foto Pernikahan Utama" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUd1Xj7sX7KZRg1_YPhoiBFvlub4K4LkdXwdUGWdpgIMZbzANuk6BQqlzMYboPoPnfX9DUwvXYPwN9PK2pHkEmjsmGcK86YpPifDYcfEZe1R6Zjg5YdxbYP67-qxG_iOJgGGHTtI9y5HsCgD09NuoS47hUTFzS2b0two7YJZ_ryHXx6weo0evz96W71JblYhKIAWeydqqVuni0MtnUxFIUmRI9Mj-Dmr3IGGsoz0eKl2Ic2R1FU2or8C9EdODESJYjgWsLaP6kojc"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+</div>
+</section>
+<!-- Mitra Kami (Partners) Section -->
+<section class="py-24 bg-white border-y border-outline-variant/20 overflow-hidden">
+<div class="max-w-container-max mx-auto px-gutter mb-12 text-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-[0.2em] uppercase">Mitra Kami</span>
+</div>
+<div class="marquee-container">
+<div class="marquee-content">
+<span class="text-title-lg font-bold text-outline/40 flex items-center gap-2 grayscale"><span class="material-symbols-outlined">local_florist</span> LUXE FLORALS</span>
+<span class="text-title-lg font-bold text-outline/40 flex items-center gap-2 grayscale"><span class="material-symbols-outlined">photo_camera</span> VISONARY PIX</span>
+<span class="text-title-lg font-bold text-outline/40 flex items-center gap-2 grayscale"><span class="material-symbols-outlined">apartment</span> GRAND BALLROOM</span>
+<span class="text-title-lg font-bold text-outline/40 flex items-center gap-2 grayscale"><span class="material-symbols-outlined">restaurant</span> ELITE CATERING</span>
+<span class="text-title-lg font-bold text-outline/40 flex items-center gap-2 grayscale"><span class="material-symbols-outlined">music_note</span> HARMONY MUSIC</span>
+</div>
+<!-- Duplicate for infinite effect -->
+<div aria-hidden="true" class="marquee-content">
+<span class="text-title-lg font-bold text-outline/40 flex items-center gap-2 grayscale"><span class="material-symbols-outlined">local_florist</span> LUXE FLORALS</span>
+<span class="text-title-lg font-bold text-outline/40 flex items-center gap-2 grayscale"><span class="material-symbols-outlined">photo_camera</span> VISONARY PIX</span>
+<span class="text-title-lg font-bold text-outline/40 flex items-center gap-2 grayscale"><span class="material-symbols-outlined">apartment</span> GRAND BALLROOM</span>
+<span class="text-title-lg font-bold text-outline/40 flex items-center gap-2 grayscale"><span class="material-symbols-outlined">restaurant</span> ELITE CATERING</span>
+<span class="text-title-lg font-bold text-outline/40 flex items-center gap-2 grayscale"><span class="material-symbols-outlined">music_note</span> HARMONY MUSIC</span>
+</div>
+</div>
+</section>
+<!-- Paket Langganan Section -->
+<section class="py-section-gap px-gutter max-w-container-max mx-auto" id="paket">
+<div class="text-center mb-16">
+<h2 class="font-headline-md text-headline-md text-primary mb-4">Paket Langganan</h2>
+<p class="font-body-md text-on-surface-variant max-w-xl mx-auto">Pilih paket terbaik untuk mengabadikan momen suci Anda dengan undangan digital yang elegan.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Silver -->
+<div class="bg-white border border-outline-variant p-internal-lg rounded-xl flex flex-col hover:shadow-xl transition-shadow duration-300">
+<h3 class="font-title-lg text-title-lg mb-2">Silver</h3>
+<div class="mb-6">
+<span class="text-4xl font-bold">Rp 150k</span>
+<span class="text-on-surface-variant text-sm">/pernikahan</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Undangan Digital Standar</li>
+<li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Fitur RSVP Dasar</li>
+<li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Galeri 10 Foto</li>
+<li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Masa Aktif 1 Bulan</li>
+</ul>
+<button class="w-full border border-primary text-primary font-button py-3 rounded-full hover:bg-primary hover:text-on-primary transition-colors">Pilih Paket</button>
+</div>
+<!-- Gold -->
+<div class="bg-primary text-on-primary p-internal-lg rounded-xl flex flex-col shadow-2xl relative overflow-hidden scale-105">
+<div class="absolute top-0 right-0 bg-white/20 px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-white">Populer</div>
+<h3 class="font-title-lg text-title-lg mb-2">Gold</h3>
+<div class="mb-6">
+<span class="text-4xl font-bold">Rp 350k</span>
+<span class="text-on-primary/70 text-sm">/pernikahan</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-2 text-body-md"><span class="material-symbols-outlined text-sm">check_circle</span> Desain Premium &amp; Eksklusif</li>
+<li class="flex items-center gap-2 text-body-md"><span class="material-symbols-outlined text-sm">check_circle</span> RSVP &amp; Manajemen Tamu</li>
+<li class="flex items-center gap-2 text-body-md"><span class="material-symbols-outlined text-sm">check_circle</span> Galeri Foto &amp; Video Tanpa Batas</li>
+<li class="flex items-center gap-2 text-body-md"><span class="material-symbols-outlined text-sm">check_circle</span> Integrasi Musik &amp; Maps</li>
+<li class="flex items-center gap-2 text-body-md"><span class="material-symbols-outlined text-sm">check_circle</span> Masa Aktif 1 Tahun</li>
+</ul>
+<button class="w-full bg-white text-primary font-button py-3 rounded-full active:scale-95 transition-transform">Pilih Paket</button>
+</div>
+<!-- Platinum -->
+<div class="bg-white border border-outline-variant p-internal-lg rounded-xl flex flex-col hover:shadow-xl transition-shadow duration-300">
+<h3 class="font-title-lg text-title-lg mb-2">Platinum</h3>
+<div class="mb-6">
+<span class="text-4xl font-bold">Rp 750k</span>
+<span class="text-on-surface-variant text-sm">/pernikahan</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Semua Fitur Paket Gold</li>
+<li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Custom Domain (namaanda.com)</li>
+<li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Buku Tamu Digital QR Code</li>
+<li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Masa Aktif Selamanya</li>
+</ul>
+<button class="w-full border border-primary text-primary font-button py-3 rounded-full hover:bg-primary hover:text-on-primary transition-colors">Pilih Paket</button>
+</div>
+</div>
+</section>
+<!-- Feature Section: Our Story -->
+<section class="py-section-gap px-gutter max-w-container-max mx-auto" id="story">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-internal-lg items-center">
+<div class="md:col-span-7 rounded-xl overflow-hidden h-[700px]">
+<img alt="Ilustrasi Kisah Kami" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4BEcozZJbeLe398TkNbqXDOfN_jo7Ba7SYhnGpG7jeWpsL23BfbW7O3LD2nkQmAJQwZG-IGl7WeTqbvYA7qz8NsxbHGPHK5gs_4oIwXe5RiRjsbBoCEfm8lIrmohZdG9T4VzXl1lywWjOXTubUr9NU8EFMTWOOgZ2KVBqXywRwWMtKOC87WD0pD0oIkGOTJP_t6Wdl-g4hQgE5Yd_IwJ5J9aJgSJyEJUrwq-XVEYkZvNd8ZyyFfoPxu3hM5Pd2lkAE0jloxC_J8A"/>
+</div>
+<div class="md:col-span-5 flex flex-col justify-center">
+<span class="font-label-caps text-label-caps text-primary mb-4 tracking-widest">Kisah Kami</span>
+<h2 class="font-headline-md text-headline-md text-primary mb-internal-md">Kisah Janji Suci</h2>
+<div class="space-y-6 font-body-md text-body-md text-on-surface-variant leading-relaxed">
+<p>Berawal dari sebuah pertemuan tak terduga di tengah hiruk pikuk kota, kami menemukan kesamaan dalam hal-hal kecil. Frekuensi yang selaras membawa kami pada sebuah perjalanan panjang yang dipenuhi dengan tawa, pembelajaran, dan dukungan tanpa henti.</p>
+<p>Kini, kami melangkah menuju masa depan yang sama, membangun mimpi di atas pondasi kepercayaan dan kasih sayang melalui Janji Suci Kita.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Event Details Section -->
+<section class="py-section-gap bg-surface-container-low" id="details">
+<div class="max-w-container-max mx-auto px-gutter">
+<div class="text-center mb-16">
+<h2 class="font-headline-md text-headline-md text-primary mb-4">Detail Acara</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Bergabunglah bersama kami pada hari yang istimewa ini.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-internal-md">
+<!-- Date Card -->
+<div class="bg-white p-internal-lg rounded-xl border border-outline-variant transition-all hover:shadow-md">
+<div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary">calendar_today</span>
+</div>
+<h3 class="font-title-lg text-title-lg mb-2">Tanggal</h3>
+<p class="font-body-md text-on-surface-variant">Minggu, 12 Oktober 2024</p>
+<p class="font-code text-code mt-4 text-primary">10:00 AM - Selesai</p>
+</div>
+<!-- Venue Card -->
+<div class="bg-white p-internal-lg rounded-xl border border-outline-variant transition-all hover:shadow-md">
+<div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary">location_on</span>
+</div>
+<h3 class="font-title-lg text-title-lg mb-2">Tempat</h3>
+<p class="font-body-md text-on-surface-variant">Ballroom Janji Suci</p>
+<p class="font-body-md text-on-surface-variant">Jl. Arsitektur Modern No. 88, Jakarta</p>
+</div>
+<!-- Dress Code Card -->
+<div class="bg-white p-internal-lg rounded-xl border border-outline-variant transition-all hover:shadow-md">
+<div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary">checkroom</span>
+</div>
+<h3 class="font-title-lg text-title-lg mb-2">Dress Code</h3>
+<p class="font-body-md text-on-surface-variant">Formal &amp; Elegan</p>
+<p class="font-body-md text-on-surface-variant">Putih, Hitam, atau Warna Netral</p>
+</div>
+</div>
+</div>
+</section>
+<!-- RSVP Section -->
+<section class="py-section-gap px-gutter max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-2 gap-section-gap items-center" id="rsvp">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary mb-internal-md">Konfirmasi RSVP</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-internal-lg">
+                Mohon konfirmasi kehadiran Anda sebelum tanggal 1 Oktober 2024 untuk membantu kami mempersiapkan segalanya dengan sempurna.
+            </p>
+<div class="flex gap-4 items-center">
+<span class="material-symbols-outlined text-primary">contact_support</span>
+<span class="font-body-md">Butuh bantuan? <a class="underline font-bold" href="#">Hubungi Kami</a></span>
+</div>
+</div>
+<div class="bg-white border border-outline-variant p-internal-lg rounded-xl shadow-sm">
+<form class="space-y-6">
+<div>
+<label class="font-label-caps text-label-caps block mb-2">Nama Lengkap</label>
+<input class="w-full bg-surface-container border-none focus:ring-1 focus:ring-primary rounded-lg px-4 py-3 font-body-md" placeholder="Masukkan nama Anda" type="text"/>
+</div>
+<div>
+<label class="font-label-caps text-label-caps block mb-2">Konfirmasi Kehadiran</label>
+<select class="w-full bg-surface-container border-none focus:ring-1 focus:ring-primary rounded-lg px-4 py-3 font-body-md">
+<option>Ya, Saya akan hadir</option>
+<option>Maaf, Saya tidak bisa hadir</option>
+<option>Masih ragu-ragu</option>
+</select>
+</div>
+<div>
+<label class="font-label-caps text-label-caps block mb-2">Jumlah Tamu</label>
+<input class="w-full bg-surface-container border-none focus:ring-1 focus:ring-primary rounded-lg px-4 py-3 font-body-md" max="2" min="1" type="number" value="1"/>
+</div>
+<button class="w-full bg-primary text-on-primary font-button text-button py-4 rounded-full active:scale-95 transition-transform" type="submit">
+                    Kirim Konfirmasi
+                </button>
+</form>
+</div>
+</section>
+<!-- Strong CTA Section -->
+<section class="py-32 px-gutter bg-primary text-center">
+<div class="max-w-3xl mx-auto">
+<h2 class="font-display-lg-mobile md:text-headline-md text-on-primary mb-8 leading-tight">Abadikan Momen Indah Anda Selamanya</h2>
+<p class="font-body-md text-on-primary/80 mb-12">Rancang undangan pernikahan digital yang mewakili keunikan cinta Anda dengan Janji Suci Kita.</p>
+<button class="bg-white text-primary font-button px-12 py-5 rounded-full text-lg hover:bg-surface-container transition-colors active:scale-95 duration-200">
+                Mulai Buat Undangan
+            </button>
+</div>
+</section>
+<!-- Photo Gallery -->
+<section class="py-section-gap px-gutter max-w-container-max mx-auto">
+<h2 class="font-headline-md text-headline-md text-primary mb-16 text-center">Momen Berharga</h2>
+<div class="grid grid-cols-12 gap-6 md:auto-rows-[300px]">
+<div class="col-span-12 md:col-span-8 md:row-span-2 rounded-xl overflow-hidden">
+<img alt="Gallery Image 1" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjSP5GpdNsMncYGvcLldI_b-64BiFJ9DDyWOEuQYUqX1PsfPRGbkj8BsBzVCoZs9W17xQgdlEVm_9Hw3_z7IiHKsWn1iJ2TK_Q4RhSoIrJsGfmwAyGWO9afg1G099Be9SzhND3FxjDgT3-rtM-fJpjmPCrpiI_zuEEJFqGqNkNEAPd9OvxJtRkfjFmVJo9IeKx6Wdbn3AvN-aDr5U3IzoJwIz-JGyUbjjQhUYyJu0SVopkqKtJ0OQRLuLtQiuXuPjNcCm0QZJOxM0"/>
+</div>
+<div class="col-span-12 md:col-span-4 md:row-span-1 rounded-xl overflow-hidden">
+<img alt="Gallery Image 2" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASgaUbwmrZ6zRWJqOUGWuhIXmjJLi4yDmEVaIY_flynZT6_vyxzTkST-YfOFiScVCUUCZkWZBs7LXSOb5AXJBOQpiAvtDokGv4lTGwdC0_IUIRiF11PDIjS97ST_3-Hh2ZiY1HCc32VJARkw-vlanrkCgvXz1vWcW_y4dnp0WYwFv1CtXgQruGV8AxL9R5SB3mYIzU2byoFhT5K887rBqV7jFzTKLpQcA0YvUByzY9GxyijQ07C2yJjZ-gly4Ofz2j2WKUbJysauE"/>
+</div>
+<div class="col-span-12 md:col-span-4 md:row-span-1 rounded-xl overflow-hidden">
+<img alt="Gallery Image 3" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAkfoHrdb7IEoAqgmzIr9SRYwDSObtkyeAGYcF2a_Tcmiq2rBINK5YgTQ2MP_vOVdFavzvcfIVdIAa0wNK7-tPEHmVKPiOI7SH1e9lYa3i4SXkoE-0cKo8_2s-Qd2iZk5X2qFo2Ft-wZvSWbMq8sj_oJ3VJ2N3sSCnaUuprfzG7NAuxvh6V4LP9iQHHju6XPE8GygITZ9gZp8LZvf4XEqXD1huzkbqVkL8_wjzgs6SCARFYTn0cwrZvMr4hpweLnhhSXtuHHOvT4I"/>
+</div>
+<div class="col-span-12 md:col-span-4 md:row-span-1 rounded-xl overflow-hidden">
+<img alt="Gallery Image 4" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3dV5xWCFveCMdFPX2n8x1sPNjhXltRmoHHtedIt9QKTFfAWH9LlTLu4c7sIqzRE0PbemXpuV9KAhzpgKRcObSOG9SWJM1YNUA4nolsY4MCskYTjMBsp7c8bd-qkv7HeLH1okxd0RVsYKwFDSxO5tr0nx6ir97yiBDpD37F4-v3mE89ql610oT4nf8fhZk8ekhu2NFO-X2ksV7CViaIciQ9Kj3vvwfvJ7aF5y2M22ic4EMp4KWShrvalr-Dn6bv4N84KDfzDP8S48"/>
+</div>
+<div class="col-span-12 md:col-span-8 md:row-span-1 rounded-xl overflow-hidden">
+<img alt="Gallery Image 5" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFJNZOOlVrjZ2oleVK-1pKLoOvoW9a1--Wn4nJAqEkM7zQ5oukcyJc0Sr7hQucoaBoX3zlyEDzCJqlaCi8EbLh-OG48x_yzzIg85ISlH4_0EKV2B0fAmOkDgCUxQj2Vs2tIiVH7pV0BmxuCppYbSXWOEDVlHr-h6eZ2XneCbERhScVpYwb_RmTNT3cs8EW7d6xnuCrl6Rt4sZPVmwqEFKYeo5rNmGCJGhJdbUGCVtMdUScQVd1FivgLYLasTBEh2PyCCIXz48lHaU"/>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-white border-t border-outline-variant/30 w-full py-section-gap">
+<div class="max-w-container-max mx-auto px-gutter grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+<div class="col-span-1 md:col-span-2">
+<div class="font-display-lg-mobile text-display-lg-mobile text-primary leading-none mb-6">
+                Janji Suci Kita
+            </div>
+<p class="font-body-md text-on-surface-variant max-w-sm">Membantu pasangan di seluruh Indonesia menciptakan undangan digital yang elegan, personal, dan tak terlupakan.</p>
+<a class="text-primary font-bold mt-4 block" href="https://www.janjisucikita.com">www.jajnjisucikita.com</a>
+</div>
+<div>
+<h4 class="font-label-caps text-label-caps mb-6 uppercase tracking-wider">Perusahaan</h4>
+<ul class="space-y-4">
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Tentang Kami</a></li>
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Layanan</a></li>
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Mitra</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-caps text-label-caps mb-6 uppercase tracking-wider">Dukungan</h4>
+<ul class="space-y-4">
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Kontak</a></li>
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Kebijakan Privasi</a></li>
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Syarat &amp; Ketentuan</a></li>
+</ul>
+</div>
+</div>
+<div class="flex flex-col items-center gap-internal-lg text-center px-gutter pt-8 border-t border-outline-variant/30">
+<div class="flex flex-wrap justify-center gap-6">
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200 underline underline-offset-4" href="#">Instagram</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200 underline underline-offset-4" href="#">WhatsApp</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-all duration-200 underline underline-offset-4" href="#">Email</a>
+</div>
+<div class="font-body-md text-on-surface-variant/60 text-sm">
+            © 2024 Janji Suci Kita. Semua hak dilindungi.
+        </div>
+</div>
+</footer>
+<script>
+        // Smooth scroll interaction for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                document.querySelector(targetId).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Intersection Observer for fade-in effects
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section > div').forEach(el => {
+            el.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-10');
+            observer.observe(el);
+        });
+    </script>
+</body></html>

@@ -99,12 +99,11 @@
             <a href="#sec4">4. Countdown</a>
             <a href="#sec5">5. Acara & Susunan</a>
             <a href="#sec6">6. Lokasi</a>
-            <a href="#sec7">7. Galeri</a>
-            <a href="#sec8">8. Love Story</a>
-            <a href="#sec9">9. RSVP & Ucapan</a>
-            <a href="#sec10">10. Tanda Kasih</a>
-            <a href="#sec11">11. Penutup</a>
-            <a href="#sec12">12. Musik & Live</a>
+            <a href="#sec8">7. Love Story</a>
+            <a href="#sec9">8. RSVP & Ucapan</a>
+            <a href="#sec10">9. Tanda Kasih</a>
+            <a href="#sec11">10. Penutup</a>
+            <a href="#sec12">11. Musik & Live</a>
         </aside>
 
         <div class="space-y-5">
@@ -344,63 +343,10 @@
                     </div>
                 </section>
 
-                <section id="sec7" class="edit-card">
-                    <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">7</span>Galeri</h3>
-                        <span class="text-xs font-semibold"
-                            style="color: var(--text-secondary);">{{ $currentPhotos }}/{{ $maxPhotos }}</span>
-                    </div>
-                    <div class="edit-body">
-                        <div class="mb-4"
-                            style="background: var(--bg-tertiary); height: 4px; border-radius: 2px; overflow: hidden;">
-                            <div
-                                style="width: {{ $photoPercent }}%; height: 100%; border-radius: 2px; transition: width 0.3s; background: {{ $photoPercent >= 90 ? 'var(--danger)' : ($photoPercent >= 70 ? 'var(--warning)' : 'var(--accent)') }};">
-                            </div>
-                        </div>
-                        @if ($invitation->photos->count())
-                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-4">
-                                @foreach ($invitation->photos as $photo)
-                                    <div class="relative group"
-                                        style="aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border);">
-                                        <img src="{{ asset('storage/' . $photo->file_path) }}" alt="{{ $photo->caption }}"
-                                            class="w-full h-full object-cover">
-                                        <div
-                                            class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                                            <button type="submit" form="delete-photo-{{ $photo->id }}"
-                                                onclick="return confirm('Hapus foto ini?')"
-                                                class="w-8 h-8 rounded-full flex items-center justify-center"
-                                                style="background: rgba(255,59,48,0.8);">
-                                                <i class="fas fa-trash text-white text-xs"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-                        @if ($currentPhotos < $maxPhotos)
-                            <div class="grid grid-cols-1 sm:grid-cols-[1fr,180px,150px] gap-2 items-end">
-                                <div>
-                                    <label class="form-label">Upload Foto Baru</label>
-                                    <input type="file" name="photo" class="form-input text-xs"
-                                        accept="image/jpeg,image/png,image/webp" required form="galleryUploadForm">
-                                </div>
-                                <div>
-                                    <label class="form-label">Caption</label>
-                                    <input type="text" name="caption" class="form-input" placeholder="Opsional"
-                                        form="galleryUploadForm">
-                                </div>
-                                <button type="submit" form="galleryUploadForm" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-upload mr-1"></i> Simpan Galeri
-                                </button>
-                            </div>
-                        @endif
-                    </div>
-                </section>
-
                 <section id="sec8" class="edit-card"
                     x-data="{ stories: {{ json_encode($invitation->loveStories->count() > 0 ? $invitation->loveStories->map(fn($s) => ['year' => $s->year, 'title' => $s->title, 'description' => $s->description, 'photo_path' => $s->photo_path])->values() : [['year' => '', 'title' => '', 'description' => '', 'photo_path' => '']]) }} }">
                     <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">8</span>Love Story</h3>
+                        <h3 class="font-semibold flex items-center gap-2"><span class="step">7</span>Love Story</h3>
                         <div class="flex items-center gap-2">
                             <button type="button" @click="stories.push({year:'',title:'',description:'',photo_path:''})"
                                 class="btn btn-secondary btn-sm"><i class="fas fa-plus mr-1"></i> Tambah</button>
@@ -442,7 +388,7 @@
 
                 <section id="sec9" class="edit-card">
                     <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">9</span>RSVP & Ucapan</h3>
+                        <h3 class="font-semibold flex items-center gap-2"><span class="step">8</span>RSVP & Ucapan</h3>
                     </div>
                     <div class="edit-body">
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -471,7 +417,7 @@
                 <section id="sec10" class="edit-card"
                     x-data="{ accounts: {{ json_encode($invitation->bankAccounts->count() ? $invitation->bankAccounts->map(fn($a) => ['bank_name' => $a->bank_name, 'account_number' => $a->account_number, 'account_name' => $a->account_name])->values() : [['bank_name' => $invitation->bank_name ?? '', 'account_number' => $invitation->bank_account_number ?? '', 'account_name' => $invitation->bank_account_name ?? '']]) }} }">
                     <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">10</span>Tanda Kasih</h3>
+                        <h3 class="font-semibold flex items-center gap-2"><span class="step">9</span>Tanda Kasih</h3>
                         <button type="button" @click="accounts.push({bank_name:'',account_number:'',account_name:''})"
                             class="btn btn-secondary btn-sm"><i class="fas fa-plus mr-1"></i> Tambah</button>
                     </div>
@@ -498,7 +444,7 @@
 
                 <section id="sec11" class="edit-card">
                     <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">11</span>Penutup</h3>
+                        <h3 class="font-semibold flex items-center gap-2"><span class="step">10</span>Penutup</h3>
                     </div>
                     <div class="edit-body">
                         <div class="mb-4"><label class="form-label">Teks Penutup</label><textarea name="closing_text"
@@ -511,7 +457,7 @@
 
                 <section id="sec12" class="edit-card">
                     <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">12</span>Musik & Live Streaming
+                        <h3 class="font-semibold flex items-center gap-2"><span class="step">11</span>Musik & Live Streaming
                         </h3>
                     </div>
                     <div class="edit-body">
@@ -557,17 +503,6 @@
                 </div>
             </form>
 
-            <form id="galleryUploadForm" method="POST" action="{{ route('client.invitations.photos.store', $invitation) }}"
-                enctype="multipart/form-data" class="hidden">
-                @csrf
-            </form>
-            @foreach ($invitation->photos as $photo)
-                <form id="delete-photo-{{ $photo->id }}" method="POST"
-                    action="{{ route('client.invitations.photos.destroy', [$invitation, $photo]) }}" class="hidden">
-                    @csrf
-                    @method('DELETE')
-                </form>
-            @endforeach
         </div>
     </div>
 
@@ -673,6 +608,36 @@
                     pickerMarker.setLatLng(e.latlng);
                     updateCoordInputs(e.latlng.lat, e.latlng.lng);
                 });
+
+                // Parse Coordinates from Google Maps URL
+                function parseCoordsFromUrl(url) {
+                    let match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+                    if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+                    
+                    match = url.match(/[?&](q|query)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+                    if (match) return { lat: parseFloat(match[2]), lng: parseFloat(match[3]) };
+                    
+                    match = url.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+                    if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+                    
+                    match = url.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+                    if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+                    
+                    return null;
+                }
+
+                const mapsUrlInput = document.getElementsByName('google_maps_url')[0];
+                if (mapsUrlInput) {
+                    mapsUrlInput.addEventListener('input', function() {
+                        const url = this.value.trim();
+                        const coords = parseCoordsFromUrl(url);
+                        if (coords) {
+                            updateCoordInputs(coords.lat, coords.lng);
+                            pickerMap.setView([coords.lat, coords.lng], 17);
+                            pickerMarker.setLatLng([coords.lat, coords.lng]);
+                        }
+                    });
+                }
 
                 // If no saved coords, auto-locate user
                 if (!hasExistingCoords) {

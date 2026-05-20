@@ -25,9 +25,12 @@
                 <div class="p-5">
                     <div class="flex items-center justify-between gap-3 mb-3">
                         <h3 class="font-semibold text-sm">{{ $template->name }}</h3>
-                        @if ($template->is_premium)
-                            <span class="badge badge-warning">Premium</span>
-                        @endif
+                        <div class="flex items-center gap-2">
+                            <span class="badge badge-info">{{ $template->render_mode === \App\Models\Template::RENDER_MODE_BUILDER ? 'Builder' : 'Blade' }}</span>
+                            @if ($template->is_premium)
+                                <span class="badge badge-warning">Premium</span>
+                            @endif
+                        </div>
                     </div>
                     <p class="text-xs mb-4" style="color: var(--text-secondary);">
                         Kategori: {{ ucfirst($template->category) }}

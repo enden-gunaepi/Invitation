@@ -290,7 +290,26 @@
         button:disabled .btn-text {
             display: none;
         }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 0 0px rgba(159, 191, 214, 0.5);
+                border-color: rgba(159, 191, 214, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(159, 191, 214, 0);
+                border-color: rgba(159, 191, 214, 1);
+            }
+        }
+        .pulse-glow-active {
+            animation: pulse-glow 2s infinite !important;
+            border-color: #9fbfd6 !important;
+        }
+        .pulse-glow-active svg {
+            color: #9fbfd6 !important;
+        }
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
 </head>
 
 <body class="bg-black text-white overflow-x-hidden">
@@ -300,6 +319,15 @@
             ($invitation->groom_name ?? 'Mempelai Pria') . ' & ' . ($invitation->bride_name ?? 'Mempelai Wanita'),
         );
         $coverImage = $invitation->cover_photo ? asset('storage/' . $invitation->cover_photo) : null;
+        $slideshowImages = [];
+        if ($invitation->cover_photo) {
+            $slideshowImages[] = asset('storage/' . $invitation->cover_photo);
+        }
+        foreach ($invitation->photos as $photo) {
+            $slideshowImages[] = asset('storage/' . $photo->file_path);
+        }
+        $slideshowImages = array_values(array_unique($slideshowImages));
+
         $groomPhoto = $invitation->groom_photo ? asset('storage/' . $invitation->groom_photo) : null;
         $bridePhoto = $invitation->bride_photo ? asset('storage/' . $invitation->bride_photo) : null;
         $eventDateText = $invitation->event_date ? $invitation->event_date->translatedFormat('d.m.y') : '-';
@@ -331,19 +359,25 @@
     <section id="cover"
         class="relative h-screen w-full flex items-end justify-center text-center overflow-hidden transition-opacity duration-700">
         <div class="absolute inset-0">
-            @if ($coverImage)
-                <img src="{{ $coverImage }}" class="w-full h-full object-cover bg-zoom" alt="Cover">
+            @if (count($slideshowImages) > 0)
+                <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
+                    @foreach ($slideshowImages as $index => $imgUrl)
+                        <img src="{{ $imgUrl }}" 
+                             class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" 
+                             alt="Cover {{ $index + 1 }}">
+                    @endforeach
+                </div>
             @else
                 <div class="w-full h-full bg-gradient-to-b from-slate-900 to-black"></div>
             @endif
-            <div class="absolute inset-0 bg-black/70"></div>
-            <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
+            <div class="absolute inset-0 bg-black/35 z-20"></div>
+            <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/85 via-black/50 to-transparent z-30"></div>
         </div>
         <div class="absolute bottom-0 left-0 w-28 opacity-30"><img src="ornament.png" class="ornament-float"
                 alt=""></div>
         <div class="absolute bottom-0 right-0 w-28 opacity-30 rotate-180"><img src="ornament.png" class="ornament-float"
                 alt=""></div>
-        <div class="relative z-10 pb-16 px-6">
+        <div class="relative z-40 pb-16 px-6">
             <h1 class="font-title text-3xl md:text-5xl mb-3 tracking-wide">{{ $coupleName }}</h1>
             <p class="text-sm mb-6 opacity-80">{{ $eventDateText }}</p>
             <p class="text-sm opacity-80">Kepada Yth.</p>
@@ -357,13 +391,19 @@
     <section id="mainContent" class="hidden">
         <section class="relative min-h-screen flex items-end justify-center text-center text-white overflow-hidden">
             <div class="absolute inset-0">
-                @if ($coverImage)
-                    <img src="{{ $coverImage }}" class="w-full h-full object-cover" alt="Pembuka">
+                @if (count($slideshowImages) > 0)
+                    <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
+                        @foreach ($slideshowImages as $index => $imgUrl)
+                            <img src="{{ $imgUrl }}" 
+                                 class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" 
+                                 alt="Pembuka {{ $index + 1 }}">
+                        @endforeach
+                    </div>
                 @else
                     <div class="w-full h-full bg-gradient-to-b from-slate-800 to-black"></div>
                 @endif
-                <div class="absolute inset-0 bg-black/50"></div>
-                <div class="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black via-black/90 to-transparent">
+                <div class="absolute inset-0 bg-black/35 z-20"></div>
+                <div class="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/85 via-black/45 to-transparent z-30">
                 </div>
             </div>
             <div class="absolute bottom-0 left-0 w-40 opacity-30"><img src="ornament.png" class="ornament-float"
@@ -371,7 +411,7 @@
             <div class="absolute bottom-0 right-0 w-40 opacity-30 rotate-180"><img src="ornament.png"
                     class="ornament-float" alt="">
             </div>
-            <div class="relative z-10 pb-20 px-6">
+            <div class="relative z-40 pb-20 px-6">
                 <h1 class="font-title text-3xl md:text-5xl mb-4">{{ $coupleName }}</h1>
                 <p class="text-sm opacity-80 mb-6">{{ $eventDateText }}</p>
                 <p class="text-sm opacity-80">Kepada Yth.</p>
@@ -381,13 +421,19 @@
 
         <section class="relative min-h-screen flex items-end justify-center text-center text-white overflow-hidden">
             <div class="absolute inset-0">
-                @if ($coverImage)
-                    <img src="{{ $coverImage }}" class="w-full h-full object-cover bg-zoom" alt="Pembuka">
+                @if (count($slideshowImages) > 0)
+                    <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
+                        @foreach ($slideshowImages as $index => $imgUrl)
+                            <img src="{{ $imgUrl }}" 
+                                 class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" 
+                                 alt="Pembuka {{ $index + 1 }}">
+                        @endforeach
+                    </div>
                 @else
                     <div class="w-full h-full bg-gradient-to-b from-slate-800 to-black"></div>
                 @endif
-                <div class="absolute inset-0 bg-black/50"></div>
-                <div class="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black via-black/40 to-transparent">
+                <div class="absolute inset-0 bg-black/30 z-20"></div>
+                <div class="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/75 via-black/30 to-transparent z-30">
                 </div>
             </div>
             <div class="absolute bottom-0 left-0 w-40 opacity-30"><img src="ornament.png" class="ornament-float"
@@ -396,7 +442,7 @@
                     class="ornament-float" alt="">
             </div>
 
-            <div class="relative z-10 px-6 pb-14 w-full max-w-3xl">
+            <div class="relative z-40 px-6 pb-14 w-full max-w-3xl">
                 <article class="glass-card rounded-3xl px-6 py-8 md:px-10 md:py-10 text-center">
                     <h3 class="font-title text-3xl md:text-4xl mb-4">{{ $coupleName }}</h3>
                     <p class="text-sm md:text-base leading-relaxed opacity-95">{!! nl2br(e($openingText)) !!}</p>
@@ -414,8 +460,8 @@
                 @else
                     <div class="w-full h-full bg-gradient-to-b from-slate-900 to-black"></div>
                 @endif
-                <div class="absolute inset-0 bg-black/50"></div>
-                <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black via-black/30 to-transparent">
+                <div class="absolute inset-0 bg-black/30"></div>
+                <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/75 via-black/20 to-transparent">
                 </div>
             </div>
             <div class="absolute top-0 left-0 w-32 opacity-30"><img src="ornament.png" class="ornament-float"
@@ -548,12 +594,20 @@
 
         <section class="relative min-h-screen text-white px-6 py-20 overflow-hidden">
             <div class="absolute inset-0">
-                @if ($coverImage)
-                    <img src="{{ $coverImage }}" class="w-full h-full object-cover" alt="Timeline">
+                @if (count($slideshowImages) > 0)
+                    <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
+                        @foreach ($slideshowImages as $index => $imgUrl)
+                            <img src="{{ $imgUrl }}" 
+                                 class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" 
+                                 alt="Timeline {{ $index + 1 }}">
+                        @endforeach
+                    </div>
+                @else
+                    <div class="w-full h-full bg-gradient-to-b from-slate-900 to-black"></div>
                 @endif
-                <div class="absolute inset-0 bg-black/70"></div>
+                <div class="absolute inset-0 bg-black/35 z-20"></div>
             </div>
-            <div class="relative z-10 max-w-5xl mx-auto">
+            <div class="relative z-40 max-w-5xl mx-auto">
                 <div class="text-center mb-16">
                     <h2 class="font-title text-2xl md:text-3xl mt-6">SUSUNAN ACARA</h2>
                 </div>
@@ -629,11 +683,13 @@
             <section class="relative px-6 py-20 bg-[#9fbfd6]">
                 <div class="max-w-6xl mx-auto">
                     <h2 class="font-title text-3xl mb-8 text-center">Galeri</h2>
-                    <div class="columns-2 md:columns-4 gap-4 [column-fill:_balance]">
+                    <div class="columns-2 md:columns-4 gap-2 md:gap-3 [column-fill:_balance]">
                         @foreach ($invitation->photos as $photo)
-                            <div class="mb-4 break-inside-avoid">
-                                <img src="{{ asset('storage/' . $photo->file_path) }}" alt="Galeri foto"
-                                    class="w-full h-auto object-contain rounded-xl shadow-lg shadow-black/20">
+                            <div class="mb-2 md:mb-3 break-inside-avoid gallery-item overflow-hidden rounded-xl">
+                                <a href="{{ asset('storage/' . $photo->file_path) }}" data-fancybox="gallery" data-caption="{{ $photo->caption ?: '' }}">
+                                    <img src="{{ asset('storage/' . $photo->file_path) }}" alt="{{ $photo->caption ?: '' }}"
+                                        class="w-full h-auto object-contain rounded-xl shadow-lg shadow-black/20 hover:scale-[1.03] hover:brightness-[1.05] transition-all duration-300 ease-out cursor-pointer">
+                                </a>
                             </div>
                         @endforeach
                     </div>
@@ -803,11 +859,19 @@
         <section
             class="relative min-h-screen flex flex-col items-center justify-between text-center text-white px-6 overflow-hidden">
             <div class="absolute inset-0">
-                @if ($coverImage)
-                    <img src="{{ $coverImage }}" class="w-full h-full object-cover" alt="Closing">
+                @if (count($slideshowImages) > 0)
+                    <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
+                        @foreach ($slideshowImages as $index => $imgUrl)
+                            <img src="{{ $imgUrl }}" 
+                                 class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" 
+                                 alt="Closing {{ $index + 1 }}">
+                        @endforeach
+                    </div>
+                @else
+                    <div class="w-full h-full bg-gradient-to-b from-slate-900 to-black"></div>
                 @endif
-                <div class="absolute inset-0 bg-black/70"></div>
-                <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black via-black/90 to-transparent">
+                <div class="absolute inset-0 bg-black/35 z-20"></div>
+                <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/85 via-black/50 to-transparent z-30">
                 </div>
             </div>
             <div class="absolute top-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
@@ -816,7 +880,7 @@
             <div class="absolute bottom-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
             <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png" alt="">
             </div>
-            <div class="relative z-10 mt-16 max-w-xl">
+            <div class="relative z-40 mt-16 max-w-xl">
                 <p class="text-sm leading-relaxed opacity-90 mb-6">
                     {{ $invitation->closing_text ?: 'Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kedua mempelai.' }}
                 </p>
@@ -826,7 +890,7 @@
                     <p class="text-xs mt-4 break-all opacity-80">{{ $guest->getInvitationUrl() }}</p>
                 @endif
             </div>
-            <div class="relative z-10 mb-8 text-xs opacity-60 max-w-md">
+            <div class="relative z-40 mb-8 text-xs opacity-60 max-w-md">
                 <p>Music</p>
             </div>
         </section>
@@ -838,28 +902,45 @@
         </audio>
     @endif
 
-    <div class="fixed right-2 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-1.5">
+    <div class="fixed right-4 bottom-4 z-50 flex flex-col gap-2">
         <button id="soundToggle" type="button" aria-label="Toggle suara" title="Suara: Off"
-            class="w-8 h-8 rounded-full bg-black/55 hover:bg-black/75 border border-white/25 backdrop-blur-md flex items-center justify-center transition">
-            <svg id="soundIconOn" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white hidden"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M11 5 6 9H3v6h3l5 4V5Zm4.5 3.5a6 6 0 0 1 0 7" />
+            class="w-8 h-8 rounded-full bg-slate-900/80 hover:bg-slate-950 border border-white/20 backdrop-blur-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-[0_3px_15px_rgba(0,0,0,0.4)]">
+            <!-- Music SVG (On) -->
+            <svg id="soundIconOn" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white hidden" viewBox="0 0 24 24">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <g fill="none">
+                    <path fill="currentColor" fill-rule="evenodd" d="M13 16.753V14H8.818a3.249 3.249 0 1 0 .403 6.472l.557-.07A3.68 3.68 0 0 0 13 16.754" clip-rule="evenodd" />
+                    <path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M13 8v-.611c0-1.619 0-2.428.474-2.987s1.272-.693 2.868-.96L18.7 3.05c.136-.022.204-.034.24.006s.02.106-.013.24l-.895 3.581c-.015.06-.023.09-.044.11s-.05.026-.111.038zm0 0v6m0 0v2.753a3.68 3.68 0 0 1-3.222 3.65l-.557.07A3.249 3.249 0 1 1 8.818 14z" />
+                </g>
             </svg>
-            <svg id="soundIconOff" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5 6 9H3v6h3l5 4V5Zm4 5 4 4m0-4-4 4" />
+            <!-- Music SVG (Off / Slashed) -->
+            <svg id="soundIconOff" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <g fill="none">
+                    <path fill="currentColor" fill-rule="evenodd" d="M13 16.753V14H8.818a3.249 3.249 0 1 0 .403 6.472l.557-.07A3.68 3.68 0 0 0 13 16.754" clip-rule="evenodd" />
+                    <path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M13 8v-.611c0-1.619 0-2.428.474-2.987s1.272-.693 2.868-.96L18.7 3.05c.136-.022.204-.034.24.006s.02.106-.013.24l-.895 3.581c-.015.06-.023.09-.044.11s-.05.026-.111.038zm0 0v6m0 0v2.753a3.68 3.68 0 0 1-3.222 3.65l-.557.07A3.249 3.249 0 1 1 8.818 14z" />
+                    <path d="M4 4l16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </g>
             </svg>
         </button>
         <button id="scrollToggle" type="button" aria-label="Toggle auto scroll" title="Auto Scroll: Off"
-            class="w-8 h-8 rounded-full bg-black/55 hover:bg-black/75 border border-white/25 backdrop-blur-md flex items-center justify-center transition">
-            <svg id="scrollIconOn" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white hidden"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m0 0-4-4m4 4 4-4" />
+            class="w-8 h-8 rounded-full bg-slate-900/80 hover:bg-slate-950 border border-white/20 backdrop-blur-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-[0_3px_15px_rgba(0,0,0,0.4)]">
+            <!-- Scroll SVG (On) -->
+            <svg id="scrollIconOn" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white hidden" viewBox="0 0 24 24">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <g fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 22c6 0 7.5-4.51 7.5-10S18 2 12 2S4.5 6.51 4.5 12S6 22 12 22Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.988 6.839v4.92m-1.992-3.9c.984-1.02 1.584-1.92 2.04-1.856c.384-.003.744.596 1.968 1.856m0 3.281c-.984 1.02-1.584 1.92-2.04 1.856c-.384.003-.744-.595-1.968-1.855" />
+                </g>
             </svg>
-            <svg id="scrollIconOff" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m0 0-4-4m4 4 4-4m5-13L3 21" />
+            <!-- Scroll SVG (Off / Slashed) -->
+            <svg id="scrollIconOff" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24">
+                <path d="M0 0h24v24H0z" fill="none" />
+                <g fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 22c6 0 7.5-4.51 7.5-10S18 2 12 2S4.5 6.51 4.5 12S6 22 12 22Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.988 6.839v4.92m-1.992-3.9c.984-1.02 1.584-1.92 2.04-1.856c.384-.003.744.596 1.968 1.856m0 3.281c-.984 1.02-1.584 1.92-2.04 1.856c-.384.003-.744-.595-1.968-1.855" />
+                    <path d="M4 4l16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </g>
             </svg>
         </button>
     </div>
@@ -867,6 +948,7 @@
     <div id="toast" class="toast-notification">Berhasil disalin!</div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
     <script>
         const bgMusic = document.getElementById("bgMusic");
         const soundToggle = document.getElementById("soundToggle");
@@ -875,8 +957,8 @@
         const soundIconOff = document.getElementById("soundIconOff");
         const scrollIconOn = document.getElementById("scrollIconOn");
         const scrollIconOff = document.getElementById("scrollIconOff");
-        let soundOn = false;
-        let autoScrollOn = false;
+        let soundOn = true;
+        let autoScrollOn = true;
         let autoScrollFrame = null;
         let visualInited = false;
 
@@ -1100,6 +1182,11 @@
         function updateSoundLabel() {
             if (soundToggle) {
                 soundToggle.title = "Suara: " + (soundOn ? "On" : "Off");
+                if (soundOn) {
+                    soundToggle.classList.add('pulse-glow-active');
+                } else {
+                    soundToggle.classList.remove('pulse-glow-active');
+                }
             }
             if (soundIconOn && soundIconOff) {
                 soundIconOn.classList.toggle("hidden", !soundOn);
@@ -1110,6 +1197,11 @@
         function updateScrollLabel() {
             if (scrollToggle) {
                 scrollToggle.title = "Auto Scroll: " + (autoScrollOn ? "On" : "Off");
+                if (autoScrollOn) {
+                    scrollToggle.classList.add('pulse-glow-active');
+                } else {
+                    scrollToggle.classList.remove('pulse-glow-active');
+                }
             }
             if (scrollIconOn && scrollIconOff) {
                 scrollIconOn.classList.toggle("hidden", !autoScrollOn);
@@ -1237,7 +1329,71 @@
             setInterval(updateCountdown, 1000);
             updateCountdown();
         @endif
+
+        // Initialize Fancybox Gallery with thumbnails strip at the bottom
+        Fancybox.bind('[data-fancybox="gallery"]', {
+            Thumbs: {
+                type: "classic",
+                autoStart: true
+            },
+            Toolbar: {
+                display: {
+                    left: ["infobar"],
+                    middle: [],
+                    right: ["slideshow", "thumbs", "close"],
+                },
+            },
+            Carousel: {
+                transition: "fade",
+            },
+            Images: {
+                zoom: true,
+            }
+        });
+
+        // Prevent right-click on gallery images and Fancybox modal to protect wedding photos from easy downloads
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('.gallery-item img') || e.target.closest('.fancybox__content img')) {
+                e.preventDefault();
+            }
+        });
+
+        // Synced Multi-Section Slideshow automatic cross-fade
+        (function() {
+            const slideshowContainers = Array.from(document.querySelectorAll('.bg-slideshow'));
+            if (slideshowContainers.length === 0) return;
+
+            const maxImages = Math.max(...slideshowContainers.map(c => c.getElementsByTagName('img').length));
+            if (maxImages <= 1) return;
+
+            let activeIdx = 0;
+            const intervalTime = 5000; // Ganti foto setiap 5 detik
+
+            setInterval(() => {
+                const nextIdx = (activeIdx + 1) % maxImages;
+
+                slideshowContainers.forEach(container => {
+                    const images = Array.from(container.getElementsByTagName('img'));
+                    if (images.length <= 1) return;
+
+                    const prevImg = images[activeIdx % images.length];
+                    const nextImg = images[nextIdx % images.length];
+
+                    if (prevImg) {
+                        prevImg.classList.remove('opacity-100', 'z-10');
+                        prevImg.classList.add('opacity-0', 'z-0');
+                    }
+                    if (nextImg) {
+                        nextImg.classList.remove('opacity-0', 'z-0');
+                        nextImg.classList.add('opacity-100', 'z-10');
+                    }
+                });
+
+                activeIdx = nextIdx;
+            }, intervalTime);
+        })();
     </script>
+
 </body>
 
 </html>

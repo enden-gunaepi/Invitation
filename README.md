@@ -8,6 +8,19 @@ Platform undangan digital berbasis web yang memungkinkan pembuatan, pengelolaan,
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
+Perintah menjalankan project:
+
+```bash
+# Jalankan dengan Vite dev server
+composer dev
+
+# Jalankan tanpa npm run dev
+composer start
+
+# Build dulu lalu langsung jalankan server
+composer start:build
+```
+
 ---
 
 ## 📋 Daftar Isi
@@ -18,7 +31,7 @@ Platform undangan digital berbasis web yang memungkinkan pembuatan, pengelolaan,
 - [Konfigurasi](#-konfigurasi)
 - [Penggunaan](#-penggunaan)
 - [Role & Hak Akses](#-role--hak-akses)
-- [Template Undangan](#-template-undangan)
+- [Template Undangan & Builder CMS](#-template-undangan--builder-cms)
 - [Struktur Database](#-struktur-database)
 - [Struktur Folder](#-struktur-folder)
 - [Screenshot](#-screenshot)
@@ -31,20 +44,33 @@ Platform undangan digital berbasis web yang memungkinkan pembuatan, pengelolaan,
 ### 👑 Administrator
 - Dashboard statistik (total undangan, tamu, RSVP, template aktif)
 - Manajemen User (Client & Guest) — CRUD
-- Manajemen Template Undangan — CRUD
+- Manajemen Template Undangan — CRUD (Mendukung mode *Legacy Blade* & *Builder CMS*)
 - Manajemen Paket / Pricing — CRUD
 - Approve / Reject undangan dari client
+- **Integrasi Notifikasi & Gateway Pihak Ketiga**:
+  - Integrasi Bot Telegram (Konfigurasi & Webhook)
+  - Integrasi WhatsApp Gateway (WeaGate API)
+- Manajemen Saldo Client (Balance) untuk pengiriman notifikasi
 - Pengaturan sistem (nama app, email, logo, dll)
 
 ### 🧑‍💼 Client (Pemilik Acara)
 - Register & Login
-- Pilih template undangan
+- Pilih template undangan (*Legacy Blade* atau *Builder CMS* dynamic template)
 - Input data acara (nama mempelai, tanggal, lokasi, dll)
 - Upload foto / galeri
-- Kelola daftar tamu
-- Kirim link undangan personal per tamu
+- Kelola daftar tamu & Kirim link undangan personal per tamu
 - Pantau RSVP & ucapan
-- Lihat statistik kunjungan undangan
+- **Fitur Wedding Planner**:
+  - Onboarding Wizard untuk setup detail rencana pernikahan
+  - AI Wedding Advisor (Asisten AI konsultasi persiapan pernikahan)
+  - Checklist Tugas Pernikahan (To-Do List Terstruktur)
+  - Tracker Anggaran & Pengeluaran (Budget Planner)
+  - Manajemen Vendor Pernikahan (CRUD & Leads Vendor)
+- **Kolaborasi & Backup**:
+  - Kolaborator undangan (mengundang user lain untuk ikut mengedit/mengelola)
+  - Backup & Restore data undangan secara cepat
+- **Analitik Kunjungan (Invitation Funnel)**:
+  - Pelacakan metrik/statistik pengunjung secara lengkap (page views, clicks, RSVP)
 
 ### 👤 Guest (Tamu)
 - Akses undangan via link unik
@@ -58,9 +84,10 @@ Platform undangan digital berbasis web yang memungkinkan pembuatan, pengelolaan,
 ### 🎨 Desain
 - **Dark / Light Mode** — toggle dengan persist di localStorage
 - **Responsive** — mobile & desktop friendly
-- **macOS-inspired UI** — translucent blur sidebar, rounded corners, Inter font
-- **Multi-template** — 4 template bawaan dengan desain unik
-- **Custom color scheme** — setiap undangan bisa punya warna sendiri
+- **macOS-inspired UI** — translucent blur sidebar, rounded corners, Inter font untuk Admin & Client panel
+- **Multi-template & Dynamic Builder Mode**:
+  - Customizer warna tema, font keluarga (Playfair Display, Cormorant Garamond, Lora, Inter, Plus Jakarta Sans, Manrope), spacing, dan border-radius.
+  - Section management: Mengaktifkan, mematikan, mengurutkan, dan memilih varian layout untuk setiap section (Hero, Couple, Events, Gallery, Love Story, RSVP, Wishes, Map, Footer).
 
 ---
 
@@ -72,6 +99,7 @@ Platform undangan digital berbasis web yang memungkinkan pembuatan, pengelolaan,
 | Frontend | Blade, Tailwind CSS 3.x, Alpine.js |
 | Database | MySQL 8.0 |
 | Auth | Laravel Breeze |
+| Integrations | Telegram Bot API, WeaGate (WhatsApp API) |
 | Animation | AOS (Animate On Scroll) |
 | Icons | Font Awesome 6.5 |
 | Build Tool | Vite |
@@ -117,7 +145,7 @@ php artisan storage:link
 npm run build
 
 # 10. Jalankan server
-php artisan serve
+composer start
 ```
 
 Buka browser → `http://127.0.0.1:8000`
@@ -155,11 +183,11 @@ DB_PASSWORD=
 ```
 Register (Admin) → Setup Template & Paket
                           ↓
-        Client Register → Pilih Template → Buat Undangan
+        Client Register → Pilih Template → Buat Undangan & Setup Wedding Planner
                           ↓
         Admin Approve → Undangan Aktif → Share Link ke Tamu
                           ↓
-        Tamu Akses → RSVP & Kirim Ucapan
+        Tamu Akses → RSVP & Kirim Ucapan → Pantau via Dashboard & Telegram/WA
 ```
 
 ---
@@ -168,64 +196,49 @@ Register (Admin) → Setup Template & Paket
 
 | Role | Prefix Route | Akses |
 |------|-------------|-------|
-| **Admin** | `/admin/*` | Full akses ke semua fitur manajemen |
-| **Client** | `/client/*` | Buat & kelola undangan sendiri |
+| **Admin** | `/admin/*` | Full akses ke semua fitur manajemen, integrasi, & template |
+| **Client** | `/client/*` | Buat & kelola undangan sendiri, akses Wedding Planner, Kolaborator, & Backup |
 | **Guest** | `/inv/{slug}` | View undangan, RSVP, kirim ucapan |
 
 Middleware `RoleMiddleware` di `app/Http/Middleware/RoleMiddleware.php` mengatur akses berdasarkan role.
 
 ---
 
-## 🎨 Template Undangan
+## 🎨 Template Undangan & Builder CMS
 
-Sistem mendukung multi-template. Setiap template adalah folder Blade terpisah:
+Sistem mendukung multi-template dengan dua mode rendering: **Legacy Blade** dan **Builder CMS Engine**.
 
+### 1. Legacy Blade
+Setiap template berupa file Blade mandiri yang terletak di:
 ```
 resources/views/invitations/templates/
 ├── wedding-elegant/index.blade.php     → Gold/dark, partikel emas, shimmer text
 ├── wedding-rustic/index.blade.php      → Earthy brown, dekorasi daun, serif font
 ├── birthday-fun/index.blade.php        → Colorful confetti, emoji, Pacifico font
-└── wedding-minimalist/index.blade.php  → Light mode B&W, Bodoni Moda, ultra-clean
+├── wedding-minimalist/index.blade.php  → Light mode B&W, Bodoni Moda, ultra-clean
+├── wedding-peach/index.blade.php       → Fresh peach peach accents, romantic
+├── wedding-gnv1/index.blade.php        → Custom modern rose-colored template
+└── wedding-gnv2/index.blade.php        → Custom clean layout with blue/dark tones
 ```
 
-### Menambahkan Template Baru
+### 2. Builder CMS Engine
+Mesin render dinamis yang merender undangan berdasarkan tata letak komponen (*sections*) yang dikonfigurasi melalui database. Contoh template bawaan:
+- **Wedding Builder Atelier** (`wedding-builder-atelier`): Template adaptif dengan layout *GNV2 Signature* yang bisa dikustomisasi penuh dari Admin Panel.
 
-1. Buat folder: `resources/views/invitations/templates/{nama-template}/index.blade.php`
-2. Desain HTML/CSS/JS (gunakan variabel `$invitation` dan `$guest`)
-3. Tambahkan record di database:
-   ```php
-   Template::create([
-       'name' => 'Nama Template',
-       'slug' => 'nama-template',
-       'category' => 'wedding',
-       'html_path' => 'invitations.templates.nama-template.index',
-       'is_active' => true,
-   ]);
-   ```
-4. Template siap dipilih oleh client!
-
-### Referensi Aset & Data Template
-
-Gunakan relasi/data berikut saat membuat template baru supaya semua fitur tetap kompatibel:
-
-| Kebutuhan | Cara Panggil di Blade |
-|---|---|
-| Cover foto | `$invitation->cover_photo ? asset('storage/' . $invitation->cover_photo) : null` |
-| Foto mempelai | `$invitation->groom_photo`, `$invitation->bride_photo` |
-| Galeri foto | `@foreach($invitation->photos as $photo)` lalu `asset('storage/' . $photo->file_path)` |
-| Musik | `$invitation->music_url` lalu `<audio><source src="{{ asset('storage/' . $invitation->music_url) }}"></audio>` |
-| Event/rundown | `@foreach($invitation->events as $event)` (`event_name`, `event_time`, `event_description`) |
-| Love story | `@foreach($invitation->loveStories as $story)` (`title`, `description`, `year`, `photo_path`) |
-| Rekening multi-bank | `@foreach($invitation->bankAccounts as $acc)` (`bank_name`, `account_number`, `account_name`) |
-| RSVP messages | `@foreach($invitation->rsvps as $rsvp)` (pastikan controller public load relasi `rsvps`) |
-| Wishes/ucapan | `@foreach($invitation->wishes as $wish)` |
-| Peta lokasi | `venue_lat`, `venue_lng`, `google_maps_url` |
-| Link tamu personal | `$guest->getInvitationUrl()` |
-
-Catatan penting:
-1. Semua file upload disimpan di disk `public`, akses via `asset('storage/...')`.
-2. Pastikan public controller memuat relasi yang dibutuhkan template (`photos`, `events`, `loveStories`, `bankAccounts`, `rsvps`, `wishes`).
-3. Jika field opsional bisa kosong, selalu beri fallback di Blade agar template tidak error.
+#### Cara Kerja Builder CMS
+Builder CMS menggunakan `TemplateRenderService` untuk menginterpretasi data JSON di kolom `builder_config` yang memuat:
+- **Theme**: Mengontrol warna primer, sekunder, aksen, background, teks, font (heading & body), serta pilihan spacing & border-radius.
+- **Sections**: Menyusun urutan, mengaktifkan/menonaktifkan, dan memilih varian tata letak untuk komponen berikut:
+  - `hero` (Varian: `cover-centered`, `cover-split`)
+  - `couple` (Varian: `portrait-stack`, `side-by-side`)
+  - `event_schedule` (Varian: `cards`, `timeline`)
+  - `gallery` (Varian: `mosaic`, `grid`)
+  - `love_story` (Varian: `timeline`, `cards`)
+  - `gift` (Varian: `cards`, `minimal`)
+  - `rsvp` (Varian: `panel`, `split`)
+  - `wishes` (Varian: `feed`, `cards`)
+  - `map` (Varian: `card`, `split`)
+  - `footer` (Varian: `simple`, `signature`)
 
 ---
 
@@ -233,18 +246,23 @@ Catatan penting:
 
 | Tabel | Deskripsi |
 |-------|-----------|
-| `users` | Users dengan role (admin, client, guest) |
+| `users` | Users dengan role (admin, client, guest) & kolom `balance` (saldo notifikasi) |
 | `packages` | Paket harga (Basic, Premium, Exclusive) |
-| `templates` | Template undangan dengan `html_path` |
+| `client_package_subscriptions` | Data langganan paket client |
+| `templates` | Template undangan dengan `render_mode`, `builder_config`, & `builder_layout` |
 | `invitations` | Data undangan utama |
+| `invitation_backups` | File cadangan data undangan client |
+| `invitation_collaborators` | Hubungan otorisasi kolaborator undangan |
+| `invitation_funnel_events` | Log event analitik kunjungan undangan |
 | `invitation_photos` | Foto/galeri undangan |
 | `invitation_events` | Sub-event (akad, resepsi, dll) |
 | `guests` | Daftar tamu dengan link unik |
 | `rsvps` | Konfirmasi kehadiran |
 | `wishes` | Ucapan & doa dari tamu |
-| `invitation_views` | Tracking kunjungan |
-| `payments` | Data pembayaran |
-| `settings` | Pengaturan aplikasi |
+| `invitation_views` | Tracking kunjungan dasar |
+| `payments` | Data pembayaran langganan & saldo |
+| `settings` | Pengaturan aplikasi global |
+| **Wedding Planner Tables** | Berisi: `wp_profiles` (data mempelai planner), `wp_checklists` (checklist tugas), `wp_budgets` & `wp_budget_items` (manajemen keuangan), `wp_vendors` (manajemen vendor), `wp_timeline_events`, dan `wp_advisor_logs` (log AI Advisor). |
 
 ---
 
@@ -254,27 +272,26 @@ Catatan penting:
 app/
 ├── Http/
 │   ├── Controllers/
-│   │   ├── Admin/          → DashboardController, UserController, dll
-│   │   ├── Client/         → DashboardController, InvitationController, dll
+│   │   ├── Admin/          → DashboardController, UserController, IntegrationController (Telegram/WA/Email), dll
+│   │   ├── Client/         → DashboardController, InvitationController, Planner/ (Advisor, Budget, Checklist, Onboarding, Vendor), dll
 │   │   └── Auth/           → RegisteredUserController (first = admin)
 │   └── Middleware/
+│       ├── EnsureActiveClientPackage.php
 │       ├── RoleMiddleware.php
 │       └── TrackInvitationView.php
-├── Models/                 → User, Invitation, Template, Guest, dll
+├── Models/                 → User, Invitation, Template, Guest, ClientPackageSubscription, Planner/ (WpProfile, WpChecklistItem, WpBudgetCategory, WpBudgetItem, WpVendor, WpTimelineEvent, WpAdvisorLog), dll
+├── Services/               → TemplateRenderService, TelegramService, WeaGateService, PhoneNormalizerService, Planner/ (PlannerOnboardingService, WeddingAdvisorService), dll
 resources/views/
 ├── layouts/
 │   ├── admin.blade.php     → macOS-style admin layout
 │   └── client.blade.php    → macOS-style client layout
-├── admin/                  → Admin panel views
-├── client/                 → Client panel views
+├── admin/                  → Admin panel views (integration/, templates/, dll)
+├── client/                 → Client panel views (planner/, packages/, invitations/, dll)
 ├── auth/                   → Login & Register
 └── invitations/
     ├── show.blade.php      → Legacy fallback
-    └── templates/          → Multi-template system
-routes/
-├── web.php                 → Public + auth routes
-├── admin.php               → Admin routes (middleware: auth + role:admin)
-└── client.php              → Client routes (middleware: auth + role:client)
+    ├── builder/            → Dynamic Builder/CMS views & sections (hero, couple, gallery, rsvp, dll)
+    └── templates/          → Multi-template system (wedding-elegant, wedding-rustic, birthday-fun, wedding-minimalist, wedding-peach, wedding-gnv1, wedding-gnv2)
 ```
 
 ---
@@ -290,8 +307,6 @@ routes/
 **Demo Undangan**
 - Wedding Elegant: `http://127.0.0.1:8000/inv/ahmad-siti`
 - Wedding Rustic: `http://127.0.0.1:8000/inv/reza-amelia`
-- Birthday Fun: `http://127.0.0.1:8000/inv/birthday-aisyah`
-- Wedding Minimalist: `http://127.0.0.1:8000/inv/daniel-sarah`
 
 > ⚠️ Demo undangan baru tersedia setelah menjalankan `SampleInvitationSeeder`
 

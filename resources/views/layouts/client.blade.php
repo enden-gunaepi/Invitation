@@ -1,16 +1,27 @@
 <!DOCTYPE html>
 <html lang="id"
-    x-data="{ darkMode: localStorage.getItem('darkMode') === 'true', sidebarOpen: false, sidebarExpanded: localStorage.getItem('clientSidebarExpanded') === 'true' }"
-    x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val));
-$watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', val))" :class="{ 'dark': darkMode }">
+    x-data="{
+        darkMode: localStorage.getItem('darkMode') === 'true',
+        sidebarOpen: false,
+        sidebarExpanded: localStorage.getItem('clientSidebarExpanded') !== 'false',
+        isMobile: window.innerWidth < 1024,
+        get sidebarWidth() { return this.sidebarExpanded ? '260px' : '72px'; },
+        get mainMargin() { return this.isMobile ? '0px' : this.sidebarWidth; }
+    }"
+    x-init="
+        $watch('darkMode', val => localStorage.setItem('darkMode', val));
+        $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', val));
+        window.addEventListener('resize', () => { isMobile = window.innerWidth < 1024; });
+    "
+    :class="{ 'dark': darkMode }">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') — Client</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>@yield('title', 'Dashboard') â€” Client</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script>
@@ -21,83 +32,143 @@ $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', v
     @stack('head')
     <style>
         [x-cloak] { display: none !important; }
-        
-        /* Layout Variables for UI Components */
+
+        /* Geist Font */
+        body {
+            font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Material Symbols */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Design tokens â€” same palette as landing page */
         :root {
+            --surface: #f9f9f9;
+            --surface-lowest: #ffffff;
+            --surface-container: #eeeeee;
+            --surface-container-low: #f3f3f3;
+            --surface-container-high: #e8e8e8;
+            --outline-variant: #cfc4c5;
+            --on-surface: #1a1c1c;
+            --on-surface-variant: #4c4546;
+            --primary: #000000;
+            --on-primary: #ffffff;
+            --secondary-container: #e1dfdf;
+            --on-secondary-container: #636262;
+            --error: #ba1a1a;
+            --success: #15803d;
+            --warning: #a16207;
+
+            /* Legacy compat vars (used by child views) */
             --bg-secondary: #ffffff;
-            --border: #f1f5f9;
-            --text: #1e293b;
-            --text-secondary: #64748b;
-            --text-tertiary: #94a3b8;
-            --accent: #293883;
-            --accent-hover: #1e2968;
-            --accent-bg: rgba(41, 56, 131, 0.1);
-            --danger: #FF5C3B;
-            --success: #00C988;
-            --warning: #FFC300;
-            --info: #0F4CFA;
+            --border: #eeeeee;
+            --text: #1a1c1c;
+            --text-secondary: #4c4546;
+            --text-tertiary: #7e7576;
+            --accent: #000000;
+            --accent-hover: #333333;
+            --accent-bg: rgba(0, 0, 0, 0.06);
+            --danger: #ba1a1a;
+            --success-clr: #15803d;
+            --warning-clr: #a16207;
+            --info: #000000;
             --radius-sm: 8px;
             --hover-bg: rgba(0, 0, 0, 0.04);
         }
 
         .dark {
-            --bg-secondary: #1E293B;
-            --border: #334155;
-            --text: #F8FAFC;
-            --text-secondary: #94A3B8;
-            --text-tertiary: #64748B;
-            --accent: #60A5FA;
-            --accent-hover: #3B82F6;
-            --accent-bg: rgba(96, 165, 250, 0.15);
-            --hover-bg: rgba(255, 255, 255, 0.06);
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --info: #3b82f6;
+            --surface: #111318;
+            --surface-lowest: #1a1c1c;
+            --surface-container: #2a2a2a;
+            --surface-container-low: #222222;
+            --surface-container-high: #333333;
+            --outline-variant: #3a3a3a;
+            --on-surface: #e8e8e8;
+            --on-surface-variant: #9e9e9e;
+            --primary: #e8e8e8;
+            --on-primary: #1a1a1a;
+            --secondary-container: #2a2a2a;
+            --on-secondary-container: #b0b0b0;
+
+            --bg-secondary: #1a1c1c;
+            --border: #2a2a2a;
+            --text: #e8e8e8;
+            --text-secondary: #9e9e9e;
+            --text-tertiary: #6e6e6e;
+            --accent: #e8e8e8;
+            --accent-hover: #c8c8c8;
+            --accent-bg: rgba(232, 232, 232, 0.08);
+            --hover-bg: rgba(255, 255, 255, 0.05);
         }
 
-        /* Core Component Styles (Maintained for child views compatibility) */
+        /* Sidebar glass effect */
+        .glass-sidebar {
+            backdrop-filter: blur(48px);
+            -webkit-backdrop-filter: blur(48px);
+        }
+
+        /* Scrollbar hide */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Animations */
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Nav active state â€” landing page style */
+        .nav-item-active {
+            background: var(--secondary-container) !important;
+            color: var(--on-secondary-container) !important;
+            font-weight: 500;
+        }
+
+        /* Shared component styles (used by child views) */
         .card {
-            background-color: var(--bg-secondary);
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border);
+            background-color: var(--surface-lowest);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--outline-variant);
             padding: 1.5rem;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .dark .card {
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
-        
+
         .btn {
             display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px;
             border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
             cursor: pointer; transition: all 0.15s ease; border: none; text-decoration: none;
+            font-family: 'Geist', sans-serif;
         }
-        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary { background: var(--accent); color: var(--on-primary); }
         .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
         .btn-secondary { background: var(--hover-bg); color: var(--text); border: 1px solid var(--border); }
         .btn-secondary:hover { background: rgba(0,0,0,0.08); }
-        .dark .btn-secondary:hover { background: rgba(255,255,255,0.1); }
-        .btn-danger { background: rgba(255, 59, 48, 0.1); color: var(--danger); }
-        .btn-danger:hover { background: rgba(255, 59, 48, 0.18); }
-        
+        .dark .btn-secondary:hover { background: rgba(255,255,255,0.08); }
+        .btn-danger { background: rgba(186, 26, 26, 0.08); color: var(--danger); }
+        .btn-danger:hover { background: rgba(186, 26, 26, 0.14); }
+
         .form-label { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; display: block; }
         .form-input {
             width: 100%; padding: 10px 14px; border: 1px solid var(--border);
             border-radius: var(--radius-sm); background: var(--bg-secondary);
             color: var(--text); font-size: 14px; transition: all 0.2s ease;
+            font-family: 'Geist', sans-serif;
         }
         .form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
 
         .badge {
             display: inline-flex; align-items: center; padding: 2px 10px;
-            border-radius: 6px; font-size: 11px; font-weight: 600;
+            border-radius: 9999px; font-size: 11px; font-weight: 600;
         }
-        .badge-success, .badge-active { background: rgba(52, 199, 89, 0.12); color: var(--success); }
-        .badge-warning, .badge-pending { background: rgba(255, 149, 0, 0.12); color: var(--warning); }
-        .badge-danger { background: rgba(255, 59, 48, 0.12); color: var(--danger); }
-        .badge-info { background: rgba(0, 113, 227, 0.08); color: var(--info); }
+        .badge-success, .badge-active { background: rgba(21, 128, 61, 0.10); color: var(--success-clr, #15803d); }
+        .badge-warning, .badge-pending { background: rgba(161, 98, 7, 0.10); color: var(--warning-clr, #a16207); }
+        .badge-danger { background: rgba(186, 26, 26, 0.10); color: var(--danger); }
+        .badge-info { background: var(--accent-bg); color: var(--accent); }
         .badge-default, .badge-draft { background: var(--hover-bg); color: var(--text-secondary); }
 
         .stat-card { padding: 20px; text-align: left; }
@@ -108,245 +179,345 @@ $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', v
         .stat-value { font-size: 24px; font-weight: 700; color: var(--text); }
         .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Animation utilities */
-        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .nav-item-active {
-            background: rgba(59, 130, 246, 0.15); /* text-blue-500 equivalent */
-            color: #60A5FA !important;
-            font-weight: 600;
-            position: relative;
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--on-surface-variant); padding: 10px 16px; text-align: left;
+            border-bottom: 1px solid var(--outline-variant);
         }
-        .nav-item-active::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0; width: 3px;
-            background: #3B82F6;
-            border-radius: 0 4px 4px 0;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-        }
+        tbody td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--outline-variant); color: var(--on-surface); }
+        tbody tr { transition: background 0.1s ease; }
+        tbody tr:hover { background: var(--hover-bg); }
+        tbody tr:last-child td { border-bottom: none; }
     </style>
 </head>
 
-<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased overflow-hidden transition-colors duration-300 lg:p-4">
-    
+<body class="text-[--on-surface] font-sans antialiased overflow-hidden transition-colors duration-300"
+      style="background-color: var(--surface);">
+
     <!-- Toasts -->
     @if (session('success'))
-        <div class="fixed top-6 right-6 z-[9999] bg-white dark:bg-slate-800 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] flex items-center gap-3 animate-slide-up">
-            <i class="fas fa-check-circle text-lg"></i> <span class="text-sm font-medium">{{ session('success') }}</span>
+        <div class="fixed top-6 right-6 z-[9999] border px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] flex items-center gap-3 animate-slide-up"
+             style="background: var(--surface-lowest); border-color: rgba(21,128,61,0.2); color: #15803d;">
+            <span class="material-symbols-outlined" style="font-size:18px;">check_circle</span>
+            <span class="text-sm font-medium">{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="fixed top-6 right-6 z-[9999] bg-white dark:bg-slate-800 border border-red-500/30 text-red-600 dark:text-red-400 px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] flex items-center gap-3 animate-slide-up">
-            <i class="fas fa-exclamation-circle text-lg"></i> <span class="text-sm font-medium">{{ session('error') }}</span>
+        <div class="fixed top-6 right-6 z-[9999] border px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] flex items-center gap-3 animate-slide-up"
+             style="background: var(--surface-lowest); border-color: rgba(186,26,26,0.2); color: #ba1a1a;">
+            <span class="material-symbols-outlined" style="font-size:18px;">error</span>
+            <span class="text-sm font-medium">{{ session('error') }}</span>
         </div>
     @endif
 
     <!-- Mobile Sidebar Overlay -->
-    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
+    <div class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
          :class="sidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible'" @click="sidebarOpen = false"></div>
 
     <!-- Sidebar -->
-    <aside class="fixed top-0 left-0 h-full lg:top-4 lg:bottom-4 lg:h-auto z-50 bg-[#1B244A] dark:bg-slate-900 shadow-2xl lg:rounded-[24px] lg:rounded-r-[32px] transition-all duration-300 overflow-hidden flex flex-col border-r lg:border border-white/5 dark:border-white/10 group"
-        :class="[
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-            sidebarExpanded ? 'w-[260px]' : 'w-[260px] lg:w-[88px]'
-        ]">
-        
-        <!-- Sidebar Profile Profile -->
-        <div class="p-6 pb-4 flex items-center gap-4 relative shrink-0">
-            @if(auth()->user()->company_logo)
-                <div class="w-11 h-11 rounded-[14px] overflow-hidden shrink-0 border border-white/10 shadow-lg transition-all duration-300"
-                    :class="!sidebarExpanded ? 'lg:mx-auto lg:w-10 lg:h-10' : ''">
+    <aside
+        class="fixed top-0 left-0 h-full z-50 flex flex-col border-r glass-sidebar overflow-hidden"
+        style="border-right-width: 1px; transition: width 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1), background 0.3s ease;"
+        :style="{
+            width: sidebarExpanded ? '260px' : '72px',
+            transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-260px)') : 'translateX(0)',
+            background: darkMode ? 'rgba(17,19,24,0.96)' : 'rgba(249,249,249,0.92)',
+            borderColor: 'var(--outline-variant)'
+        }">
+
+        <!-- Brand -->
+        <div class="px-6 py-5 flex items-center gap-3 shrink-0 border-b" style="border-color: var(--outline-variant); min-height: 72px;">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold text-sm overflow-hidden"
+                 style="background: var(--primary); color: var(--on-primary);">
+                @if(auth()->user()->company_logo)
                     <img src="{{ Storage::url(auth()->user()->company_logo) }}" alt="Logo" class="w-full h-full object-cover">
-                </div>
-            @else
-                <div class="w-11 h-11 rounded-[14px] bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xl shrink-0 border border-blue-500/30 shadow-lg transition-all duration-300"
-                    :class="!sidebarExpanded ? 'lg:mx-auto lg:w-10 lg:h-10' : ''">
+                @else
                     {{ substr(auth()->user()->company_name ?? auth()->user()->name, 0, 1) }}
-                </div>
-            @endif
-            
-            <div class="flex-1 overflow-hidden transition-all duration-300 whitespace-nowrap"
-                 :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0' : 'opacity-100 w-auto'">
-                <div class="font-bold text-white text-sm truncate">{{ auth()->user()->company_name ?? auth()->user()->name }}</div>
-                <div class="text-[11px] text-blue-300/70 font-medium tracking-wide">Client Portal</div>
+                @endif
+            </div>
+            <div class="whitespace-nowrap overflow-hidden"
+                 style="transition: opacity 0.25s ease, width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                 :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', width: (!isMobile && !sidebarExpanded) ? '0' : 'auto' }">
+                <div class="text-[15px] font-semibold leading-none" style="color: var(--on-surface); letter-spacing: -0.01em;">Janji Suci Kita</div>
+                <div class="text-[11px] mt-0.5" style="color: var(--on-surface-variant); letter-spacing: 0.04em; text-transform: uppercase;">Client Portal</div>
             </div>
         </div>
 
         <!-- Navigation Links -->
-        <nav class="flex-1 overflow-y-auto scrollbar-hide px-3 pb-6 flex flex-col gap-6 w-full">
-            
+        <nav class="flex-1 overflow-y-auto scrollbar-hide px-3 py-4 flex flex-col gap-5">
+
             <!-- Menu Utama -->
-            <div class="flex flex-col gap-1 w-full relative">
-                <div class="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 px-3 transition-opacity duration-300"
-                     :class="!sidebarExpanded ? 'lg:opacity-0' : 'opacity-100'">Menu</div>
-                
+            <div class="flex flex-col gap-0.5">
+                <div class="text-[10px] font-semibold px-3 mb-1.5 uppercase tracking-widest"
+                     style="color: var(--on-surface-variant); transition: opacity 0.25s ease;"
+                     :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '0.5' }">Menu</div>
+
                 <a href="{{ route('client.dashboard') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.dashboard') ? 'nav-item-active' : '' }}" title="Dashboard">
-                    <i class="fas fa-house text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Dashboard</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.dashboard') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.dashboard') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.dashboard') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.dashboard') ? 'this.style.background=\"\"' : '' }}"
+                    title="Dashboard">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">dashboard</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Dashboard</span>
                 </a>
             </div>
 
-            <!-- Undangan Group -->
-            <div class="flex flex-col gap-1 w-full relative">
-                <div class="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 px-3 transition-opacity duration-300"
-                     :class="!sidebarExpanded ? 'lg:opacity-0' : 'opacity-100'">Undangan</div>
-                     
+            <!-- Undangan -->
+            <div class="flex flex-col gap-0.5">
+                <div class="text-[10px] font-semibold px-3 mb-1.5 uppercase tracking-widest"
+                     style="color: var(--on-surface-variant); transition: opacity 0.25s ease;"
+                     :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '0.5' }">Undangan</div>
+
                 <a href="{{ route('client.invitations.index') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.invitations.*') ? 'nav-item-active' : '' }}" title="Undangan Saya">
-                    <i class="fas fa-envelope text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Undangan Saya</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.invitations.index') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.invitations.index') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.invitations.index') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.invitations.index') ? 'this.style.background=\"\"' : '' }}"
+                    title="Undangan Saya">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">mail</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Undangan Saya</span>
                 </a>
-                
+
                 <a href="{{ route('client.invitations.create') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.invitations.create') ? 'nav-item-active' : '' }}" title="Buat Undangan">
-                    <i class="fas fa-plus text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Buat Undangan</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.invitations.create') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.invitations.create') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.invitations.create') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.invitations.create') ? 'this.style.background=\"\"' : '' }}"
+                    title="Buat Undangan">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">add_circle</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Buat Undangan</span>
                 </a>
-                
+
                 <a href="{{ route('client.templates.index') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.templates.*') ? 'nav-item-active' : '' }}" title="Katalog Template">
-                    <i class="fas fa-palette text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Katalog Template</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.templates.*') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.templates.*') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.templates.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.templates.*') ? 'this.style.background=\"\"' : '' }}"
+                    title="Katalog Template">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">layers</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Katalog Template</span>
                 </a>
-                
+
                 <a href="{{ route('client.packages.select') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.packages.*') ? 'nav-item-active' : '' }}" title="Pilih Paket">
-                    <i class="fas fa-box-open text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Pilih Paket</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.packages.*') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.packages.*') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.packages.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.packages.*') ? 'this.style.background=\"\"' : '' }}"
+                    title="Pilih Paket">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">inventory_2</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Pilih Paket</span>
                 </a>
-                
+
                 <a href="{{ route('client.affiliate.index') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.affiliate.*') ? 'nav-item-active' : '' }}" title="Affiliate">
-                    <i class="fas fa-hand-holding-dollar text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Affiliate</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.affiliate.*') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.affiliate.*') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.affiliate.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.affiliate.*') ? 'this.style.background=\"\"' : '' }}"
+                    title="Affiliate">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">hub</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Affiliate</span>
                 </a>
             </div>
-            
+
             <!-- Wedding Planner -->
-            <div class="flex flex-col gap-1 w-full relative">
-                <div class="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1 px-3 transition-opacity duration-300"
-                     :class="!sidebarExpanded ? 'lg:opacity-0' : 'opacity-100'">Planner</div>
-                     
+            <div class="flex flex-col gap-0.5">
+                <div class="text-[10px] font-semibold px-3 mb-1.5 uppercase tracking-widest"
+                     style="color: var(--on-surface-variant); transition: opacity 0.25s ease;"
+                     :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '0.5' }">Planner</div>
+
                 <a href="{{ route('client.planner.dashboard') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.planner.dashboard') ? 'nav-item-active' : '' }}" title="Planner">
-                    <i class="fas fa-heart text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Planner</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.planner.dashboard') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.planner.dashboard') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.planner.dashboard') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.planner.dashboard') ? 'this.style.background=\"\"' : '' }}"
+                    title="Planner">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">favorite</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Planner</span>
                 </a>
+
                 <a href="{{ route('client.planner.checklist.index') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.planner.checklist.*') ? 'nav-item-active' : '' }}" title="Checklist">
-                    <i class="fas fa-list-check text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Checklist</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.planner.checklist.*') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.planner.checklist.*') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.planner.checklist.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.planner.checklist.*') ? 'this.style.background=\"\"' : '' }}"
+                    title="Checklist">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">checklist</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Checklist</span>
                 </a>
+
                 <a href="{{ route('client.planner.budget.index') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.planner.budget.*') ? 'nav-item-active' : '' }}" title="Budget">
-                    <i class="fas fa-wallet text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Budget</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.planner.budget.*') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.planner.budget.*') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.planner.budget.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.planner.budget.*') ? 'this.style.background=\"\"' : '' }}"
+                    title="Budget">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">account_balance_wallet</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Budget</span>
                 </a>
+
                 <a href="{{ route('client.planner.vendors.index') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.planner.vendors.*') ? 'nav-item-active' : '' }}" title="Vendor">
-                    <i class="fas fa-store text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Vendor</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.planner.vendors.*') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.planner.vendors.*') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.planner.vendors.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.planner.vendors.*') ? 'this.style.background=\"\"' : '' }}"
+                    title="Vendor">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">storefront</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Vendor</span>
                 </a>
+
                 <a href="{{ route('client.planner.advisor.index') }}"
-                    class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200 {{ request()->routeIs('client.planner.advisor.*') ? 'nav-item-active' : '' }}" title="AI Advisor">
-                    <i class="fas fa-robot text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                    <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                          :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">AI Advisor</span>
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.planner.advisor.*') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.planner.advisor.*') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.planner.advisor.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.planner.advisor.*') ? 'this.style.background=\"\"' : '' }}"
+                    title="AI Advisor">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">smart_toy</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">AI Advisor</span>
                 </a>
             </div>
         </nav>
 
-        <!-- Footer Profile -->
-        <div class="px-3 py-4 mt-auto border-t border-white/5 bg-black/10 shrink-0">
+        <!-- Footer / Profile -->
+        <div class="px-3 py-4 shrink-0 border-t" style="border-color: var(--outline-variant);">
             <a href="{{ route('profile.edit') }}"
-                class="group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-[14px] bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 {{ request()->routeIs('profile.*') ? 'ring-1 ring-white/20' : '' }}" title="Pengaturan Profil">
-                <i class="fas fa-user-gear text-[18px] w-6 text-center transition-transform group-hover:scale-110"></i>
-                <span class="font-medium text-sm whitespace-nowrap transition-all duration-300"
-                      :class="!sidebarExpanded ? 'lg:opacity-0 lg:w-0 lg:invisible' : 'opacity-100 w-auto visible'">Pengaturan</span>
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 w-full {{ request()->routeIs('profile.*') ? 'nav-item-active' : '' }}"
+                style="{{ !request()->routeIs('profile.*') ? 'color: var(--on-surface-variant);' : '' }}"
+                onmouseover="{{ !request()->routeIs('profile.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                onmouseout="{{ !request()->routeIs('profile.*') ? 'this.style.background=\"\"' : '' }}"
+                title="Pengaturan Profil">
+                <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">manage_accounts</span>
+                <span class="text-sm whitespace-nowrap overflow-hidden"
+                      style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                      :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Pengaturan</span>
             </a>
         </div>
     </aside>
 
-    <!-- App Wrapper (Main Area + Sticky Topbar) -->
-    <div class="flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300"
-        :class="sidebarExpanded ? 'lg:ml-[268px]' : 'lg:ml-[96px]'">
-        
+    <!-- App Wrapper -->
+    <div
+        class="flex flex-col h-screen overflow-hidden"
+        style="transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);"
+        :style="{ marginLeft: isMobile ? '0px' : (sidebarExpanded ? '260px' : '72px') }">
+
         <!-- Topbar -->
-        <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-b border-slate-200/60 dark:border-slate-800/60 lg:rounded-b-[20px] shadow-sm px-5 h-[64px] flex items-center justify-between transition-colors duration-300 shrink-0">
-            <div class="flex items-center gap-3.5 relative z-10">
-                <button @click="window.innerWidth > 1024 ? sidebarExpanded = !sidebarExpanded : sidebarOpen = !sidebarOpen"
-                    class="w-[38px] h-[38px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-all hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 active:scale-95" title="Toggle Sidebar">
-                    <i class="fas fa-bars"></i>
+        <header class="sticky top-0 z-40 flex items-center justify-between px-5 shrink-0 border-b glass-sidebar"
+                style="height: 64px; transition: background 0.3s ease, border-color 0.3s ease;"
+                :style="{
+                    background: darkMode ? 'rgba(17,19,24,0.92)' : 'rgba(249,249,249,0.88)',
+                    borderColor: 'var(--outline-variant)'
+                }">
+            <div class="flex items-center gap-3">
+                <!-- Toggle Sidebar — minimalist floating icon -->
+                <button @click="isMobile ? (sidebarOpen = !sidebarOpen) : (sidebarExpanded = !sidebarExpanded)"
+                    class="flex items-center justify-center w-8 h-8 rounded-full shrink-0 transition-all duration-200 focus:outline-none"
+                    style="color: var(--on-surface-variant);"
+                    :style="{ background: 'transparent' }"
+                    @mouseenter="$el.style.background = darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'; $el.style.color = 'var(--on-surface)'"
+                    @mouseleave="$el.style.background = 'transparent'; $el.style.color = 'var(--on-surface-variant)'"
+                    title="Toggle Sidebar">
+                    <span class="material-symbols-outlined" style="font-size: 22px; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ transform: (!isMobile && sidebarExpanded) ? 'rotate(0deg)' : 'rotate(180deg)' }"
+                          x-text="isMobile ? 'menu' : 'chevron_left'"></span>
                 </button>
+
+                <!-- Page Title -->
                 <div class="flex flex-col justify-center">
-                    <h1 class="text-[15px] font-bold text-slate-800 dark:text-slate-100 leading-tight">@yield('page-title', 'Dashboard')</h1>
+                    <h1 class="text-[15px] font-semibold leading-tight" style="color: var(--on-surface); letter-spacing: -0.01em;">@yield('page-title', 'Dashboard')</h1>
                     @hasSection('page-subtitle')
-                        <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">@yield('page-subtitle')</p>
+                        <p class="text-[11px] mt-0.5" style="color: var(--on-surface-variant);">@yield('page-subtitle')</p>
                     @endif
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 relative z-10" x-data="{ userMenuOpen: false }">
+            <div class="flex items-center gap-2" x-data="{ userMenuOpen: false }">
                 <!-- Theme Toggle -->
                 <button @click="darkMode = !darkMode"
-                    class="w-[38px] h-[38px] rounded-full bg-slate-100 dark:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center hover:text-blue-600 dark:hover:text-blue-400 transition-all focus:outline-none group">
-                    <i class="fas transition-transform group-hover:scale-110" :class="darkMode ? 'fa-sun text-amber-500' : 'fa-moon'"></i>
+                    class="w-9 h-9 rounded-lg flex items-center justify-center transition-all focus:outline-none"
+                    style="color: var(--on-surface-variant); background: var(--surface-container);"
+                    onmouseover="this.style.background='var(--surface-container-high)'"
+                    onmouseout="this.style.background='var(--surface-container)'">
+                    <span class="material-symbols-outlined" style="font-size: 20px;" :class="darkMode ? 'text-amber-500' : ''"
+                          x-text="darkMode ? 'light_mode' : 'dark_mode'"></span>
                 </button>
 
-                <!-- User Dropdown Menu -->
+                <!-- Divider -->
+                <div class="w-px h-5 mx-1" style="background: var(--outline-variant);"></div>
+
+                <!-- User Dropdown -->
                 <div class="relative">
                     <button @click="userMenuOpen = !userMenuOpen"
-                        class="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm transition-all focus:outline-none">
+                        class="flex items-center gap-2.5 px-3 py-1.5 rounded-full transition-all focus:outline-none"
+                        style="background: var(--surface-container); color: var(--on-surface);"
+                        onmouseover="this.style.background='var(--surface-container-high)'"
+                        onmouseout="this.style.background='var(--surface-container)'">
                         @if(auth()->user()->avatar)
-                            <div class="w-7 h-7 rounded-full overflow-hidden border border-slate-200 dark:border-slate-600 shrink-0">
+                            <div class="w-6 h-6 rounded-full overflow-hidden shrink-0">
                                 <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="Avatar" class="w-full h-full object-cover">
                             </div>
                         @else
-                            <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center font-bold text-[11px] shrink-0">
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center font-semibold text-[11px] shrink-0"
+                                 style="background: var(--primary); color: var(--on-primary);">
                                 {{ substr(auth()->user()->name, 0, 1) }}
                             </div>
                         @endif
-                        <span class="text-[13px] font-semibold text-slate-700 dark:text-slate-200 hidden sm:block tracking-tight">{{ auth()->user()->name }}</span>
-                        <i class="fas fa-chevron-down text-[10px] text-slate-400 pl-1"></i>
+                        <span class="text-[13px] font-medium hidden sm:block" style="color: var(--on-surface);">{{ auth()->user()->name }}</span>
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: var(--on-surface-variant);">expand_more</span>
                     </button>
-                    
+
                     <div x-show="userMenuOpen" @click.outside="userMenuOpen = false"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 scale-95 translate-y-1"
                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave="transition ease-in duration-100"
                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-                        class="absolute right-0 mt-3 w-56 rounded-[18px] bg-white dark:bg-slate-800 shadow-[0_10px_40px_rgba(0,0,0,0.12)] border border-slate-100 dark:border-slate-700 py-2 z-50 overflow-hidden"
+                        x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                        class="absolute right-0 mt-2 w-52 rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] z-50 border"
+                        style="background: var(--surface-lowest); border-color: var(--outline-variant);"
                         x-cloak>
-                        <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-700 mb-1 bg-slate-50 dark:bg-slate-800/80">
-                            <p class="text-[13px] font-bold text-slate-800 dark:text-white truncate">{{ auth()->user()->name }}</p>
-                            <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate mt-0.5">{{ auth()->user()->email }}</p>
+                        <div class="px-4 py-3 border-b" style="background: var(--surface-container-low); border-color: var(--outline-variant);">
+                            <p class="text-[13px] font-semibold truncate" style="color: var(--on-surface);">{{ auth()->user()->name }}</p>
+                            <p class="text-[11px] truncate mt-0.5" style="color: var(--on-surface-variant);">{{ auth()->user()->email }}</p>
                         </div>
-                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                            <i class="fas fa-user-gear w-4 text-center"></i> Setelan Profil
+                        <a href="{{ route('profile.edit') }}"
+                           class="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors"
+                           style="color: var(--on-surface-variant);"
+                           onmouseover="this.style.background='var(--surface-container)'; this.style.color='var(--on-surface)'"
+                           onmouseout="this.style.background=''; this.style.color='var(--on-surface-variant)'">
+                            <span class="material-symbols-outlined" style="font-size: 17px;">manage_accounts</span> Setelan Profil
                         </a>
                         <form method="POST" action="{{ route('logout') }}" class="block w-full m-0">
                             @csrf
-                            <button type="submit" class="w-full flex items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300 transition-colors text-left">
-                                <i class="fas fa-arrow-right-from-bracket w-4 text-center"></i> Keluar
+                            <button type="submit"
+                                class="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left"
+                                style="color: #ba1a1a;"
+                                onmouseover="this.style.background='rgba(186,26,26,0.06)'"
+                                onmouseout="this.style.background=''">
+                                <span class="material-symbols-outlined" style="font-size: 17px;">logout</span> Keluar
                             </button>
                         </form>
                     </div>
@@ -355,54 +526,55 @@ $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', v
         </header>
 
         <!-- Main Content Area -->
-        <main class="flex-1 overflow-y-auto scrollbar-hide bg-white dark:bg-[#0B1120] lg:rounded-tl-[32px] lg:shadow-[-5px_-5px_25px_rgba(0,0,0,0.02)] lg:border-l lg:border-t border-slate-200/50 dark:border-slate-800 mt-4 relative z-10 transition-colors duration-300">
-            <div class="p-5 pb-28 lg:pb-12 min-h-full">
+        <main class="flex-1 overflow-y-auto scrollbar-hide transition-colors duration-300" style="background: var(--surface-lowest);">
+            <div class="p-6 pb-28 lg:pb-10 min-h-full">
                 @yield('content')
             </div>
         </main>
     </div>
 
-    <!-- Mobile Bottom Navigation Dock -->
-    <nav class="lg:hidden fixed bottom-4 left-4 right-4 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 p-2 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.3)]">
-        <div class="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-1" data-mobile-dock-track>
-            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
+    <nav class="lg:hidden fixed bottom-4 left-4 right-4 rounded-2xl shadow-xl z-50 p-2 border"
+         :style="{ background: darkMode ? 'rgba(17,19,24,0.95)' : 'rgba(249,249,249,0.95)', borderColor: 'var(--outline-variant)' }"
+         style="backdrop-filter: blur(24px);">
+        <div class="flex gap-1 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-1" data-mobile-dock-track>
+            <div class="snap-start shrink-0 w-1/5 flex justify-center">
                 <a href="{{ route('client.dashboard') }}"
-                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('client.dashboard') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
-                    <i class="fas fa-house text-lg"></i>
+                    class="w-11 h-11 flex flex-col items-center justify-center rounded-xl transition-all duration-200"
+                    style="{{ request()->routeIs('client.dashboard') ? 'background: var(--primary); color: var(--on-primary);' : 'color: var(--on-surface-variant);' }}">
+                    <span class="material-symbols-outlined" style="font-size: 22px;">dashboard</span>
                 </a>
             </div>
-            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
+            <div class="snap-start shrink-0 w-1/5 flex justify-center">
                 <a href="{{ route('client.invitations.index') }}"
-                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('client.invitations.index') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
-                    <i class="fas fa-envelope text-lg"></i>
+                    class="w-11 h-11 flex flex-col items-center justify-center rounded-xl transition-all duration-200"
+                    style="{{ request()->routeIs('client.invitations.*') ? 'background: var(--primary); color: var(--on-primary);' : 'color: var(--on-surface-variant);' }}">
+                    <span class="material-symbols-outlined" style="font-size: 22px;">mail</span>
                 </a>
             </div>
-            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
+            <div class="snap-start shrink-0 w-1/5 flex justify-center">
                 <a href="{{ route('client.invitations.create') }}"
-                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('client.invitations.create') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
-                    <i class="fas fa-plus text-lg"></i>
+                    class="w-11 h-11 flex flex-col items-center justify-center rounded-xl transition-all duration-200"
+                    style="{{ request()->routeIs('client.invitations.create') ? 'background: var(--primary); color: var(--on-primary);' : 'color: var(--on-surface-variant);' }}">
+                    <span class="material-symbols-outlined" style="font-size: 22px;">add_circle</span>
                 </a>
             </div>
-            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
+            <div class="snap-start shrink-0 w-1/5 flex justify-center">
                 <a href="{{ route('client.affiliate.index') }}"
-                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('client.affiliate.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
-                    <i class="fas fa-hand-holding-dollar text-lg"></i>
+                    class="w-11 h-11 flex flex-col items-center justify-center rounded-xl transition-all duration-200"
+                    style="{{ request()->routeIs('client.affiliate.*') ? 'background: var(--primary); color: var(--on-primary);' : 'color: var(--on-surface-variant);' }}">
+                    <span class="material-symbols-outlined" style="font-size: 22px;">hub</span>
                 </a>
             </div>
-            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
-                <a href="{{ route('client.templates.index') }}"
-                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('client.templates.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
-                    <i class="fas fa-palette text-lg"></i>
-                </a>
-            </div>
-            <div class="snap-start shrink-0 w-1/4 sm:w-1/5 flex justify-center">
+            <div class="snap-start shrink-0 w-1/5 flex justify-center">
                 <a href="{{ route('profile.edit') }}"
-                    class="w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 {{ request()->routeIs('profile.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-slate-400 hover:text-white hover:bg-white/10' }}">
-                    <i class="fas fa-gear text-lg"></i>
+                    class="w-11 h-11 flex flex-col items-center justify-center rounded-xl transition-all duration-200"
+                    style="{{ request()->routeIs('profile.*') ? 'background: var(--primary); color: var(--on-primary);' : 'color: var(--on-surface-variant);' }}">
+                    <span class="material-symbols-outlined" style="font-size: 22px;">manage_accounts</span>
                 </a>
             </div>
         </div>
     </nav>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const track = document.querySelector('[data-mobile-dock-track]');
@@ -410,10 +582,6 @@ $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', v
             const key = 'client_mobile_dock_scroll_new';
             const saved = localStorage.getItem(key);
             if (saved !== null) { track.scrollLeft = parseInt(saved, 10) || 0; }
-            else {
-                const active = track.querySelector('.bg-blue-600');
-                if (active) active.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
-            }
             track.addEventListener('scroll', () => localStorage.setItem(key, String(track.scrollLeft)), { passive: true });
         });
     </script>
@@ -422,7 +590,7 @@ $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', v
     {{-- Floating Donation Ad Card (Only for Free Users) --}}
     @php
         $hasPaidSubscription = auth()->check() && (
-            auth()->user()->isAdmin() || 
+            auth()->user()->isAdmin() ||
             auth()->user()->packageSubscriptions()->where('status', 'active')->whereHas('package', function($q) {
                 $q->where('price', '>', 0);
             })->exists()
@@ -430,8 +598,8 @@ $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', v
     @endphp
 
     @if(!$hasPaidSubscription)
-    <div x-data="{ 
-            showAd: false, 
+    <div x-data="{
+            showAd: false,
             init() {
                 const hideUntil = localStorage.getItem('hideSaweriaAdUntil');
                 if (!hideUntil || Date.now() > parseInt(hideUntil)) { this.showAd = true; }
@@ -458,7 +626,7 @@ $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', v
                 <i class="fas fa-coffee"></i>
             </div>
             <div class="text-amber-400 text-[11px] font-bold mb-1 uppercase tracking-wider">Dukung Kami</div>
-            <div class="text-gray-400 text-[10px] leading-relaxed mb-3">Traktir kopi agar update makin ngebut! ☕</div>
+            <div class="text-gray-400 text-[10px] leading-relaxed mb-3">Traktir kopi agar update makin ngebut! â˜•</div>
             <a href="https://saweria.co/gunaepi" target="_blank"
                 class="block w-full py-1.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-900 text-[11px] font-bold rounded-lg transition-all shadow-md hover:-translate-y-0.5">
                 Donasi

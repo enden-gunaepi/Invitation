@@ -72,10 +72,14 @@
                 <form method="POST" action="{{ route('client.invitations.photos.store', $invitation) }}" enctype="multipart/form-data" class="flex gap-2 items-end">
                     @csrf
                     <div class="flex-1">
-                        <input type="file" name="photo" class="form-input text-xs" accept="image/*" required>
+                        <label class="form-label text-[10px] uppercase font-bold tracking-wider mb-1 block" style="color: var(--text-secondary);">Upload beberapa foto sekaligus</label>
+                        <input type="file" name="photos[]" class="form-input text-xs" accept="image/*" required multiple>
                     </div>
-                    <input type="text" name="caption" class="form-input" placeholder="Caption" style="max-width: 140px;">
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-upload"></i></button>
+                    <div class="w-36">
+                        <label class="form-label text-[10px] uppercase font-bold tracking-wider mb-1 block" style="color: var(--text-secondary);">Caption (Opsional)</label>
+                        <input type="text" name="caption" class="form-input" placeholder="Caption">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm h-[38px] flex items-center justify-center px-4" title="Upload Foto"><i class="fas fa-upload mr-1"></i> Upload</button>
                 </form>
                 @else
                 <p class="text-xs text-center py-2" style="color: var(--text-secondary);">
