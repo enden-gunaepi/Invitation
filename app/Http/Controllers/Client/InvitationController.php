@@ -605,6 +605,51 @@ class InvitationController extends Controller
         ]);
     }
 
+    public function uploadIgStory(Request $request, Invitation $invitation)
+    {
+        $this->authorizeAnyEditor($invitation);
+
+        $request->validate([
+            'ig_story_photo' => 'required|image|max:10240',
+        ], [
+            'ig_story_photo.required' => 'Pilih file gambar IG Story terlebih dahulu.',
+            'ig_story_photo.image' => 'File harus berupa gambar (jpg, png, webp, dll).',
+            'ig_story_photo.max' => 'Ukuran gambar maksimal 10MB.',
+        ]);
+
+        // Delete old ig_story_photo if exists
+        if ($invitation->ig_story_photo) {
+            $this->deletePublicFileIfExists($invitation->ig_story_photo);
+        }
+
+        try {
+            $path = $this->imageCompressionService->compressAndStore(
+                $request->file('ig_story_photo'),
+                'invitations/ig-stories'
+            );
+        } catch (\Throwable $e) {
+            report($e);
+            $detail = app()->environment('local') ? (' Detail: ' . $e->getMessage()) : '';
+            return back()->withErrors(['ig_story_photo' => 'Gagal memproses gambar IG Story.' . $detail]);
+        }
+
+        $invitation->update(['ig_story_photo' => $path]);
+
+        return back()->with('success', 'Template IG Story berhasil diupload!');
+    }
+
+    public function destroyIgStory(Invitation $invitation)
+    {
+        $this->authorizeAnyEditor($invitation);
+
+        if ($invitation->ig_story_photo) {
+            $this->deletePublicFileIfExists($invitation->ig_story_photo);
+            $invitation->update(['ig_story_photo' => null]);
+        }
+
+        return back()->with('success', 'Template IG Story berhasil dihapus!');
+    }
+
     /**
      * Check if a package can access premium templates.
      */

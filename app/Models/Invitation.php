@@ -15,7 +15,7 @@ class Invitation extends Model
         'user_id', 'template_id', 'package_id', 'slug', 'event_type', 'title',
         'groom_name', 'groom_parent_name', 'bride_name', 'bride_parent_name', 'host_name', 'event_date', 'event_time',
         'event_end_time', 'venue_name', 'venue_address', 'venue_lat', 'venue_lng',
-        'google_maps_url', 'livestream_enabled', 'livestream_url', 'livestream_label', 'cover_photo', 'groom_photo', 'bride_photo', 'groom_instagram', 'bride_instagram', 'groom_facebook', 'bride_facebook', 'opening_text', 'closing_text',
+        'google_maps_url', 'livestream_enabled', 'livestream_url', 'livestream_label', 'cover_photo', 'ig_story_photo', 'groom_photo', 'bride_photo', 'groom_instagram', 'bride_instagram', 'groom_facebook', 'bride_facebook', 'opening_text', 'closing_text',
         'bank_name', 'bank_account_number', 'bank_account_name', 'gift_address', 'footer_text',
         'music_url', 'status', 'is_password_protected', 'invitation_password',
         'rsvp_deadline', 'custom_colors', 'custom_fonts', 'view_count',
@@ -256,6 +256,7 @@ class Invitation extends Model
     private function deleteOwnedMediaFiles(): void
     {
         $this->deleteImagePathIfUnused($this->cover_photo);
+        $this->deleteImagePathIfUnused($this->ig_story_photo);
         $this->deleteImagePathIfUnused($this->groom_photo);
         $this->deleteImagePathIfUnused($this->bride_photo);
 
@@ -280,6 +281,7 @@ class Invitation extends Model
             ->where('id', '!=', $this->id)
             ->where(function ($q) use ($path) {
                 $q->where('cover_photo', $path)
+                    ->orWhere('ig_story_photo', $path)
                     ->orWhere('groom_photo', $path)
                     ->orWhere('bride_photo', $path);
             })

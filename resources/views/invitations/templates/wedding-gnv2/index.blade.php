@@ -9,7 +9,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         html {
             scroll-behavior: smooth;
@@ -17,6 +18,11 @@
 
         body {
             font-family: 'Inter', sans-serif;
+        }
+
+        section {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
         }
 
         .font-title {
@@ -45,6 +51,10 @@
 
         .anim-fade-up {
             transform: translateY(40px);
+        }
+
+        .anim-fade-up-subtle {
+            transform: translateY(20px);
         }
 
         .anim-slide-left {
@@ -185,12 +195,20 @@
         .wish-submit {
             width: 100%;
             margin-top: 14px;
-            background: rgba(23, 38, 54, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            border-radius: 8px;
-            padding: 10px 12px;
-            font-weight: 700;
-            letter-spacing: .02em;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 999px;
+            padding: 12px 16px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .wish-submit:hover {
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .wish-select {
@@ -246,7 +264,18 @@
             width: 100%;
             height: 280px;
             border-radius: 1rem;
-            z-index: 10;
+            z-index: 1;
+            background: transparent;
+            position: relative;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        #mapWrapper iframe {
+            width: 100%;
+            height: 280px;
+            border-radius: 1rem;
         }
 
         .toast-notification {
@@ -254,19 +283,25 @@
             bottom: 2rem;
             left: 50%;
             transform: translateX(-50%) translateY(100px);
+            opacity: 0;
+            visibility: hidden;
             background: rgba(0, 0, 0, 0.85);
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 9999px;
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 100;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9999;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             font-size: 0.875rem;
+            pointer-events: none;
         }
 
         .toast-notification.show {
             transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
         }
 
         .loading-spinner {
@@ -280,7 +315,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         button:disabled .loading-spinner {
@@ -292,19 +329,24 @@
         }
 
         @keyframes pulse-glow {
-            0%, 100% {
+
+            0%,
+            100% {
                 box-shadow: 0 0 0 0px rgba(159, 191, 214, 0.5);
                 border-color: rgba(159, 191, 214, 0.4);
             }
+
             50% {
                 box-shadow: 0 0 0 10px rgba(159, 191, 214, 0);
                 border-color: rgba(159, 191, 214, 1);
             }
         }
+
         .pulse-glow-active {
             animation: pulse-glow 2s infinite !important;
             border-color: #9fbfd6 !important;
         }
+
         .pulse-glow-active svg {
             color: #9fbfd6 !important;
         }
@@ -316,7 +358,7 @@
     @php
         $guestName = $guest->name ?? 'Nama Tamu';
         $coupleName = trim(
-            ($invitation->groom_name ?? 'Mempelai Pria') . ' & ' . ($invitation->bride_name ?? 'Mempelai Wanita'),
+            ($invitation->bride_name ?? 'Mempelai Wanita') . ' & ' . ($invitation->groom_name ?? 'Mempelai Pria'),
         );
         $coverImage = $invitation->cover_photo ? asset('storage/' . $invitation->cover_photo) : null;
         $slideshowImages = [];
@@ -362,16 +404,17 @@
             @if (count($slideshowImages) > 0)
                 <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
                     @foreach ($slideshowImages as $index => $imgUrl)
-                        <img src="{{ $imgUrl }}" 
-                             class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" 
-                             alt="Cover {{ $index + 1 }}">
+                        <img src="{{ $imgUrl }}"
+                            class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}"
+                            alt="Cover {{ $index + 1 }}">
                     @endforeach
                 </div>
             @else
                 <div class="w-full h-full bg-gradient-to-b from-slate-900 to-black"></div>
             @endif
             <div class="absolute inset-0 bg-black/35 z-20"></div>
-            <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/85 via-black/50 to-transparent z-30"></div>
+            <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/85 via-black/50 to-transparent z-30">
+            </div>
         </div>
         <div class="absolute bottom-0 left-0 w-28 opacity-30"><img src="ornament.png" class="ornament-float"
                 alt=""></div>
@@ -383,7 +426,7 @@
             <p class="text-sm opacity-80">Kepada Yth.</p>
             <h2 class="text-lg font-medium mb-6">{{ $guestName }}</h2>
             <button onclick="openInvitation()"
-                class="bg-white/20 backdrop-blur-md px-6 py-3 rounded-full hover:bg-white/30 transition">Open
+                class="bg-transparent border border-white/40 backdrop-blur-md px-8 py-2.5 rounded-full hover:bg-white/20 transition text-xs uppercase tracking-widest">Open
                 Invitation</button>
         </div>
     </section>
@@ -394,16 +437,17 @@
                 @if (count($slideshowImages) > 0)
                     <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
                         @foreach ($slideshowImages as $index => $imgUrl)
-                            <img src="{{ $imgUrl }}" 
-                                 class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" 
-                                 alt="Pembuka {{ $index + 1 }}">
+                            <img src="{{ $imgUrl }}"
+                                class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}"
+                                alt="Pembuka {{ $index + 1 }}">
                         @endforeach
                     </div>
                 @else
                     <div class="w-full h-full bg-gradient-to-b from-slate-800 to-black"></div>
                 @endif
                 <div class="absolute inset-0 bg-black/35 z-20"></div>
-                <div class="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/85 via-black/45 to-transparent z-30">
+                <div
+                    class="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/85 via-black/45 to-transparent z-30">
                 </div>
             </div>
             <div class="absolute bottom-0 left-0 w-40 opacity-30"><img src="ornament.png" class="ornament-float"
@@ -424,16 +468,17 @@
                 @if (count($slideshowImages) > 0)
                     <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
                         @foreach ($slideshowImages as $index => $imgUrl)
-                            <img src="{{ $imgUrl }}" 
-                                 class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" 
-                                 alt="Pembuka {{ $index + 1 }}">
+                            <img src="{{ $imgUrl }}"
+                                class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}"
+                                alt="Pembuka {{ $index + 1 }}">
                         @endforeach
                     </div>
                 @else
                     <div class="w-full h-full bg-gradient-to-b from-slate-800 to-black"></div>
                 @endif
                 <div class="absolute inset-0 bg-black/30 z-20"></div>
-                <div class="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/75 via-black/30 to-transparent z-30">
+                <div
+                    class="absolute bottom-0 w-full h-2/3 bg-gradient-to-t from-black/75 via-black/30 to-transparent z-30">
                 </div>
             </div>
             <div class="absolute bottom-0 left-0 w-40 opacity-30"><img src="ornament.png" class="ornament-float"
@@ -478,7 +523,7 @@
                 <p class="text-sm opacity-90 mb-6 leading-relaxed">{{ $invitation->bride_parent_name ?? '-' }}</p>
                 @if ($invitation->bride_instagram)
                     <a href="{{ $invitation->bride_instagram }}" target="_blank"
-                        class="inline-block bg-white/20 backdrop-blur-md px-5 py-2 rounded-full mb-8 hover:bg-white/30 transition">@instagram</a>
+                        class="inline-block bg-transparent border border-white/40 backdrop-blur-md px-6 py-2 rounded-full mb-8 hover:bg-white/20 transition text-[10px] uppercase tracking-widest">@instagram</a>
                 @endif
                 <h3 class="font-title text-xl mb-2">{{ $coupleName }}</h3>
                 <p class="text-sm opacity-80">{{ $eventDateText }}</p>
@@ -513,7 +558,7 @@
                 <p class="text-sm opacity-90 mb-6 leading-relaxed">{{ $invitation->groom_parent_name ?? '-' }}</p>
                 @if ($invitation->groom_instagram)
                     <a href="{{ $invitation->groom_instagram }}" target="_blank"
-                        class="inline-block bg-white/20 backdrop-blur-md px-5 py-2 rounded-full mb-8 hover:bg-white/30 transition">@instagram</a>
+                        class="inline-block bg-transparent border border-white/40 backdrop-blur-md px-6 py-2 rounded-full mb-8 hover:bg-white/20 transition text-[10px] uppercase tracking-widest">@instagram</a>
                 @endif
                 <h3 class="font-title text-xl mb-2">{{ $coupleName }}</h3>
                 <p class="text-sm opacity-80">{{ $eventDateText }}</p>
@@ -553,7 +598,7 @@
                 <p class="text-sm mb-6 opacity-90">Tekan tombol dibawah ini untuk mengirim ucapan dan konfirmasi
                     kehadiran</p>
                 <a href="#rsvp"
-                    class="inline-block bg-black/40 backdrop-blur-md px-6 py-3 rounded-full hover:bg-black/60 transition">Konfirmasi
+                    class="inline-block bg-transparent border border-white/50 backdrop-blur-md px-8 py-2.5 rounded-full hover:bg-white/20 hover:text-white transition text-xs uppercase tracking-widest mt-2">Konfirmasi
                     & Kirim Ucapan</a>
             </div>
         </section>
@@ -597,9 +642,9 @@
                 @if (count($slideshowImages) > 0)
                     <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
                         @foreach ($slideshowImages as $index => $imgUrl)
-                            <img src="{{ $imgUrl }}" 
-                                 class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" 
-                                 alt="Timeline {{ $index + 1 }}">
+                            <img src="{{ $imgUrl }}"
+                                class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}"
+                                alt="Timeline {{ $index + 1 }}">
                         @endforeach
                     </div>
                 @else
@@ -658,20 +703,30 @@
                 <p class="text-sm opacity-80 mb-6">{{ $eventDateText }}</p>
                 <h3 class="font-title text-2xl mb-2">{{ $invitation->venue_name }}</h3>
                 <p class="text-sm mb-6 leading-relaxed">{{ $invitation->venue_address }}</p>
-                <div class="rounded-2xl overflow-hidden shadow-xl border border-white/30 mb-4">
-                    <div id="map"></div>
+                <div id="mapWrapper" class="rounded-2xl shadow-xl border border-white/30 mb-4"
+                    style="min-height:280px; overflow: visible;">
+                    <iframe
+                        src="{{ $mapsEmbed }}"
+                        style="width:100%;height:280px;border:0;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
                 </div>
                 <div id="userDistance" class="text-xs opacity-90 mb-6 bg-black/20 py-2 px-3 rounded-lg hidden">
                     <span class="flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                clip-rule="evenodd" />
                         </svg>
                         <span id="distanceText">Menghitung jarak...</span>
                     </span>
                 </div>
                 @if ($mapsUrl)
                     <a href="{{ $mapsUrl }}" target="_blank"
-                        class="inline-block bg-white/20 backdrop-blur-md px-6 py-3 rounded-full hover:bg-white/30 transition mb-6">Gunakan
+                        class="inline-block bg-transparent border border-white/50 backdrop-blur-md px-8 py-2.5 rounded-full hover:bg-white/20 hover:text-white transition mb-6 mt-4 text-xs uppercase tracking-widest">Gunakan
                         Google Maps</a>
                 @endif
             </div>
@@ -680,24 +735,227 @@
 
 
         @if ($invitation->photos->count())
-            <section class="relative px-6 py-20 bg-[#9fbfd6]">
-                <div class="max-w-6xl mx-auto">
-                    <h2 class="font-title text-3xl mb-8 text-center">Galeri</h2>
-                    <div class="columns-2 md:columns-4 gap-2 md:gap-3 [column-fill:_balance]">
-                        @foreach ($invitation->photos as $photo)
-                            <div class="mb-2 md:mb-3 break-inside-avoid gallery-item overflow-hidden rounded-xl">
-                                <a href="{{ asset('storage/' . $photo->file_path) }}" data-fancybox="gallery" data-caption="{{ $photo->caption ?: '' }}">
-                                    <img src="{{ asset('storage/' . $photo->file_path) }}" alt="{{ $photo->caption ?: '' }}"
-                                        class="w-full h-auto object-contain rounded-xl shadow-lg shadow-black/20 hover:scale-[1.03] hover:brightness-[1.05] transition-all duration-300 ease-out cursor-pointer">
-                                </a>
+            <section class="relative px-6 py-20 bg-[#9fbfd6] overflow-hidden">
+                <div class="absolute top-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
+                <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png"
+                        alt=""></div>
+                <div class="max-w-4xl mx-auto relative z-10">
+                    <h2 class="font-title text-4xl mb-2 text-center text-white">Galeri</h2>
+                    <p class="text-sm md:text-base opacity-85 text-center mb-10 text-white italic tracking-wide">Setiap
+                        potret menceritakan kisah cinta kami yang abadi</p>
+
+                    <div class="relative px-12 mb-6">
+                        <div thumbsSlider="" class="swiper gallery-thumbs">
+                            <div class="swiper-wrapper">
+                                @foreach ($invitation->photos as $photo)
+                                    <div
+                                        class="swiper-slide cursor-pointer opacity-60 transition-all duration-300 rounded-lg">
+                                        <img src="{{ asset('storage/' . $photo->file_path) }}"
+                                            class="w-full h-16 md:h-24 object-cover rounded-lg border-2 border-transparent">
+                                    </div>
+                                @endforeach
                             </div>
-                        @endforeach
+                        </div>
+                        <div
+                            class="swiper-button-prev !text-white !left-0 after:!text-sm bg-white/20 hover:bg-white/40 backdrop-blur-sm w-8 h-8 rounded-full transition-all">
+                        </div>
+                        <div
+                            class="swiper-button-next !text-white !right-0 after:!text-sm bg-white/20 hover:bg-white/40 backdrop-blur-sm w-8 h-8 rounded-full transition-all">
+                        </div>
+                    </div>
+
+                    <div class="swiper gallery-main rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/30">
+                        <div class="swiper-wrapper">
+                            @foreach ($invitation->photos as $photo)
+                                <div class="swiper-slide">
+                                    <a href="{{ asset('storage/' . $photo->file_path) }}" data-fancybox="gallery"
+                                        data-caption="{{ $photo->caption ?: '' }}">
+                                        <img src="{{ asset('storage/' . $photo->file_path) }}"
+                                            alt="{{ $photo->caption ?: '' }}"
+                                            class="w-full h-[60vh] object-cover hover:scale-105 transition-transform duration-700 cursor-pointer">
+                                    </a>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </section>
         @endif
 
+        @if ($invitation->ig_story_photo)
+            @php
+                $igStoryDate = $invitation->event_date ? $invitation->event_date->format('d · m · Y') : '-';
+                $igCoupleName = trim(
+                    ($invitation->bride_name ?? 'Mempelai Wanita') .
+                        ' & ' .
+                        ($invitation->groom_name ?? 'Mempelai Pria'),
+                );
+            @endphp
+            <section
+                class="relative py-20 flex items-center justify-center text-center text-white px-6 bg-[#9fbfd6] overflow-hidden">
+                <div class="absolute top-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
+                <div class="absolute top-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png"
+                        alt=""></div>
+                <div class="absolute bottom-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
+                <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png"
+                        alt=""></div>
+                <div class="relative z-10 max-w-md w-full">
+                    <h2 class="font-title text-2xl md:text-3xl mb-2">Instagram Story</h2>
+                    <p class="text-sm opacity-80 mb-8">Bagikan momen bahagia kami di Instagram Story kamu</p>
+                    <div class="glass-card rounded-2xl p-3 mb-6">
+                        <canvas id="igStoryCanvas" class="w-full h-auto rounded-xl shadow-lg"
+                            style="aspect-ratio: 9/16;"></canvas>
+                    </div>
+                    <button type="button" id="downloadIgStory"
+                        class="inline-flex items-center gap-2 bg-transparent border border-white/50 backdrop-blur-md px-8 py-2.5 rounded-full hover:bg-white/20 hover:text-white transition text-xs uppercase tracking-widest mt-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Download Template
+                    </button>
+                </div>
+            </section>
+            <script>
+                (function() {
+                    const CANVAS_W = 1080;
+                    const CANVAS_H = 1920;
+                    const coupleNameText = @json($igCoupleName);
+                    const dateText = @json($igStoryDate);
+                    const websiteUrl = 'janjisucikita.com';
+                    const igHandle = '-';
+                    const photoSrc = @json(asset('storage/' . $invitation->ig_story_photo));
 
+                    const scriptFont = new FontFace('GreatVibes',
+                        'url(https://fonts.gstatic.com/s/greatvibes/v18/RWmMoKWR9v4ksMfaWd_JN9XFiaQ.woff2)');
+                    const sansFont = new FontFace('Inter',
+                        'url(https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.woff2)'
+                    );
+
+                    Promise.all([scriptFont.load(), sansFont.load()]).then(function(fonts) {
+                        fonts.forEach(function(f) {
+                            document.fonts.add(f);
+                        });
+                        renderIgStory();
+                    }).catch(function() {
+                        renderIgStory();
+                    });
+
+                    function renderIgStory() {
+                        const canvas = document.getElementById('igStoryCanvas');
+                        if (!canvas) return;
+                        canvas.width = CANVAS_W;
+                        canvas.height = CANVAS_H;
+                        const ctx = canvas.getContext('2d');
+
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = function() {
+                            // -- Draw background photo (cover fit) --
+                            const imgRatio = img.width / img.height;
+                            const canvasRatio = CANVAS_W / CANVAS_H;
+                            let sx = 0,
+                                sy = 0,
+                                sw = img.width,
+                                sh = img.height;
+                            if (imgRatio > canvasRatio) {
+                                sw = img.height * canvasRatio;
+                                sx = (img.width - sw) / 2;
+                            } else {
+                                sh = img.width / canvasRatio;
+                                sy = (img.height - sh) / 2;
+                            }
+                            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, CANVAS_W, CANVAS_H);
+
+                            // -- Bottom gradient overlay --
+                            const gradStart = CANVAS_H * 0.45;
+                            const grad = ctx.createLinearGradient(0, gradStart, 0, CANVAS_H);
+                            grad.addColorStop(0, 'rgba(100, 140, 170, 0)');
+                            grad.addColorStop(0.35, 'rgba(80, 125, 155, 0.55)');
+                            grad.addColorStop(0.6, 'rgba(65, 110, 140, 0.82)');
+                            grad.addColorStop(1, 'rgba(50, 95, 125, 0.95)');
+                            ctx.fillStyle = grad;
+                            ctx.fillRect(0, gradStart, CANVAS_W, CANVAS_H - gradStart);
+
+                            // -- Couple name (script font) --
+                            const nameY = CANVAS_H * 0.66;
+                            ctx.textAlign = 'center';
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = '700 72px GreatVibes, cursive';
+                            ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                            ctx.shadowBlur = 8;
+                            ctx.fillText(coupleNameText, CANVAS_W / 2, nameY);
+                            ctx.shadowBlur = 0;
+
+                            // -- Date --
+                            const dateY = nameY + 60;
+                            ctx.font = '300 36px Inter, sans-serif';
+                            ctx.letterSpacing = '4px';
+                            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                            ctx.fillText(dateText, CANVAS_W / 2, dateY);
+
+                            // -- "Wish" label --
+                            const wishLabelY = dateY + 56;
+                            ctx.font = '400 30px Inter, sans-serif';
+                            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                            ctx.fillText('Wish', CANVAS_W / 2, wishLabelY);
+
+                            // -- White/cream box for wish space --
+                            const boxMargin = 60;
+                            const boxTop = wishLabelY + 24;
+                            const boxWidth = CANVAS_W - (boxMargin * 2);
+                            const boxHeight = 360;
+                            const boxRadius = 16;
+
+                            ctx.fillStyle = 'rgba(245, 240, 232, 0.92)';
+                            ctx.beginPath();
+                            ctx.moveTo(boxMargin + boxRadius, boxTop);
+                            ctx.lineTo(boxMargin + boxWidth - boxRadius, boxTop);
+                            ctx.quadraticCurveTo(boxMargin + boxWidth, boxTop, boxMargin + boxWidth, boxTop + boxRadius);
+                            ctx.lineTo(boxMargin + boxWidth, boxTop + boxHeight - boxRadius);
+                            ctx.quadraticCurveTo(boxMargin + boxWidth, boxTop + boxHeight, boxMargin + boxWidth - boxRadius,
+                                boxTop + boxHeight);
+                            ctx.lineTo(boxMargin + boxRadius, boxTop + boxHeight);
+                            ctx.quadraticCurveTo(boxMargin, boxTop + boxHeight, boxMargin, boxTop + boxHeight - boxRadius);
+                            ctx.lineTo(boxMargin, boxTop + boxRadius);
+                            ctx.quadraticCurveTo(boxMargin, boxTop, boxMargin + boxRadius, boxTop);
+                            ctx.closePath();
+                            ctx.fill();
+
+                            // -- Bottom footer: website URL & IG handle --
+                            const footerY = CANVAS_H - 60;
+                            ctx.font = '400 24px Inter, sans-serif';
+                            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                            ctx.textAlign = 'left';
+                            ctx.fillText(websiteUrl, boxMargin, footerY);
+                            ctx.textAlign = 'right';
+                            ctx.fillText(igHandle, CANVAS_W - boxMargin, footerY);
+                            ctx.textAlign = 'center';
+                        };
+                        img.onerror = function() {
+                            ctx.fillStyle = '#3c1e14';
+                            ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+                            ctx.fillStyle = '#fff';
+                            ctx.font = '400 32px Inter, sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.fillText('Gagal memuat gambar', CANVAS_W / 2, CANVAS_H / 2);
+                        };
+                        img.src = photoSrc;
+                    }
+
+                    document.getElementById('downloadIgStory')?.addEventListener('click', function() {
+                        const canvas = document.getElementById('igStoryCanvas');
+                        if (!canvas) return;
+                        const link = document.createElement('a');
+                        link.download = 'ig-story-' + coupleNameText.replace(/\s+/g, '-').toLowerCase() + '.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    });
+                })();
+            </script>
+        @endif
 
         <section id="rsvp"
             class="relative min-h-screen flex items-center justify-center text-center text-white px-6 bg-[#9fbfd6] overflow-hidden">
@@ -707,7 +965,8 @@
             <div class="relative z-10 w-full max-w-xl">
                 <h2 class="font-title text-2xl mb-2">Konfirmasi Kehadiran</h2>
                 <p class="text-sm opacity-80 mb-8">Mohon kesediaannya untuk mengisi konfirmasi kehadiran</p>
-                <form id="rsvpForm" method="POST" action="{{ route('invitation.rsvp', $invitation->slug) }}" class="space-y-4">
+                <form id="rsvpForm" method="POST" action="{{ route('invitation.rsvp', $invitation->slug) }}"
+                    class="space-y-4">
                     @csrf
                     <div class="wish-form">
                         <label class="wish-label" for="rsvpName">Nama :</label>
@@ -718,9 +977,7 @@
                         <input id="rsvpPax" type="number" name="pax" min="1" max="10"
                             value="1" placeholder="Jumlah tamu hadir" class="wish-line-input" required>
 
-                        <label class="wish-label mt-4 block" for="rsvpWhatsapp">Nomor WhatsApp :</label>
-                        <input id="rsvpWhatsapp" type="tel" name="phone"
-                            placeholder="628123456789" class="wish-line-input" required>
+                        <input type="hidden" name="phone" value="-">
 
                         <label class="wish-label mt-4 block" for="rsvpStatus">Konfirmasi :</label>
                         <select id="rsvpStatus" name="status" class="wish-select" required>
@@ -730,7 +987,8 @@
                         </select>
 
                         <label class="wish-label mt-4 block" for="rsvpAddress">Ucapan & Doa :</label>
-                        <textarea id="rsvpAddress" name="message" placeholder="Tulis ucapan dan doa untuk mempelai..." class="wish-line-textarea" required></textarea>
+                        <textarea id="rsvpAddress" name="message" placeholder="Tulis ucapan dan doa untuk mempelai..."
+                            class="wish-line-textarea" required></textarea>
 
                         @if (!empty($guest?->id))
                             <input type="hidden" name="guest_id" value="{{ $guest->id }}">
@@ -742,31 +1000,86 @@
                         </button>
                     </div>
                 </form>
-                <div id="rsvpListContainer"
-                    class="mt-8 bg-white/30 backdrop-blur-md rounded-2xl p-4 max-h-[280px] overflow-y-auto text-left space-y-4">
-                    <h3 class="text-sm font-semibold">Daftar Konfirmasi Kehadiran</h3>
-                    @php
-                        $statusLabels = [
-                            'attending' => 'Hadir',
-                            'not_attending' => 'Tidak Hadir',
-                            'maybe' => 'Mungkin',
-                        ];
-                    @endphp
-                    @foreach ($invitation->rsvps as $rsvp)
-                        <article class="message-card list-rsvp-item">
-                            <p class="message-author">{{ $rsvp->name }}</p>
-                            <p class="message-meta">{{ $rsvp->pax }} pax •
-                                {{ $statusLabels[$rsvp->status] ?? $rsvp->status }}</p>
-                            @if ($rsvp->message)
-                                <p class="message-body"><span class="opacity-80">Pesan:</span> {{ $rsvp->message }}
-                                </p>
-                            @endif
-                        </article>
-                    @endforeach
-                    <div class="flex items-center justify-between pt-1 list-rsvp-pager">
-                        <button type="button" class="pager-btn" data-prev>Prev</button>
-                        <span class="text-xs opacity-90" data-page-info>Hal 1 / 1</span>
-                        <button type="button" class="pager-btn" data-next>Next</button>
+            </div>
+        </section>
+
+        <section class="relative min-h-screen flex items-center justify-center text-center text-white px-6 overflow-hidden">
+            <div class="absolute inset-0">
+                @if (count($slideshowImages) > 0)
+                    <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
+                        @foreach ($slideshowImages as $index => $imgUrl)
+                            <img src="{{ $imgUrl }}"
+                                class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}"
+                                alt="Ucapan {{ $index + 1 }}">
+                        @endforeach
+                    </div>
+                @else
+                    <div class="w-full h-full bg-gradient-to-b from-slate-900 to-black"></div>
+                @endif
+                <div class="absolute inset-0 bg-black/35 z-20"></div>
+            </div>
+            <div class="absolute top-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
+            <div class="absolute top-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png" alt="">
+            </div>
+            <div class="absolute bottom-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
+            <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png" alt="">
+            </div>
+            <div class="relative z-40 w-full max-w-xl">
+                <h2 class="font-title text-2xl mb-2">Ucapan & Doa</h2>
+                <p class="text-sm opacity-80 mb-8">Ucapan dan doa dari tamu undangan</p>
+                <div class="bg-white/20 backdrop-blur-lg rounded-3xl p-4 shadow-2xl border border-white/30">
+                    <div id="rsvpListContainer" class="max-h-[400px] overflow-y-auto text-left space-y-2 pr-2">
+                        @php
+                            $statusLabels = [
+                                'attending' => 'Hadir',
+                                'not_attending' => 'Tidak Hadir',
+                                'maybe' => 'Mungkin',
+                            ];
+                        @endphp
+                        @foreach ($invitation->rsvps as $rsvp)
+                            <article class="bg-transparent border border-white/30 rounded-lg p-2.5 shadow-md">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                        <span class="text-white text-xs font-semibold">{{ mb_strtoupper(mb_substr($rsvp->name, 0, 1)) }}</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="message-author font-semibold text-sm text-white truncate">{{ $rsvp->name }}</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        @if ($rsvp->status === 'attending')
+                                            <div class="w-5 h-5 rounded-full bg-green-500/30 flex items-center justify-center" title="Hadir">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-green-400" viewBox="0 0 256 256">
+                                                    <path d="M0 0h256v256H0z" fill="none" />
+                                                    <path fill="currentColor" d="M152.5 156.54a72 72 0 1 0-89 0a124 124 0 0 0-48.69 35.74a12 12 0 0 0 18.38 15.44C46.88 191.42 71 172 108 172s61.12 19.42 74.81 35.72a12 12 0 1 0 18.38-15.44a123.9 123.9 0 0 0-48.69-35.74M60 100a48 48 0 1 1 48 48a48.05 48.05 0 0 1-48-48m192.49 36.49l-32 32a12 12 0 0 1-17 0l-16-16a12 12 0 0 1 17-17L212 143l23.51-23.52a12 12 0 1 1 17 17Z" />
+                                                </svg>
+                                            </div>
+                                        @elseif ($rsvp->status === 'not_attending')
+                                            <div class="w-5 h-5 rounded-full bg-red-500/30 flex items-center justify-center" title="Tidak Hadir">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-red-400" viewBox="0 0 24 24">
+                                                    <path d="M0 0h24v24H0z" fill="none" />
+                                                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0-8 0M6 21v-2a4 4 0 0 1 4-4h3.5m2.5 4a3 3 0 1 0 6 0a3 3 0 1 0-6 0m1 2l4-4" />
+                                                </svg>
+                                            </div>
+                                        @else
+                                            <div class="w-5 h-5 rounded-full bg-yellow-500/30 flex items-center justify-center" title="Masih Ragu">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-yellow-400" viewBox="0 0 512 512">
+                                                    <path d="M0 0h512v512H0z" fill="none" />
+                                                    <path fill="currentColor" fill-rule="evenodd" d="M213.333 42.667c41.238 0 74.667 33.429 74.667 74.666c0 39.863-31.238 72.43-70.57 74.556l-4.097.111c-41.237 0-74.666-33.429-74.666-74.667c0-39.862 31.238-72.43 70.57-74.556zm148.835 384l.499-.499v.499zm-298.168 0h170.667v-42.172l.494-.495H106.667v-34.133l.11-4.142c2.057-38.365 32.515-68.392 69.223-68.392h74.667l3.908.114c22.622 1.322 42.501 14.047 54.242 32.897l30.667-30.667c-20.476-27.372-52.644-45.01-88.817-45.01H176l-4.617.096C111.668 237.253 64 287.834 64 349.867zm192-33.336l9.331-9.331h.002l52.444-52.444l-.001-.001l33.131-33.131l.001.002l8.883-8.884l54.667 54.667L310.667 448H256zm-74.667-275.998c0-17.673 14.327-32 32-32s32 14.327 32 32s-14.327 32-32 32s-32-14.327-32-32m228 122.667L464 294.667l-34.458 34.457l-54.666-54.667z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                @if ($rsvp->message)
+                                    <p class="message-body text-sm leading-relaxed text-white pl-11 mt-2">{{ $rsvp->message }}</p>
+                                @endif
+                            </article>
+                        @endforeach
+                        <div class="flex items-center justify-between pt-4 list-rsvp-pager">
+                            <button type="button" class="pager-btn" data-prev>Prev</button>
+                            <span class="text-xs opacity-90" data-page-info>Hal 1 / 1</span>
+                            <button type="button" class="pager-btn" data-next>Next</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -838,7 +1151,7 @@
                             <p class="text-lg font-bold mb-2">{{ $acc->account_number }}</p>
                             <div class="flex items-center gap-3 mb-2">
                                 <button onclick="copyText('{{ $acc->account_number }}')"
-                                    class="bg-black/40 px-4 py-2 rounded-lg text-sm hover:bg-black/60 transition"
+                                    class="bg-transparent border border-white/40 px-5 py-2 rounded-full text-[10px] uppercase tracking-widest hover:bg-white/20 transition"
                                     type="button">Salin Rekening</button>
                             </div>
                         </div>
@@ -849,7 +1162,7 @@
                         <h4 class="font-semibold mb-3">Kirim Kado</h4>
                         <p class="text-sm mb-4 leading-relaxed">{{ $invitation->gift_address }}</p>
                         <button onclick="copyText('{{ addslashes($invitation->gift_address) }}')"
-                            class="bg-black/40 px-5 py-2 rounded-lg text-sm hover:bg-black/60 transition"
+                            class="bg-transparent border border-white/40 px-5 py-2 rounded-full text-[10px] uppercase tracking-widest hover:bg-white/20 transition mt-2"
                             type="button">Salin Alamat</button>
                     </div>
                 @endif
@@ -862,16 +1175,17 @@
                 @if (count($slideshowImages) > 0)
                     <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
                         @foreach ($slideshowImages as $index => $imgUrl)
-                            <img src="{{ $imgUrl }}" 
-                                 class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}" 
-                                 alt="Closing {{ $index + 1 }}">
+                            <img src="{{ $imgUrl }}"
+                                class="absolute inset-0 w-full h-full object-cover bg-zoom transition-opacity duration-[2000ms] ease-in-out {{ $index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' }}"
+                                alt="Closing {{ $index + 1 }}">
                         @endforeach
                     </div>
                 @else
                     <div class="w-full h-full bg-gradient-to-b from-slate-900 to-black"></div>
                 @endif
                 <div class="absolute inset-0 bg-black/35 z-20"></div>
-                <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/85 via-black/50 to-transparent z-30">
+                <div
+                    class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/85 via-black/50 to-transparent z-30">
                 </div>
             </div>
             <div class="absolute top-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
@@ -890,8 +1204,14 @@
                     <p class="text-xs mt-4 break-all opacity-80">{{ $guest->getInvitationUrl() }}</p>
                 @endif
             </div>
-            <div class="relative z-40 mb-8 text-xs opacity-60 max-w-md">
-                <p>Music</p>
+            <div class="relative z-40 mb-10 text-center flex flex-col items-center">
+                <p class="text-[10px] uppercase tracking-[0.2em] opacity-60 mb-2">Digital Invitation by</p>
+                <a href="https://janjisucikita.com" target="_blank"
+                    class="inline-flex items-center justify-center gap-2 text-sm font-semibold tracking-wider hover:text-[#9fbfd6] transition-colors">
+                    <img src="{{ asset('logo/logoputih.png') }}" alt="Logo"
+                        class="h-5 w-auto object-contain opacity-90">
+                    janjisucikita.com
+                </a>
             </div>
         </section>
     </section>
@@ -904,59 +1224,51 @@
 
     <div class="fixed right-4 bottom-4 z-50 flex flex-col gap-2">
         <button id="soundToggle" type="button" aria-label="Toggle suara" title="Suara: Off"
-            class="w-8 h-8 rounded-full bg-slate-900/80 hover:bg-slate-950 border border-white/20 backdrop-blur-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-[0_3px_15px_rgba(0,0,0,0.4)]">
+            class="w-8 h-8 rounded-full bg-slate-900/80 hover:bg-slate-950 border border-white/20 backdrop-blur-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-[0_3px_15px_rgba(0,0,0,0.4)] hidden">
             <!-- Music SVG (On) -->
-            <svg id="soundIconOn" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white hidden" viewBox="0 0 24 24">
+            <svg id="soundIconOn" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white hidden"
+                viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0z" fill="none" />
                 <g fill="none">
-                    <path fill="currentColor" fill-rule="evenodd" d="M13 16.753V14H8.818a3.249 3.249 0 1 0 .403 6.472l.557-.07A3.68 3.68 0 0 0 13 16.754" clip-rule="evenodd" />
-                    <path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M13 8v-.611c0-1.619 0-2.428.474-2.987s1.272-.693 2.868-.96L18.7 3.05c.136-.022.204-.034.24.006s.02.106-.013.24l-.895 3.581c-.015.06-.023.09-.044.11s-.05.026-.111.038zm0 0v6m0 0v2.753a3.68 3.68 0 0 1-3.222 3.65l-.557.07A3.249 3.249 0 1 1 8.818 14z" />
+                    <path fill="currentColor" fill-rule="evenodd"
+                        d="M13 16.753V14H8.818a3.249 3.249 0 1 0 .403 6.472l.557-.07A3.68 3.68 0 0 0 13 16.754"
+                        clip-rule="evenodd" />
+                    <path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                        d="M13 8v-.611c0-1.619 0-2.428.474-2.987s1.272-.693 2.868-.96L18.7 3.05c.136-.022.204-.034.24.006s.02.106-.013.24l-.895 3.581c-.015.06-.023.09-.044.11s-.05.026-.111.038zm0 0v6m0 0v2.753a3.68 3.68 0 0 1-3.222 3.65l-.557.07A3.249 3.249 0 1 1 8.818 14z" />
                 </g>
             </svg>
             <!-- Music SVG (Off / Slashed) -->
-            <svg id="soundIconOff" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24">
+            <svg id="soundIconOff" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white"
+                viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0z" fill="none" />
                 <g fill="none">
-                    <path fill="currentColor" fill-rule="evenodd" d="M13 16.753V14H8.818a3.249 3.249 0 1 0 .403 6.472l.557-.07A3.68 3.68 0 0 0 13 16.754" clip-rule="evenodd" />
-                    <path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M13 8v-.611c0-1.619 0-2.428.474-2.987s1.272-.693 2.868-.96L18.7 3.05c.136-.022.204-.034.24.006s.02.106-.013.24l-.895 3.581c-.015.06-.023.09-.044.11s-.05.026-.111.038zm0 0v6m0 0v2.753a3.68 3.68 0 0 1-3.222 3.65l-.557.07A3.249 3.249 0 1 1 8.818 14z" />
+                    <path fill="currentColor" fill-rule="evenodd"
+                        d="M13 16.753V14H8.818a3.249 3.249 0 1 0 .403 6.472l.557-.07A3.68 3.68 0 0 0 13 16.754"
+                        clip-rule="evenodd" />
+                    <path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                        d="M13 8v-.611c0-1.619 0-2.428.474-2.987s1.272-.693 2.868-.96L18.7 3.05c.136-.022.204-.034.24.006s.02.106-.013.24l-.895 3.581c-.015.06-.023.09-.044.11s-.05.026-.111.038zm0 0v6m0 0v2.753a3.68 3.68 0 0 1-3.222 3.65l-.557.07A3.249 3.249 0 1 1 8.818 14z" />
                     <path d="M4 4l16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
                 </g>
             </svg>
         </button>
-        <button id="scrollToggle" type="button" aria-label="Toggle auto scroll" title="Auto Scroll: Off"
+        <button id="scrollTopBtn" type="button" aria-label="Scroll ke atas" title="Scroll ke atas"
             class="w-8 h-8 rounded-full bg-slate-900/80 hover:bg-slate-950 border border-white/20 backdrop-blur-lg flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-[0_3px_15px_rgba(0,0,0,0.4)]">
-            <!-- Scroll SVG (On) -->
-            <svg id="scrollIconOn" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white hidden" viewBox="0 0 24 24">
-                <path d="M0 0h24v24H0z" fill="none" />
-                <g fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M12 22c6 0 7.5-4.51 7.5-10S18 2 12 2S4.5 6.51 4.5 12S6 22 12 22Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.988 6.839v4.92m-1.992-3.9c.984-1.02 1.584-1.92 2.04-1.856c.384-.003.744.596 1.968 1.856m0 3.281c-.984 1.02-1.584 1.92-2.04 1.856c-.384.003-.744-.595-1.968-1.855" />
-                </g>
-            </svg>
-            <!-- Scroll SVG (Off / Slashed) -->
-            <svg id="scrollIconOff" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24">
-                <path d="M0 0h24v24H0z" fill="none" />
-                <g fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M12 22c6 0 7.5-4.51 7.5-10S18 2 12 2S4.5 6.51 4.5 12S6 22 12 22Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.988 6.839v4.92m-1.992-3.9c.984-1.02 1.584-1.92 2.04-1.856c.384-.003.744.596 1.968 1.856m0 3.281c-.984 1.02-1.584 1.92-2.04 1.856c-.384.003-.744-.595-1.968-1.855" />
-                    <path d="M4 4l16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                </g>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19V5M5 12l7-7 7 7" />
             </svg>
         </button>
     </div>
 
     <div id="toast" class="toast-notification">Berhasil disalin!</div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
     <script>
         const bgMusic = document.getElementById("bgMusic");
         const soundToggle = document.getElementById("soundToggle");
-        const scrollToggle = document.getElementById("scrollToggle");
+        const scrollTopBtn = document.getElementById("scrollTopBtn");
         const soundIconOn = document.getElementById("soundIconOn");
         const soundIconOff = document.getElementById("soundIconOff");
-        const scrollIconOn = document.getElementById("scrollIconOn");
-        const scrollIconOff = document.getElementById("scrollIconOff");
         let soundOn = true;
         let autoScrollOn = true;
         let autoScrollFrame = null;
@@ -967,21 +1279,19 @@
             visualInited = true;
 
             const sections = document.querySelectorAll("#mainContent section");
-            const sectionAnims = ["anim-fade-up", "anim-slide-left", "anim-slide-right", "anim-zoom-in", "anim-pop-in",
-                "anim-flip"
-            ];
             sections.forEach((section, i) => {
-                section.classList.add("reveal-section", sectionAnims[i % sectionAnims.length]);
+                section.classList.add("reveal-section", "anim-fade-up-subtle");
             });
 
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add("in-view");
+                        // We removed initMap from here to avoid race conditions with opacity transitions
                     }
                 });
             }, {
-                threshold: 0.14
+                threshold: 0.1
             });
 
             sections.forEach((section) => observer.observe(section));
@@ -993,8 +1303,9 @@
             const itemAnims = ["anim-fade-up", "anim-slide-left", "anim-slide-right", "anim-zoom-in", "anim-pop-in",
                 "anim-flip"
             ];
+            // Exclude the map wrapper (#mapWrapper) from reveal-item animations
             const animatedItems = document.querySelectorAll(
-                "#mainContent h1, #mainContent h2, #mainContent h3, #mainContent p, #mainContent article, #mainContent .glass-card, #mainContent .rounded-2xl, #mainContent form, #mainContent button, #mainContent a"
+                "#mainContent h1, #mainContent h2, #mainContent h3, #mainContent p, #mainContent article, #mainContent .glass-card, #mainContent .rounded-2xl:not(#mapWrapper), #mainContent form, #mainContent button, #mainContent a"
             );
             animatedItems.forEach((item, i) => {
                 item.classList.add("reveal-item", itemAnims[i % itemAnims.length]);
@@ -1021,7 +1332,7 @@
         function openInvitation(instant = false) {
             const cover = document.getElementById("cover");
             const main = document.getElementById("mainContent");
-            
+
             const doOpen = () => {
                 cover.style.display = "none";
                 main.classList.remove("hidden");
@@ -1032,11 +1343,11 @@
                     bgMusic.play().catch(() => {});
                 }
                 autoScrollOn = true;
-                updateScrollLabel();
                 if (!autoScrollFrame) {
                     runAutoScroll();
                 }
-                initMap();
+                // Calculate distance using geolocation
+                calculateDistance();
             };
 
             if (instant) {
@@ -1047,72 +1358,38 @@
             }
         }
 
-        // Leaflet Map Initialization
-        let mapInited = false;
-        function initMap() {
-            if (mapInited) return;
-            const lat = @json($invitation->venue_lat);
-            const lng = @json($invitation->venue_lng);
+        function calculateDistance() {
+            const lat = parseFloat(@json($invitation->venue_lat ?? '0'));
+            const lng = parseFloat(@json($invitation->venue_lng ?? '0'));
             
-            // If no coordinates saved, hide the map container
-            if (lat === null || lng === null || (lat === 0 && lng === 0)) {
-                const mapContainer = document.getElementById('map');
-                if (mapContainer) {
-                    mapContainer.parentElement.style.display = 'none';
-                }
+            if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
+                console.log('No valid coordinates for distance calculation');
                 return;
             }
             
-            const map = L.map('map').setView([lat, lng], 16);
-
-            const hybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-                maxZoom: 20,
-                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                attribution: '&copy; Google Maps'
-            });
-
-            const streets = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-                maxZoom: 20,
-                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                attribution: '&copy; Google Maps'
-            });
-
-            const satellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-                maxZoom: 20,
-                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                attribution: '&copy; Google Maps'
-            });
-
-            hybrid.addTo(map);
-
-            const baseMaps = {
-                "Hybrid": hybrid,
-                "Satellite": satellite,
-                "Streets": streets
-            };
-
-            L.control.layers(baseMaps).addTo(map);
-
-            const marker = L.marker([lat, lng]).addTo(map);
-            marker.bindPopup("<b>{{ $invitation->venue_name }}</b><br>{{ $invitation->venue_address }}").openPopup();
-            mapInited = true;
-
-            // Geolocation and Distance Calculation
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const userPos = L.latLng(position.coords.latitude, position.coords.longitude);
-                    const venuePos = L.latLng(lat, lng);
-                    const distance = userPos.distanceTo(venuePos); // In meters
-                    const distanceKm = (distance / 1000).toFixed(1);
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const userLat = pos.coords.latitude;
+                    const userLng = pos.coords.longitude;
                     
-                    const distanceEl = document.getElementById("userDistance");
-                    const distanceText = document.getElementById("distanceText");
-                    if (distanceEl && distanceText) {
-                        distanceEl.classList.remove("hidden");
-                        distanceText.textContent = `Anda berjarak sekitar ${distanceKm} km dari lokasi acara.`;
+                    // Calculate distance using Haversine formula
+                    const R = 6371; // Earth's radius in km
+                    const dLat = (lat - userLat) * Math.PI / 180;
+                    const dLng = (lng - userLng) * Math.PI / 180;
+                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                              Math.cos(userLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) *
+                              Math.sin(dLng/2) * Math.sin(dLng/2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                    const distKm = (R * c).toFixed(1);
+                    
+                    const distEl = document.getElementById('userDistance');
+                    const distText = document.getElementById('distanceText');
+                    if (distEl && distText) {
+                        distEl.classList.remove('hidden');
+                        distText.textContent = 'Anda berjarak sekitar ' + distKm + ' km dari lokasi acara.';
                     }
                 }, (error) => {
-                    console.warn("Geolocation permission denied or error.");
+                    console.log('Geolocation error:', error);
                 });
             }
         }
@@ -1126,6 +1403,12 @@
                 e.preventDefault();
                 const submitBtn = form.querySelector('button[type="submit"]');
                 submitBtn.disabled = true;
+
+                // Set a valid phone number placeholder if empty or placeholder value
+                const phoneInput = form.querySelector('input[name="phone"]');
+                if (phoneInput && (!phoneInput.value || phoneInput.value === '-')) {
+                    phoneInput.value = '6280000000000';
+                }
 
                 try {
                     const formData = new FormData(form);
@@ -1148,7 +1431,7 @@
                         const html = await refreshRes.text();
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
-                        
+
                         const newList = doc.getElementById(listContainerId);
                         if (newList) {
                             document.getElementById(listContainerId).innerHTML = newList.innerHTML;
@@ -1194,30 +1477,40 @@
             }
         }
 
-        function updateScrollLabel() {
-            if (scrollToggle) {
-                scrollToggle.title = "Auto Scroll: " + (autoScrollOn ? "On" : "Off");
-                if (autoScrollOn) {
-                    scrollToggle.classList.add('pulse-glow-active');
-                } else {
-                    scrollToggle.classList.remove('pulse-glow-active');
-                }
-            }
-            if (scrollIconOn && scrollIconOff) {
-                scrollIconOn.classList.toggle("hidden", !autoScrollOn);
-                scrollIconOff.classList.toggle("hidden", autoScrollOn);
-            }
-        }
+        let lastScrollTime = 0;
 
-        function runAutoScroll() {
+        function runAutoScroll(timestamp) {
             if (!autoScrollOn) return;
-            window.scrollBy({
-                top: 1,
-                left: 0,
-                behavior: "auto"
-            });
+            if (timestamp - lastScrollTime > 20) {
+                window.scrollBy({
+                    top: 1,
+                    left: 0,
+                    behavior: "auto"
+                });
+                lastScrollTime = timestamp;
+            }
             autoScrollFrame = window.requestAnimationFrame(runAutoScroll);
         }
+
+        // Disable auto-scroll and enable snap on manual interaction
+        let snapEnabled = false;
+        ['wheel', 'touchstart', 'keydown'].forEach(evt => {
+            window.addEventListener(evt, () => {
+                if (autoScrollOn) {
+                    autoScrollOn = false;
+                    if (autoScrollFrame) {
+                        window.cancelAnimationFrame(autoScrollFrame);
+                        autoScrollFrame = null;
+                    }
+                }
+                if (!snapEnabled) {
+                    document.documentElement.style.scrollSnapType = 'y proximity';
+                    snapEnabled = true;
+                }
+            }, {
+                passive: true
+            });
+        });
 
         if (soundToggle) {
             soundToggle.addEventListener("click", function() {
@@ -1232,29 +1525,22 @@
             });
         }
 
-        if (scrollToggle) {
-            scrollToggle.addEventListener("click", function() {
-                autoScrollOn = !autoScrollOn;
-                updateScrollLabel();
-                if (autoScrollOn) {
-                    runAutoScroll();
-                } else if (autoScrollFrame) {
-                    window.cancelAnimationFrame(autoScrollFrame);
-                    autoScrollFrame = null;
-                }
+        if (scrollTopBtn) {
+            scrollTopBtn.addEventListener("click", function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                });
             });
         }
 
         updateSoundLabel();
-        updateScrollLabel();
 
-        // Pause auto-scroll when user focuses on an input to type
         const formInputs = document.querySelectorAll('input, select, textarea');
         formInputs.forEach(input => {
             input.addEventListener('focus', () => {
                 if (autoScrollOn) {
                     autoScrollOn = false;
-                    updateScrollLabel();
                     if (autoScrollFrame) {
                         window.cancelAnimationFrame(autoScrollFrame);
                         autoScrollFrame = null;
@@ -1394,6 +1680,52 @@
         })();
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var galleryThumbs = new Swiper(".gallery-thumbs", {
+                spaceBetween: 12,
+                slidesPerView: 3,
+                freeMode: true,
+                watchSlidesProgress: true,
+                breakpoints: {
+                    640: {
+                        slidesPerView: 4
+                    },
+                    768: {
+                        slidesPerView: 5
+                    },
+                    1024: {
+                        slidesPerView: 6
+                    }
+                }
+            });
+            var galleryMain = new Swiper(".gallery-main", {
+                spaceBetween: 10,
+                navigation: {
+                    nextEl: ".swiper-button-next",
+                    prevEl: ".swiper-button-prev",
+                },
+                autoplay: {
+                    delay: 3500,
+                    disableOnInteraction: false,
+                },
+                thumbs: {
+                    swiper: galleryThumbs
+                }
+            });
+        });
+    </script>
+    <style>
+        .gallery-thumbs .swiper-slide-thumb-active {
+            opacity: 1 !important;
+        }
+
+        .gallery-thumbs .swiper-slide-thumb-active img {
+            border-color: white;
+            transform: scale(1.05);
+        }
+    </style>
 </body>
 
 </html>

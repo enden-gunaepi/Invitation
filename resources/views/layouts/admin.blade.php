@@ -4,6 +4,7 @@
         darkMode: localStorage.getItem('darkMode') === 'true',
         sidebarOpen: false,
         sidebarExpanded: localStorage.getItem('adminSidebarExpanded') !== 'false',
+        companyModalOpen: false,
         isMobile: window.innerWidth < 1024,
         get sidebarWidth() { return this.sidebarExpanded ? '260px' : '72px'; },
         get mainMargin() { return this.isMobile ? '0px' : this.sidebarWidth; }
@@ -218,7 +219,7 @@
         }">
 
         <!-- Brand -->
-        <div class="px-6 py-5 flex items-center gap-3 shrink-0 border-b" style="border-color: var(--outline-variant); min-height: 72px;">
+        <div class="px-6 py-5 flex items-center gap-3 shrink-0 border-b cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors" @click="companyModalOpen = true" style="border-color: var(--outline-variant); min-height: 72px;">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold text-sm"
                  style="background: var(--primary); color: var(--on-primary);">
                 @if(auth()->user()->company_logo)
@@ -230,7 +231,7 @@
             <div class="whitespace-nowrap overflow-hidden"
                  style="transition: opacity 0.25s ease, width 0.3s cubic-bezier(0.4,0,0.2,1);"
                  :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', width: (!isMobile && !sidebarExpanded) ? '0' : 'auto' }">
-                <div class="text-[15px] font-semibold leading-none" style="color: var(--on-surface); letter-spacing: -0.01em;">Janji Suci Kita</div>
+                <div class="text-[15px] font-semibold leading-none" style="color: var(--on-surface); letter-spacing: -0.01em;">{{ auth()->user()->company_name ?? 'Janji Suci Kita' }}</div>
                 <div class="text-[11px] mt-0.5" style="color: var(--on-surface-variant); letter-spacing: 0.04em; text-transform: uppercase;">Administrator</div>
             </div>
         </div>
@@ -663,5 +664,88 @@
         </div>
     </div>
     @endif
+
+    <!-- Company Info Modal -->
+    <div x-show="companyModalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div x-show="companyModalOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="absolute inset-0 bg-black/40 backdrop-blur-md"
+             @click="companyModalOpen = false"></div>
+
+        <!-- Modal Card -->
+        <div x-show="companyModalOpen"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 translate-y-8 scale-95"
+             class="relative w-full shadow-2xl overflow-hidden border border-gray-100 dark:border-white/5"
+             style="max-width: 420px; border-radius: 24px; background: var(--surface-lowest);"
+             @click.stop>
+            
+            <!-- Close Button -->
+            <button @click="companyModalOpen = false" style="position: absolute; top: 16px; right: 16px; z-index: 20; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,0.8); backdrop-filter: blur(8px); color: #333; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <i class="fas fa-times" style="font-size: 14px;"></i>
+            </button>
+
+            <!-- Top Image/Logo Section -->
+            <div style="position: relative; width: 100%; height: 200px; background: linear-gradient(135deg, #fdf2f8, #fbcfe8); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                @if(auth()->user()->company_logo)
+                    <!-- Wrap logo in a safe container so it's not cropped awkwardly -->
+                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                        <img src="{{ Storage::url(auth()->user()->company_logo) }}" alt="Company Cover" style="max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));">
+                    </div>
+                @else
+                    <i class="fas fa-building" style="font-size: 72px; color: rgba(219, 39, 119, 0.3); position: absolute;"></i>
+                @endif
+                
+                <!-- Badges -->
+                <div style="position: absolute; top: 16px; left: 16px; display: flex; flex-wrap: wrap; gap: 8px; z-index: 10;">
+                    <span style="padding: 4px 10px; font-size: 10px; font-weight: 600; color: white; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <i class="fas fa-rocket text-pink-400"></i> Pro Plan
+                    </span>
+                    <span style="padding: 4px 10px; font-size: 10px; font-weight: 600; color: white; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <i class="fas fa-shield-alt text-blue-400"></i> Verified
+                    </span>
+                </div>
+            </div>
+
+            <!-- Content Section -->
+            <div style="padding: 24px 32px 32px 32px; position: relative; z-index: 20; background: var(--surface-lowest);">
+                <h2 style="font-size: 24px; font-weight: 700; color: var(--text); margin-top: 0; margin-bottom: 16px; font-family: 'Geist', sans-serif; letter-spacing: -0.02em;">
+                    {{ auth()->user()->company_name ?? 'Company Profile' }}
+                </h2>
+                
+                <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px;">
+                    @php
+                        $settingsCompany = \App\Models\Setting::where('group', 'company')->pluck('value', 'key');
+                    @endphp
+                    <p style="margin-top: 0; margin-bottom: 8px;"><strong style="color: var(--text); font-weight: 600;">Email:</strong> {{ $settingsCompany['company_email'] ?? auth()->user()->email }}</p>
+                    @if(isset($settingsCompany['company_phone']))
+                        <p style="margin-top: 0; margin-bottom: 8px;"><strong style="color: var(--text); font-weight: 600;">Phone:</strong> {{ $settingsCompany['company_phone'] }}</p>
+                    @endif
+                    @if(isset($settingsCompany['company_address']))
+                        <p style="margin-top: 0; margin-bottom: 0;"><strong style="color: var(--text); font-weight: 600;">Address:</strong> {{ $settingsCompany['company_address'] }}</p>
+                    @endif
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="margin-top: 8px;">
+                    <a href="{{ route('admin.settings.index') }}" 
+                       style="display: flex; align-items: center; justify-content: center; width: 100%; padding: 12px 24px; background: #1a1a1a; color: white; border-radius: 9999px; font-size: 14px; font-weight: 600; text-decoration: none; transition: opacity 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
+                       onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                        Pengaturan Perusahaan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

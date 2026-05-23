@@ -63,6 +63,10 @@ Route::delete('/invitations/{invitation}/vendors/{vendor}', [VendorLeadControlle
 Route::post('/invitations/{invitation}/photos', [PhotoController::class, 'store'])->name('invitations.photos.store');
 Route::delete('/invitations/{invitation}/photos/{photo}', [PhotoController::class, 'destroy'])->name('invitations.photos.destroy');
 
+// IG Story Template
+Route::post('/invitations/{invitation}/ig-story', [InvitationController::class, 'uploadIgStory'])->name('invitations.ig-story.upload');
+Route::delete('/invitations/{invitation}/ig-story', [InvitationController::class, 'destroyIgStory'])->name('invitations.ig-story.destroy');
+
 // Collaborators
 Route::post('/invitations/{invitation}/collaborators', [InvitationCollaboratorController::class, 'store'])->name('invitations.collaborators.store');
 Route::delete('/invitations/{invitation}/collaborators/{collaborator}', [InvitationCollaboratorController::class, 'destroy'])->name('invitations.collaborators.destroy');

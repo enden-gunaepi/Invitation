@@ -106,6 +106,49 @@
             </div>
         </div>
 
+        {{-- IG Story Template Upload --}}
+        <div class="card overflow-hidden">
+            <div class="px-6 py-4 border-b" style="border-color: var(--border);">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-base"><i class="fab fa-instagram mr-2" style="color: var(--accent);"></i>Template IG Story</h3>
+                    @if($invitation->ig_story_photo)
+                        <span class="badge badge-success">Uploaded</span>
+                    @endif
+                </div>
+                <p class="text-xs mt-1" style="color: var(--text-secondary);">Upload gambar template IG Story untuk tamu download di halaman undangan.</p>
+            </div>
+            <div class="p-4">
+                @if($invitation->ig_story_photo)
+                <div class="flex items-start gap-4 mb-4">
+                    <div class="relative group" style="width: 120px; border-radius: var(--radius-sm); overflow: hidden;">
+                        <img src="{{ asset('storage/' . $invitation->ig_story_photo) }}" alt="IG Story Template" class="w-full h-auto object-cover rounded-lg shadow-sm">
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs mb-2" style="color: var(--text-secondary);">Template IG Story sudah diupload. Tamu dapat mendownload gambar ini dari halaman undangan.</p>
+                        <form method="POST" action="{{ route('client.invitations.ig-story.destroy', $invitation) }}" onsubmit="return confirm('Hapus template IG Story ini?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm text-xs">
+                                <i class="fas fa-trash mr-1"></i> Hapus
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @endif
+
+                <form method="POST" action="{{ route('client.invitations.ig-story.upload', $invitation) }}" enctype="multipart/form-data" class="flex gap-2 items-end">
+                    @csrf
+                    <div class="flex-1">
+                        <label class="form-label text-[10px] uppercase font-bold tracking-wider mb-1 block" style="color: var(--text-secondary);">{{ $invitation->ig_story_photo ? 'Ganti gambar IG Story' : 'Upload gambar IG Story' }}</label>
+                        <input type="file" name="ig_story_photo" class="form-input text-xs" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm h-[38px] flex items-center justify-center px-4" title="Upload IG Story"><i class="fas fa-upload mr-1"></i> Upload</button>
+                </form>
+                @error('ig_story_photo')
+                    <p class="text-xs mt-2" style="color: var(--danger);">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+
         {{-- RSVP & Ucapan combined --}}
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color: var(--border);">
