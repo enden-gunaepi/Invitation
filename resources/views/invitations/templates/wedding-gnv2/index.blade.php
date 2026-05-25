@@ -421,10 +421,10 @@
         <div class="absolute bottom-0 right-0 w-28 opacity-30 rotate-180"><img src="ornament.png" class="ornament-float"
                 alt=""></div>
         <div class="relative z-40 pb-16 px-6">
-            <h1 class="font-title text-3xl md:text-5xl mb-3 tracking-wide">{{ $coupleName }}</h1>
+            <h1 class="font-title text-xl md:text-2xl mb-3 tracking-wide">{{ $coupleName }}</h1>
             <p class="text-sm mb-6 opacity-80">{{ $eventDateText }}</p>
             <p class="text-sm opacity-80">Kepada Yth.</p>
-            <h2 class="text-lg font-medium mb-6">{{ $guestName }}</h2>
+            <h2 class="text-md font-medium mb-6">{{ $guestName }}</h2>
             <button onclick="openInvitation()"
                 class="bg-transparent border border-white/40 backdrop-blur-md px-8 py-2.5 rounded-full hover:bg-white/20 transition text-xs uppercase tracking-widest">Open
                 Invitation</button>
@@ -456,7 +456,7 @@
                     class="ornament-float" alt="">
             </div>
             <div class="relative z-40 pb-20 px-6">
-                <h1 class="font-title text-3xl md:text-5xl mb-4">{{ $coupleName }}</h1>
+                <h1 class="font-title text-xl md:text-2xl mb-4">{{ $coupleName }}</h1>
                 <p class="text-sm opacity-80 mb-6">{{ $eventDateText }}</p>
                 <p class="text-sm opacity-80">Kepada Yth.</p>
                 <h2 class="text-lg font-medium mt-1">{{ $guestName }}</h2>
@@ -488,11 +488,11 @@
             </div>
 
             <div class="relative z-40 px-6 pb-14 w-full max-w-3xl">
-                <article class="glass-card rounded-3xl px-6 py-8 md:px-10 md:py-10 text-center">
-                    <h3 class="font-title text-3xl md:text-4xl mb-4">{{ $coupleName }}</h3>
-                    <p class="text-sm md:text-base leading-relaxed opacity-95">{!! nl2br(e($openingText)) !!}</p>
-                    <p class="text-xs mt-5 opacity-80 tracking-wide">QS. Ar-Rum: 21</p>
-                </article>
+
+
+                <p class="text-sm md:text-base leading-relaxed opacity-95">{!! nl2br(e($openingText)) !!}</p>
+                <p class="text-xs mt-5 opacity-80 tracking-wide">QS. Ar-Rum: 21</p>
+
             </div>
         </section>
 
@@ -519,14 +519,13 @@
                     class="ornament-float" alt="">
             </div>
             <div class="relative z-10 px-6 max-w-xl">
-                <h2 class="font-title text-3xl md:text-4xl mb-3">{{ $invitation->bride_name ?? '-' }}</h2>
+                <h2 class="font-title text-xl md:text-2xl mb-3">{{ $invitation->bride_name ?? '-' }}</h2>
                 <p class="text-sm opacity-90 mb-6 leading-relaxed">{{ $invitation->bride_parent_name ?? '-' }}</p>
                 @if ($invitation->bride_instagram)
                     <a href="{{ $invitation->bride_instagram }}" target="_blank"
                         class="inline-block bg-transparent border border-white/40 backdrop-blur-md px-6 py-2 rounded-full mb-8 hover:bg-white/20 transition text-[10px] uppercase tracking-widest">@instagram</a>
                 @endif
-                <h3 class="font-title text-xl mb-2">{{ $coupleName }}</h3>
-                <p class="text-sm opacity-80">{{ $eventDateText }}</p>
+
             </div>
         </section>
 
@@ -554,14 +553,13 @@
                     class="ornament-float" alt="">
             </div>
             <div class="relative z-10 px-6 max-w-xl">
-                <h2 class="font-title text-3xl md:text-4xl mb-3">{{ $invitation->groom_name ?? '-' }}</h2>
+                <h2 class="font-title text-xl md:text-2xl mb-3">{{ $invitation->groom_name ?? '-' }}</h2>
                 <p class="text-sm opacity-90 mb-6 leading-relaxed">{{ $invitation->groom_parent_name ?? '-' }}</p>
                 @if ($invitation->groom_instagram)
                     <a href="{{ $invitation->groom_instagram }}" target="_blank"
                         class="inline-block bg-transparent border border-white/40 backdrop-blur-md px-6 py-2 rounded-full mb-8 hover:bg-white/20 transition text-[10px] uppercase tracking-widest">@instagram</a>
                 @endif
-                <h3 class="font-title text-xl mb-2">{{ $coupleName }}</h3>
-                <p class="text-sm opacity-80">{{ $eventDateText }}</p>
+
             </div>
         </section>
 
@@ -576,7 +574,7 @@
             <div class="relative z-10 max-w-xl">
                 <h2 class="font-title text-xl mb-2">{{ $coupleName }}</h2>
                 <p class="text-sm opacity-80 mb-6">{{ $eventDateText }}</p>
-                <h3 class="font-title text-2xl md:text-3xl mb-6 italic">Menuju Hari Spesial Kami</h3>
+                <h3 class="font-title text-xl md:text-3xl mb-6 ">Menuju Hari Spesial Kami</h3>
                 <div class="flex justify-center gap-3 mb-8 flex-wrap">
                     <div class="bg-black/40 px-4 py-3 rounded-lg">
                         <p id="days" class="text-lg font-bold">0</p>
@@ -595,11 +593,7 @@
                         <p class="text-xs">Detik</p>
                     </div>
                 </div>
-                <p class="text-sm mb-6 opacity-90">Tekan tombol dibawah ini untuk mengirim ucapan dan konfirmasi
-                    kehadiran</p>
-                <a href="#rsvp"
-                    class="inline-block bg-transparent border border-white/50 backdrop-blur-md px-8 py-2.5 rounded-full hover:bg-white/20 hover:text-white transition text-xs uppercase tracking-widest mt-2">Konfirmasi
-                    & Kirim Ucapan</a>
+
             </div>
         </section>
 
@@ -654,82 +648,171 @@
             </div>
             <div class="relative z-40 max-w-5xl mx-auto">
                 <div class="text-center mb-16">
-                    <h2 class="font-title text-2xl md:text-3xl mt-6">SUSUNAN ACARA</h2>
-                </div>
-                <div class="relative">
-                    <div class="absolute left-1/2 top-0 bottom-0 w-[2px] bg-white/30 transform -translate-x-1/2"></div>
-                    @foreach ($invitation->events as $event)
-                        <div class="mb-12 flex flex-col md:flex-row items-center">
-                            <div
-                                class="md:w-1/2 md:pr-8 text-center md:text-right {{ $loop->odd ? '' : 'order-2 md:order-1' }}">
-                                @if ($loop->odd)
-                                    <p class="text-sm font-semibold">
-                                        {{ $event->event_time ? \Carbon\Carbon::parse($event->event_time)->format('H:i') : '-' }}
-                                        WIB</p>
-                                @else
-                                    <h3 class="font-semibold">{{ $event->event_name }}</h3>
-                                    <p class="text-sm opacity-80">{{ $event->event_description }}</p>
-                                @endif
-                            </div>
-                            <div class="w-4 h-4 bg-sky-300 rounded-full border-2 border-white z-10"></div>
-                            <div
-                                class="md:w-1/2 md:pl-8 text-center md:text-left {{ $loop->odd ? 'mt-4 md:mt-0' : 'order-1 md:order-2 mb-4 md:mb-0' }}">
-                                @if ($loop->odd)
-                                    <h3 class="font-semibold">{{ $event->event_name }}</h3>
-                                    <p class="text-sm opacity-80">{{ $event->event_description }}</p>
-                                @else
-                                    <p class="text-sm font-semibold">
-                                        {{ $event->event_time ? \Carbon\Carbon::parse($event->event_time)->format('H:i') : '-' }}
-                                        WIB</p>
-                                @endif
-                            </div>
+                    <h2 class="font-title text-2xl md:text-3xl mt-6 tracking-[0.18em]">SUSUNAN ACARA</h2>
+                    <div class="mt-5 max-w-xl mx-auto space-y-3">
+                        <h1 class="font-title text-xl md:text-2xl">{{ $invitation->venue_name }}</h1>
+                        <p class="text-sm md:text-base text-white/80 leading-relaxed">{{ $invitation->venue_address }}
+                        </p>
+                        <div id="userDistance" class="text-xs text-white/75 hidden">
+                            <span id="distanceText">Menghitung jarak...</span>
                         </div>
-                    @endforeach
+                    </div>
+                </div>
+                <div class="max-w-3xl mx-auto space-y-5">
+                    @forelse ($invitation->events as $event)
+                        @php
+                            $eventDate = $event->event_date
+                                ? \Carbon\Carbon::parse($event->event_date)
+                                : $invitation->event_date;
+                            $eventMonth = $eventDate ? $eventDate->translatedFormat('M') : '-';
+                            $eventDay = $eventDate ? $eventDate->format('d') : '-';
+                            $eventYear = $eventDate ? $eventDate->format('Y') : '-';
+                            $eventStart = $event->event_time
+                                ? \Carbon\Carbon::parse($event->event_time)->format('H:i')
+                                : '-';
+                            $eventEnd = $event->event_end_time
+                                ? \Carbon\Carbon::parse($event->event_end_time)->format('H:i')
+                                : null;
+                            $eventVenue = $event->venue_name ?: $invitation->venue_name;
+                            $eventAddress = $event->venue_address ?: $invitation->venue_address;
+                            $eventMapsUrl = $event->venue_maps_url ?: $mapsUrl;
+                            $calendarDate = $eventDate ? $eventDate->format('Ymd') : null;
+                            $calendarStart = $event->event_time
+                                ? \Carbon\Carbon::parse($event->event_time)->format('His')
+                                : '000000';
+                            $calendarEnd = $event->event_end_time
+                                ? \Carbon\Carbon::parse($event->event_end_time)->format('His')
+                                : \Carbon\Carbon::parse($event->event_time ?: '00:00')
+                                    ->addHours(2)
+                                    ->format('His');
+                            $calendarUrl = $calendarDate
+                                ? 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' .
+                                    urlencode($event->event_name ?: $invitation->title) .
+                                    '&dates=' .
+                                    $calendarDate .
+                                    'T' .
+                                    $calendarStart .
+                                    '/' .
+                                    $calendarDate .
+                                    'T' .
+                                    $calendarEnd .
+                                    '&location=' .
+                                    urlencode(trim(($eventVenue ?: '') . ' ' . ($eventAddress ?: '')))
+                                : null;
+                        @endphp
+                        <article
+                            class="rounded-[30px] border border-white/15 bg-black/25 px-6 py-8 text-center backdrop-blur-md shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+                            <h3 class="font-title text-3xl mb-5">{{ $event->event_name }}</h3>
+                            <div class="flex items-center justify-center gap-4 mb-5">
+                                <div class="min-w-[56px] text-center">
+                                    <p class="text-xs uppercase tracking-[0.2em] text-white/60">{{ $eventMonth }}
+                                    </p>
+                                </div>
+                                <div class="h-12 w-px bg-white/30"></div>
+                                <div class="min-w-[76px] text-center">
+                                    <p class="text-5xl leading-none font-title">{{ $eventDay }}</p>
+                                </div>
+                                <div class="h-12 w-px bg-white/30"></div>
+                                <div class="min-w-[56px] text-center">
+                                    <p class="text-xs uppercase tracking-[0.2em] text-white/60">{{ $eventYear }}
+                                    </p>
+                                </div>
+                            </div>
+                            <p class="text-base font-medium mb-1">
+                                {{ $eventStart }}{{ $eventEnd ? ' - ' . $eventEnd : '' }} WIB
+                            </p>
+                            @if ($eventVenue)
+                                <p class="text-sm text-white/85">{{ $eventVenue }}</p>
+                            @endif
+                            @if ($eventAddress)
+                                <p class="text-sm text-white/70 mt-1">{{ $eventAddress }}</p>
+                            @endif
+                            @if ($event->event_description)
+                                <p class="text-sm text-white/65 leading-relaxed mt-3 max-w-xl mx-auto">
+                                    {{ $event->event_description }}</p>
+                            @endif
+
+                            <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+                                @if ($calendarUrl)
+                                    <a href="{{ $calendarUrl }}" target="_blank"
+                                        class="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[11px] font-medium tracking-[0.06em] text-slate-900 transition hover:bg-[#dce8f4]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path
+                                                d="M6 2a1 1 0 012 0v1h4V2a1 1 0 112 0v1h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h1V2zm9 5H5v7h10V7z" />
+                                        </svg>
+                                        <span>Save The Date</span>
+                                    </a>
+                                @endif
+                                @if ($eventMapsUrl)
+                                    <a href="{{ $eventMapsUrl }}" target="_blank"
+                                        class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#9fbfd6] px-5 py-2.5 text-[11px] font-medium tracking-[0.06em] text-slate-950 transition hover:bg-[#b8d0e3]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M12.293 7.293a1 1 0 011.414 0L16 9.586V8a1 1 0 112 0v4a1 1 0 01-1 1h-4a1 1 0 110-2h1.586l-2.293-2.293a1 1 0 010-1.414zM3 5a2 2 0 012-2h4a1 1 0 110 2H5v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <span>Map Navigation</span>
+                                    </a>
+                                @endif
+                            </div>
+                        </article>
+                    @empty
+                        <article
+                            class="mx-auto max-w-2xl rounded-[30px] border border-white/15 bg-black/25 px-6 py-8 text-center backdrop-blur-md shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+                            <h3 class="font-title text-3xl mb-5">{{ $invitation->venue_name }}</h3>
+                            <div class="flex items-center justify-center gap-4 mb-5">
+                                <div class="min-w-[56px] text-center">
+                                    <p class="text-xs uppercase tracking-[0.2em] text-white/60">
+                                        {{ $invitation->event_date ? $invitation->event_date->translatedFormat('M') : '-' }}
+                                    </p>
+                                </div>
+                                <div class="h-12 w-px bg-white/30"></div>
+                                <div class="min-w-[76px] text-center">
+                                    <p class="text-5xl leading-none font-title">
+                                        {{ $invitation->event_date ? $invitation->event_date->format('d') : '-' }}</p>
+                                </div>
+                                <div class="h-12 w-px bg-white/30"></div>
+                                <div class="min-w-[56px] text-center">
+                                    <p class="text-xs uppercase tracking-[0.2em] text-white/60">
+                                        {{ $invitation->event_date ? $invitation->event_date->format('Y') : '-' }}</p>
+                                </div>
+                            </div>
+                            <p class="text-base font-medium mb-1">
+                                {{ $invitation->event_time ? \Carbon\Carbon::parse($invitation->event_time)->format('H:i') : '-' }}
+                                WIB</p>
+                            <p class="text-sm text-white/70 mt-1">{{ $invitation->venue_address }}</p>
+                            <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+                                @if ($invitation->google_calendar_url)
+                                    <a href="{{ $invitation->google_calendar_url }}" target="_blank"
+                                        class="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[11px] font-medium tracking-[0.06em] text-slate-900 transition hover:bg-[#dce8f4]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path
+                                                d="M6 2a1 1 0 012 0v1h4V2a1 1 0 112 0v1h1a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h1V2zm9 5H5v7h10V7z" />
+                                        </svg>
+                                        <span>Save The Date</span>
+                                    </a>
+                                @endif
+                                @if ($mapsUrl)
+                                    <a href="{{ $mapsUrl }}" target="_blank"
+                                        class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#9fbfd6] px-5 py-2.5 text-[11px] font-medium tracking-[0.06em] text-slate-950 transition hover:bg-[#b8d0e3]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M12.293 7.293a1 1 0 011.414 0L16 9.586V8a1 1 0 112 0v4a1 1 0 01-1 1h-4a1 1 0 110-2h1.586l-2.293-2.293a1 1 0 010-1.414zM3 5a2 2 0 012-2h4a1 1 0 110 2H5v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <span>Map Navigation</span>
+                                    </a>
+                                @endif
+                            </div>
+                        </article>
+                    @endforelse
                 </div>
             </div>
 
-        </section>
-
-        <section
-            class="relative min-h-screen flex flex-col items-center justify-center text-center text-white px-6 bg-[#9fbfd6] overflow-hidden">
-            <div class="absolute top-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
-            <div class="absolute top-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png" alt="">
-            </div>
-            <div class="absolute bottom-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
-            <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png" alt="">
-            </div>
-            <div class="relative z-10 max-w-xl w-full">
-                <h2 class="font-title text-xl mb-1">{{ $coupleName }}</h2>
-                <p class="text-sm opacity-80 mb-6">{{ $eventDateText }}</p>
-                <h3 class="font-title text-2xl mb-2">{{ $invitation->venue_name }}</h3>
-                <p class="text-sm mb-6 leading-relaxed">{{ $invitation->venue_address }}</p>
-                <div id="mapWrapper" class="rounded-2xl shadow-xl border border-white/30 mb-4"
-                    style="min-height:280px; overflow: visible;">
-                    <iframe
-                        src="{{ $mapsEmbed }}"
-                        style="width:100%;height:280px;border:0;"
-                        allowfullscreen=""
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade">
-                    </iframe>
-                </div>
-                <div id="userDistance" class="text-xs opacity-90 mb-6 bg-black/20 py-2 px-3 rounded-lg hidden">
-                    <span class="flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        <span id="distanceText">Menghitung jarak...</span>
-                    </span>
-                </div>
-                @if ($mapsUrl)
-                    <a href="{{ $mapsUrl }}" target="_blank"
-                        class="inline-block bg-transparent border border-white/50 backdrop-blur-md px-8 py-2.5 rounded-full hover:bg-white/20 hover:text-white transition mb-6 mt-4 text-xs uppercase tracking-widest">Gunakan
-                        Google Maps</a>
-                @endif
-            </div>
         </section>
 
 
@@ -740,7 +823,7 @@
                 <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png"
                         alt=""></div>
                 <div class="max-w-4xl mx-auto relative z-10">
-                    <h2 class="font-title text-4xl mb-2 text-center text-white">Galeri</h2>
+                    <h2 class="font-title text-xl mb-2 text-center text-white">Galeri</h2>
                     <p class="text-sm md:text-base opacity-85 text-center mb-10 text-white italic tracking-wide">Setiap
                         potret menceritakan kisah cinta kami yang abadi</p>
 
@@ -800,7 +883,7 @@
                 <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png"
                         alt=""></div>
                 <div class="relative z-10 max-w-md w-full">
-                    <h2 class="font-title text-2xl md:text-3xl mb-2">Instagram Story</h2>
+                    <h2 class="font-title text-xl md:text-3xl mb-2">Instagram Story</h2>
                     <p class="text-sm opacity-80 mb-8">Bagikan momen bahagia kami di Instagram Story kamu</p>
                     <div class="glass-card rounded-2xl p-3 mb-6">
                         <canvas id="igStoryCanvas" class="w-full h-auto rounded-xl shadow-lg"
@@ -963,7 +1046,7 @@
             <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png" alt="">
             </div>
             <div class="relative z-10 w-full max-w-xl">
-                <h2 class="font-title text-2xl mb-2">Konfirmasi Kehadiran</h2>
+                <h2 class="font-title text-xl mb-2">Konfirmasi Kehadiran</h2>
                 <p class="text-sm opacity-80 mb-8">Mohon kesediaannya untuk mengisi konfirmasi kehadiran</p>
                 <form id="rsvpForm" method="POST" action="{{ route('invitation.rsvp', $invitation->slug) }}"
                     class="space-y-4">
@@ -1003,7 +1086,8 @@
             </div>
         </section>
 
-        <section class="relative min-h-screen flex items-center justify-center text-center text-white px-6 overflow-hidden">
+        <section
+            class="relative min-h-screen flex items-center justify-center text-center text-white px-6 overflow-hidden">
             <div class="absolute inset-0">
                 @if (count($slideshowImages) > 0)
                     <div class="absolute inset-0 w-full h-full overflow-hidden bg-slideshow">
@@ -1025,7 +1109,7 @@
             <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png" alt="">
             </div>
             <div class="relative z-40 w-full max-w-xl">
-                <h2 class="font-title text-2xl mb-2">Ucapan & Doa</h2>
+                <h2 class="font-title text-xl mb-2">Ucapan & Doa</h2>
                 <p class="text-sm opacity-80 mb-8">Ucapan dan doa dari tamu undangan</p>
                 <div class="bg-white/20 backdrop-blur-lg rounded-3xl p-4 shadow-2xl border border-white/30">
                     <div id="rsvpListContainer" class="max-h-[400px] overflow-y-auto text-left space-y-2 pr-2">
@@ -1039,39 +1123,54 @@
                         @foreach ($invitation->rsvps as $rsvp)
                             <article class="bg-transparent border border-white/30 rounded-lg p-2.5 shadow-md">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                                        <span class="text-white text-xs font-semibold">{{ mb_strtoupper(mb_substr($rsvp->name, 0, 1)) }}</span>
+                                    <div
+                                        class="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                        <span
+                                            class="text-white text-xs font-semibold">{{ mb_strtoupper(mb_substr($rsvp->name, 0, 1)) }}</span>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="message-author font-semibold text-sm text-white truncate">{{ $rsvp->name }}</p>
+                                        <p class="message-author font-semibold text-sm text-white truncate">
+                                            {{ $rsvp->name }}</p>
                                     </div>
                                     <div class="flex-shrink-0">
                                         @if ($rsvp->status === 'attending')
-                                            <div class="w-5 h-5 rounded-full bg-green-500/30 flex items-center justify-center" title="Hadir">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-green-400" viewBox="0 0 256 256">
+                                            <div class="w-5 h-5 rounded-full bg-green-500/30 flex items-center justify-center"
+                                                title="Hadir">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-green-400"
+                                                    viewBox="0 0 256 256">
                                                     <path d="M0 0h256v256H0z" fill="none" />
-                                                    <path fill="currentColor" d="M152.5 156.54a72 72 0 1 0-89 0a124 124 0 0 0-48.69 35.74a12 12 0 0 0 18.38 15.44C46.88 191.42 71 172 108 172s61.12 19.42 74.81 35.72a12 12 0 1 0 18.38-15.44a123.9 123.9 0 0 0-48.69-35.74M60 100a48 48 0 1 1 48 48a48.05 48.05 0 0 1-48-48m192.49 36.49l-32 32a12 12 0 0 1-17 0l-16-16a12 12 0 0 1 17-17L212 143l23.51-23.52a12 12 0 1 1 17 17Z" />
+                                                    <path fill="currentColor"
+                                                        d="M152.5 156.54a72 72 0 1 0-89 0a124 124 0 0 0-48.69 35.74a12 12 0 0 0 18.38 15.44C46.88 191.42 71 172 108 172s61.12 19.42 74.81 35.72a12 12 0 1 0 18.38-15.44a123.9 123.9 0 0 0-48.69-35.74M60 100a48 48 0 1 1 48 48a48.05 48.05 0 0 1-48-48m192.49 36.49l-32 32a12 12 0 0 1-17 0l-16-16a12 12 0 0 1 17-17L212 143l23.51-23.52a12 12 0 1 1 17 17Z" />
                                                 </svg>
                                             </div>
                                         @elseif ($rsvp->status === 'not_attending')
-                                            <div class="w-5 h-5 rounded-full bg-red-500/30 flex items-center justify-center" title="Tidak Hadir">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-red-400" viewBox="0 0 24 24">
+                                            <div class="w-5 h-5 rounded-full bg-red-500/30 flex items-center justify-center"
+                                                title="Tidak Hadir">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-red-400"
+                                                    viewBox="0 0 24 24">
                                                     <path d="M0 0h24v24H0z" fill="none" />
-                                                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0-8 0M6 21v-2a4 4 0 0 1 4-4h3.5m2.5 4a3 3 0 1 0 6 0a3 3 0 1 0-6 0m1 2l4-4" />
+                                                    <path fill="none" stroke="currentColor" stroke-linecap="round"
+                                                        stroke-linejoin="round" stroke-width="2"
+                                                        d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0-8 0M6 21v-2a4 4 0 0 1 4-4h3.5m2.5 4a3 3 0 1 0 6 0a3 3 0 1 0-6 0m1 2l4-4" />
                                                 </svg>
                                             </div>
                                         @else
-                                            <div class="w-5 h-5 rounded-full bg-yellow-500/30 flex items-center justify-center" title="Masih Ragu">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-yellow-400" viewBox="0 0 512 512">
+                                            <div class="w-5 h-5 rounded-full bg-yellow-500/30 flex items-center justify-center"
+                                                title="Masih Ragu">
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                    class="w-3 h-3 text-yellow-400" viewBox="0 0 512 512">
                                                     <path d="M0 0h512v512H0z" fill="none" />
-                                                    <path fill="currentColor" fill-rule="evenodd" d="M213.333 42.667c41.238 0 74.667 33.429 74.667 74.666c0 39.863-31.238 72.43-70.57 74.556l-4.097.111c-41.237 0-74.666-33.429-74.666-74.667c0-39.862 31.238-72.43 70.57-74.556zm148.835 384l.499-.499v.499zm-298.168 0h170.667v-42.172l.494-.495H106.667v-34.133l.11-4.142c2.057-38.365 32.515-68.392 69.223-68.392h74.667l3.908.114c22.622 1.322 42.501 14.047 54.242 32.897l30.667-30.667c-20.476-27.372-52.644-45.01-88.817-45.01H176l-4.617.096C111.668 237.253 64 287.834 64 349.867zm192-33.336l9.331-9.331h.002l52.444-52.444l-.001-.001l33.131-33.131l.001.002l8.883-8.884l54.667 54.667L310.667 448H256zm-74.667-275.998c0-17.673 14.327-32 32-32s32 14.327 32 32s-14.327 32-32 32s-32-14.327-32-32m228 122.667L464 294.667l-34.458 34.457l-54.666-54.667z" clip-rule="evenodd" />
+                                                    <path fill="currentColor" fill-rule="evenodd"
+                                                        d="M213.333 42.667c41.238 0 74.667 33.429 74.667 74.666c0 39.863-31.238 72.43-70.57 74.556l-4.097.111c-41.237 0-74.666-33.429-74.666-74.667c0-39.862 31.238-72.43 70.57-74.556zm148.835 384l.499-.499v.499zm-298.168 0h170.667v-42.172l.494-.495H106.667v-34.133l.11-4.142c2.057-38.365 32.515-68.392 69.223-68.392h74.667l3.908.114c22.622 1.322 42.501 14.047 54.242 32.897l30.667-30.667c-20.476-27.372-52.644-45.01-88.817-45.01H176l-4.617.096C111.668 237.253 64 287.834 64 349.867zm192-33.336l9.331-9.331h.002l52.444-52.444l-.001-.001l33.131-33.131l.001.002l8.883-8.884l54.667 54.667L310.667 448H256zm-74.667-275.998c0-17.673 14.327-32 32-32s32 14.327 32 32s-14.327 32-32 32s-32-14.327-32-32m228 122.667L464 294.667l-34.458 34.457l-54.666-54.667z"
+                                                        clip-rule="evenodd" />
                                                 </svg>
                                             </div>
                                         @endif
                                     </div>
                                 </div>
                                 @if ($rsvp->message)
-                                    <p class="message-body text-sm leading-relaxed text-white pl-11 mt-2">{{ $rsvp->message }}</p>
+                                    <p class="message-body text-sm leading-relaxed text-white pl-11 mt-2">
+                                        {{ $rsvp->message }}</p>
                                 @endif
                             </article>
                         @endforeach
@@ -1086,33 +1185,73 @@
         </section>
 
         @if ($invitation->loveStories->count())
-            <section class="relative px-6 py-20 bg-[#9fbfd6]">
-                <div class="max-w-4xl mx-auto">
-                    <h2 class="font-title text-3xl mb-8 text-center">Love Story</h2>
-                    <div class="overflow-hidden rounded-2xl shadow-2xl border border-white/20">
+            <section class="relative px-6 py-20 overflow-hidden">
+                <div class="absolute inset-0">
+                    @if ($invitation->photos->first())
+                        <img src="{{ asset('storage/' . $invitation->photos->first()->file_path) }}"
+                            alt="Love Story Background" class="w-full h-full object-cover">
+                    @elseif($coverImage)
+                        <img src="{{ $coverImage }}" alt="Love Story Background"
+                            class="w-full h-full object-cover">
+                    @else
+                        <div class="w-full h-full bg-[#9fbfd6]"></div>
+                    @endif
+                    <div class="absolute inset-0 bg-black/45"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-white/10 via-black/10 to-black/60"></div>
+                </div>
+                <div class="absolute top-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
+                <div class="absolute top-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png"
+                        alt=""></div>
+                <div class="absolute bottom-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
+                <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png"
+                        alt=""></div>
+                <div class="max-w-4xl mx-auto relative z-10">
+                    <h2 class="font-title text-3xl md:text-4xl mb-3 text-center text-white">Kisah Cinta</h2>
+                    <p class="text-sm md:text-base opacity-85 text-center mb-8 text-white tracking-wide">Kisah
+                        perjalanan kami menuju hari istimewa</p>
+
+                    <div class="relative pl-12 md:pl-16 space-y-10">
+                        <div
+                            class="absolute left-4 md:left-6 top-6 bottom-6 w-px border-l border-dashed border-white/50">
+                        </div>
                         @foreach ($invitation->loveStories as $story)
-                            @php
-                                $mediaFirst = $loop->odd;
-                            @endphp
-                            <article class="grid grid-cols-2">
-                                <div class="{{ $mediaFirst ? 'order-1' : 'order-2' }}">
+                            <article
+                                class="relative rounded-[30px] overflow-visible border border-white/20 bg-white/10 backdrop-blur-xl shadow-[0_20px_45px_rgba(15,23,42,0.22)]">
+                                <div
+                                    class="absolute -left-12 md:-left-14 top-14 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[#5f82b4] shadow-[0_8px_18px_rgba(0,0,0,0.16)]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24">
+                                        <path d="M0 0h24v24H0z" fill="none" />
+                                        <g fill="none">
+                                            <path
+                                                d="m12.594 23.258l-.012.002l-.071.035l-.02.004l-.014-.004l-.071-.036q-.016-.004-.024.006l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.016-.018m.264-.113l-.014.002l-.184.093l-.01.01l-.003.011l.018.43l.005.012l.008.008l.201.092q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.003-.011l.018-.43l-.003-.012l-.01-.01z" />
+                                            <path fill="currentColor"
+                                                d="M9.498 5.793c1.42-1.904 3.555-2.46 5.519-1.925c2.12.577 3.984 2.398 4.603 4.934q.048.195.083.39a4.45 4.45 0 0 0-2.774-.07c-1.287-.952-2.881-1.112-4.298-.59c-1.775.655-3.161 2.316-3.482 4.406c-.41 2.676 1.22 5.08 3.525 7.124l.388.336c-.313.022-.631-.027-.935-.092a10 10 0 0 1-.466-.112l-.537-.15C6.35 18.701 3.154 16.6 2.237 13.46c-.732-2.506-.028-5.015 1.52-6.575c1.434-1.445 3.56-2.031 5.741-1.092m1.628 7.448c.428-2.792 3.657-4.168 5.315-1.772a.104.104 0 0 0 .144.025c2.377-1.684 4.94.713 4.387 3.483q-.48 2.41-4.47 4l-.435.17l-.263.108c-.227.089-.467.16-.684.122c-.216-.038-.417-.188-.6-.348l-.31-.28q-3.47-2.986-3.084-5.508" />
+                                        </g>
+                                    </svg>
+                                </div>
+                                <div class="relative">
                                     @if ($story->photo_path)
                                         <img src="{{ asset('storage/' . $story->photo_path) }}"
-                                            alt="{{ $story->title }}" class="w-full h-64 md:h-72 object-cover">
+                                            alt="{{ $story->title }}"
+                                            class="w-full h-56 md:h-[320px] object-cover rounded-t-[30px]">
                                     @else
-                                        <div class="w-full h-64 md:h-72 bg-black/40"></div>
+                                        <div class="w-full h-56 md:h-[320px] bg-white/10 rounded-t-[30px]"></div>
                                     @endif
+                                    <div
+                                        class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent via-white/12 to-white/8">
+                                    </div>
                                 </div>
-                                <div
-                                    class="{{ $mediaFirst ? 'order-2' : 'order-1' }} bg-black/65 text-white p-4 md:p-6 flex flex-col justify-center">
-                                    <h3 class="text-sm md:text-lg font-semibold uppercase tracking-wide">
-                                        {{ $story->title }}</h3>
+                                <div class="relative -mt-5 px-4 pb-6 pt-2 md:px-10 text-center text-white">
+                                    <p
+                                        class="font-title text-lg md:text-[2rem] text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.24)]">
+                                        {{ $story->title }}
+                                    </p>
                                     @if ($story->year)
-                                        <p class="text-xs md:text-sm mt-2 font-semibold opacity-90">
+                                        <p class="text-xs md:text-sm mt-1 uppercase tracking-[0.24em] text-white/70">
                                             {{ $story->year }}
                                         </p>
                                     @endif
-                                    <p class="text-xs md:text-sm mt-3 opacity-85 leading-relaxed">
+                                    <p class="text-sm md:text-base mt-3 leading-8 text-white/90 max-w-2xl mx-auto">
                                         {{ $story->description }}
                                     </p>
                                 </div>
@@ -1131,12 +1270,12 @@
             <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png" alt="">
             </div>
             <div class="relative z-10 max-w-xl w-full">
-                <h2 class="font-title text-xl mb-2">{{ $coupleName }}</h2>
-                <p class="text-sm opacity-80 mb-4">{{ $eventDateText }}</p>
-                <h3 class="font-title text-2xl italic mb-4">Tanda Kasih</h3>
-                <p class="text-sm opacity-90 mb-8">Terima kasih telah menambah semangat kegembiraan pernikahan kami
-                    dengan kehadiran dan hadiah indah Anda.</p>
-                <div class="bg-white/20 backdrop-blur-md rounded-2xl p-6 mb-6 text-left space-y-6">
+
+                <h3 class="font-title text-xl  mb-4">Tanda Kasih</h3>
+                <p class="text-sm opacity-90 mb-8">Doa restu dan kehadiran Anda sudah menjadi kebahagiaan tersendiri
+                    bagi kami. Namun, apabila Anda ingin memberikan tanda kasih, kami telah menyediakan fitur berikut.
+                </p>
+                <div class="p-6 mb-6 text-left space-y-6">
                     @foreach ($invitation->bankAccounts as $acc)
                         <div>
                             <div class="flex items-center justify-between gap-3 mb-2">
@@ -1194,12 +1333,11 @@
             <div class="absolute bottom-0 left-0 w-40 opacity-20"><img src="ornament.png" alt=""></div>
             <div class="absolute bottom-0 right-0 w-40 opacity-20 rotate-180"><img src="ornament.png" alt="">
             </div>
-            <div class="relative z-40 mt-16 max-w-xl">
+            <div class="relative z-40 mt-20 max-w-xl">
                 <p class="text-sm leading-relaxed opacity-90 mb-6">
                     {{ $invitation->closing_text ?: 'Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kedua mempelai.' }}
                 </p>
-                <h2 class="font-title text-2xl mb-2">{{ $coupleName }}</h2>
-                <p class="text-sm opacity-80">{{ $eventDateText }}</p>
+                <h2 class="font-title text-xl mb-2">{{ $coupleName }}</h2>
                 @if (!empty($guest))
                     <p class="text-xs mt-4 break-all opacity-80">{{ $guest->getInvitationUrl() }}</p>
                 @endif
@@ -1361,27 +1499,27 @@
         function calculateDistance() {
             const lat = parseFloat(@json($invitation->venue_lat ?? '0'));
             const lng = parseFloat(@json($invitation->venue_lng ?? '0'));
-            
+
             if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
                 console.log('No valid coordinates for distance calculation');
                 return;
             }
-            
+
             if ('geolocation' in navigator) {
                 navigator.geolocation.getCurrentPosition((pos) => {
                     const userLat = pos.coords.latitude;
                     const userLng = pos.coords.longitude;
-                    
+
                     // Calculate distance using Haversine formula
                     const R = 6371; // Earth's radius in km
                     const dLat = (lat - userLat) * Math.PI / 180;
                     const dLng = (lng - userLng) * Math.PI / 180;
-                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                              Math.cos(userLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) *
-                              Math.sin(dLng/2) * Math.sin(dLng/2);
-                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(userLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) *
+                        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
                     const distKm = (R * c).toFixed(1);
-                    
+
                     const distEl = document.getElementById('userDistance');
                     const distText = document.getElementById('distanceText');
                     if (distEl && distText) {

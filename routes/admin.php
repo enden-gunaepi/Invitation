@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\PaymentGatewayController;
 use App\Http\Controllers\Admin\AffiliateController;
 use App\Http\Controllers\Admin\GuestOpsController;
 use App\Http\Controllers\Admin\ReliabilityController;
+use App\Http\Controllers\Admin\MediaMaintenanceController;
 use Illuminate\Support\Facades\Route;
 
 // Admin Dashboard
@@ -38,6 +39,7 @@ Route::resource('packages', PackageController::class);
 Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
 Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
 Route::patch('/payments/{payment}/mark-paid', [PaymentController::class, 'markPaid'])->name('payments.mark-paid');
+Route::post('/payments/reconcile', [PaymentController::class, 'reconcile'])->name('payments.reconcile');
 
 // Affiliate Management
 Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');
@@ -77,3 +79,5 @@ Route::get('/integration/email', [IntegrationController::class, 'email'])->name(
 
 // Reliability Monitoring
 Route::get('/system/reliability', [ReliabilityController::class, 'index'])->name('system.reliability');
+Route::get('/system/media-maintenance', [MediaMaintenanceController::class, 'index'])->name('system.media-maintenance');
+Route::post('/system/media-maintenance/cleanup', [MediaMaintenanceController::class, 'cleanup'])->name('system.media-maintenance.cleanup');

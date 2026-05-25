@@ -38,6 +38,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['track.view'])->group(function () {
     Route::get('/inv/{slug}', [InvitationPublicController::class, 'show'])->name('invitation.show');
 });
+Route::get('/inv/{slug}/ig-story.jpg', [InvitationPublicController::class, 'downloadIgStory'])
+    ->name('invitation.ig-story.download');
 Route::get('/inv/{slug}/maps', [InvitationPublicController::class, 'mapClick'])->name('invitation.map.click');
 Route::middleware(['track.view'])->group(function () {
     Route::get('/inv/{slug}/{token}', [InvitationPublicController::class, 'showGuest'])

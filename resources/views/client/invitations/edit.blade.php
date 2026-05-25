@@ -99,11 +99,10 @@
             <a href="#sec4">4. Countdown</a>
             <a href="#sec5">5. Acara & Susunan</a>
             <a href="#sec6">6. Lokasi</a>
-            <a href="#sec8">7. Love Story</a>
-            <a href="#sec9">8. RSVP & Ucapan</a>
-            <a href="#sec10">9. Tanda Kasih</a>
-            <a href="#sec11">10. Penutup</a>
-            <a href="#sec12">11. Musik & Live</a>
+            <a href="#sec9">7. RSVP & Ucapan</a>
+            <a href="#sec10">8. Tanda Kasih</a>
+            <a href="#sec11">9. Penutup</a>
+            <a href="#sec12">10. Musik & Live</a>
         </aside>
 
         <div class="space-y-5">
@@ -343,52 +342,9 @@
                     </div>
                 </section>
 
-                <section id="sec8" class="edit-card"
-                    x-data="{ stories: {{ json_encode($invitation->loveStories->count() > 0 ? $invitation->loveStories->map(fn($s) => ['year' => $s->year, 'title' => $s->title, 'description' => $s->description, 'photo_path' => $s->photo_path])->values() : [['year' => '', 'title' => '', 'description' => '', 'photo_path' => '']]) }} }">
-                    <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">7</span>Love Story</h3>
-                        <div class="flex items-center gap-2">
-                            <button type="button" @click="stories.push({year:'',title:'',description:'',photo_path:''})"
-                                class="btn btn-secondary btn-sm"><i class="fas fa-plus mr-1"></i> Tambah</button>
-                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save mr-1"></i> Simpan
-                                Love Story</button>
-                        </div>
-                    </div>
-                    <div class="edit-body">
-                        <template x-for="(story, idx) in stories" :key="idx">
-                            <div class="p-4 mb-3 rounded-lg"
-                                style="background: var(--bg-tertiary); border: 1px solid var(--border);">
-                                <div class="grid grid-cols-4 gap-3 mb-3">
-                                    <div><label class="form-label text-xs">Tahun</label><input type="text"
-                                            :name="'love_stories[' + idx + '][year]'" x-model="story.year"
-                                            class="form-input"></div>
-                                    <div class="col-span-3"><label class="form-label text-xs">Judul</label><input
-                                            type="text" :name="'love_stories[' + idx + '][title]'" x-model="story.title"
-                                            class="form-input"></div>
-                                </div>
-                                <div><label class="form-label text-xs">Deskripsi</label><textarea
-                                        :name="'love_stories[' + idx + '][description]'" x-model="story.description"
-                                        class="form-input" rows="2"></textarea></div>
-                                <input type="hidden" :name="'love_stories[' + idx + '][photo_path]'"
-                                    x-model="story.photo_path">
-                                <template x-if="story.photo_path">
-                                    <div class="mt-3 flex items-center gap-3">
-                                        <img :src="'/storage/' + story.photo_path" alt="Foto story saat ini"
-                                            class="mini-preview">
-                                        <p class="text-xs" style="color: var(--text-secondary);">Foto saat ini tetap dipakai
-                                            jika tidak upload baru.</p>
-                                    </div>
-                                </template>
-                                <div class="mt-3"><label class="form-label text-xs">Foto Story</label><input type="file"
-                                        :name="'love_story_photos[' + idx + ']'" class="form-input" accept="image/*"></div>
-                            </div>
-                        </template>
-                    </div>
-                </section>
-
                 <section id="sec9" class="edit-card">
                     <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">8</span>RSVP & Ucapan</h3>
+                        <h3 class="font-semibold flex items-center gap-2"><span class="step">7</span>RSVP & Ucapan</h3>
                     </div>
                     <div class="edit-body">
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -417,7 +373,7 @@
                 <section id="sec10" class="edit-card"
                     x-data="{ accounts: {{ json_encode($invitation->bankAccounts->count() ? $invitation->bankAccounts->map(fn($a) => ['bank_name' => $a->bank_name, 'account_number' => $a->account_number, 'account_name' => $a->account_name])->values() : [['bank_name' => $invitation->bank_name ?? '', 'account_number' => $invitation->bank_account_number ?? '', 'account_name' => $invitation->bank_account_name ?? '']]) }} }">
                     <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">9</span>Tanda Kasih</h3>
+                        <h3 class="font-semibold flex items-center gap-2"><span class="step">8</span>Tanda Kasih</h3>
                         <button type="button" @click="accounts.push({bank_name:'',account_number:'',account_name:''})"
                             class="btn btn-secondary btn-sm"><i class="fas fa-plus mr-1"></i> Tambah</button>
                     </div>
@@ -444,7 +400,7 @@
 
                 <section id="sec11" class="edit-card">
                     <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">10</span>Penutup</h3>
+            <h3 class="font-semibold flex items-center gap-2"><span class="step">9</span>Penutup</h3>
                     </div>
                     <div class="edit-body">
                         <div class="mb-4"><label class="form-label">Teks Penutup</label><textarea name="closing_text"
@@ -457,7 +413,7 @@
 
                 <section id="sec12" class="edit-card">
                     <div class="edit-head">
-                        <h3 class="font-semibold flex items-center gap-2"><span class="step">11</span>Musik & Live Streaming
+            <h3 class="font-semibold flex items-center gap-2"><span class="step">10</span>Musik & Live Streaming
                         </h3>
                     </div>
                     <div class="edit-body">
@@ -514,45 +470,135 @@
             const wrap = document.getElementById('templatePreviewWrapEdit');
             const img = document.getElementById('templatePreviewEdit');
             const thumb = opt?.dataset?.thumbnail || '';
-            if (!thumb) { wrap.style.display = 'none'; img.src = ''; return; }
-            img.src = thumb; wrap.style.display = 'block';
+            if (!thumb) {
+                wrap.style.display = 'none';
+                img.src = '';
+                return;
+            }
+            img.src = thumb;
+            wrap.style.display = 'block';
         }
 
-        let pickerMap, pickerMarker;
+        let pickerMap, pickerMarker, pickerAccuracyCircle, geoWatchId = null;
 
         function updateCoordInputs(lat, lng) {
             document.getElementById('venue_lat').value = lat.toFixed(8);
             document.getElementById('venue_lng').value = lng.toFixed(8);
         }
 
+        function clearAccuracyCircle() {
+            if (pickerMap && pickerAccuracyCircle) {
+                pickerMap.removeLayer(pickerAccuracyCircle);
+                pickerAccuracyCircle = null;
+            }
+        }
+
+        function updatePickerPosition(lat, lng, accuracy = null, zoom = 18) {
+            if (!pickerMap) return;
+            if (!pickerMarker) {
+                pickerMarker = L.marker([lat, lng], { draggable: true }).addTo(pickerMap);
+                pickerMarker.on('dragend', function() {
+                    const pos = pickerMarker.getLatLng();
+                    updateCoordInputs(pos.lat, pos.lng);
+                    clearAccuracyCircle();
+                });
+            }
+            pickerMap.setView([lat, lng], zoom);
+            pickerMarker.setLatLng([lat, lng]);
+            updateCoordInputs(lat, lng);
+            clearAccuracyCircle();
+
+            if (typeof accuracy === 'number' && Number.isFinite(accuracy) && accuracy > 0) {
+                pickerAccuracyCircle = L.circle([lat, lng], {
+                    radius: accuracy,
+                    color: '#2563eb',
+                    weight: 1,
+                    fillColor: '#60a5fa',
+                    fillOpacity: 0.12,
+                }).addTo(pickerMap);
+            }
+        }
+
         function locateMe() {
             const statusEl = document.getElementById('locateStatus');
-            if (!("geolocation" in navigator)) {
-                statusEl.textContent = '❌ Browser tidak mendukung geolokasi.';
+            if (!('geolocation' in navigator)) {
+                statusEl.textContent = 'Browser tidak mendukung geolokasi.';
                 return;
             }
-            statusEl.textContent = '⏳ Mencari lokasi Anda...';
-            navigator.geolocation.getCurrentPosition(
+
+            if (geoWatchId !== null) {
+                navigator.geolocation.clearWatch(geoWatchId);
+                geoWatchId = null;
+            }
+
+            statusEl.textContent = 'Mencari lokasi paling akurat...';
+            let bestPosition = null;
+            let finished = false;
+
+            const finishLocate = (labelPrefix = 'Lokasi ditemukan') => {
+                if (finished) return;
+                finished = true;
+
+                if (geoWatchId !== null) {
+                    navigator.geolocation.clearWatch(geoWatchId);
+                    geoWatchId = null;
+                }
+
+                if (!bestPosition) {
+                    statusEl.textContent = 'Gagal mendapatkan lokasi.';
+                    return;
+                }
+
+                const accuracy = bestPosition.coords.accuracy;
+                if (!Number.isFinite(accuracy) || accuracy > 500) {
+                    statusEl.textContent = `Lokasi browser belum akurat (${Math.round(accuracy || 0)} meter). Aktifkan GPS/Precise Location, lalu klik lagi.`;
+                    return;
+                }
+
+                const lat = bestPosition.coords.latitude;
+                const lng = bestPosition.coords.longitude;
+                updatePickerPosition(lat, lng, accuracy, accuracy <= 35 ? 19 : 18);
+                statusEl.textContent = `${labelPrefix}. Akurasi sekitar ${Math.round(accuracy)} meter. Geser marker jika perlu.`;
+            };
+
+            geoWatchId = navigator.geolocation.watchPosition(
                 (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    if (pickerMap && pickerMarker) {
-                        pickerMap.setView([lat, lng], 17);
-                        pickerMarker.setLatLng([lat, lng]);
-                        updateCoordInputs(lat, lng);
+                    const accuracy = position.coords.accuracy ?? Number.POSITIVE_INFINITY;
+                    if (!bestPosition || accuracy < (bestPosition.coords.accuracy ?? Number.POSITIVE_INFINITY)) {
+                        bestPosition = position;
+                        if (accuracy <= 500) {
+                            updatePickerPosition(position.coords.latitude, position.coords.longitude, accuracy, accuracy <= 35 ? 19 : 18);
+                        }
+                        statusEl.textContent = `Menyempurnakan lokasi... akurasi saat ini ${Math.round(accuracy)} meter`;
                     }
-                    statusEl.textContent = '✅ Lokasi ditemukan! Geser marker jika perlu.';
+                    if (accuracy <= 20) {
+                        finishLocate('Lokasi akurat ditemukan');
+                    }
                 },
                 (error) => {
                     const msgs = {
-                        1: '❌ Izin lokasi ditolak.',
-                        2: '❌ Lokasi tidak tersedia.',
-                        3: '❌ Waktu mencari lokasi habis.'
+                        1: 'Izin lokasi ditolak.',
+                        2: 'Lokasi tidak tersedia.',
+                        3: 'Waktu mencari lokasi habis.',
                     };
-                    statusEl.textContent = msgs[error.code] || '❌ Gagal mendapatkan lokasi.';
+                    if (bestPosition) {
+                        finishLocate('Lokasi terbaik yang tersedia dipakai');
+                        return;
+                    }
+                    statusEl.textContent = msgs[error.code] || 'Gagal mendapatkan lokasi.';
                 },
-                { enableHighAccuracy: true, timeout: 10000 }
+                {
+                    enableHighAccuracy: true,
+                    timeout: 25000,
+                    maximumAge: 0,
+                }
             );
+
+            window.setTimeout(() => {
+                if (!finished) {
+                    finishLocate('Lokasi terbaik ditemukan');
+                }
+            }, 9000);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -560,23 +606,23 @@
             const toggle = document.getElementById('livestream_enabled_edit');
             const fields = document.getElementById('livestream_fields_edit');
             if (toggle && fields) {
-                const refreshLive = () => { fields.style.display = toggle.checked ? '' : 'none'; };
+                const refreshLive = () => {
+                    fields.style.display = toggle.checked ? '' : 'none';
+                };
                 toggle.addEventListener('change', refreshLive);
                 refreshLive();
             }
 
-            // Init Location Picker Map
             if (typeof L !== 'undefined') {
                 const latInput = document.getElementById('venue_lat');
                 const lngInput = document.getElementById('venue_lng');
                 let initialLat = parseFloat(latInput.value);
                 let initialLng = parseFloat(lngInput.value);
-
-                const hasExistingCoords = !isNaN(initialLat) && !isNaN(initialLng) && (initialLat !== 0 || initialLng !== 0);
+                const hasExistingCoords = !Number.isNaN(initialLat) && !Number.isNaN(initialLng) && (initialLat !== 0 || initialLng !== 0);
 
                 if (!hasExistingCoords) {
-                    initialLat = -6.200000;
-                    initialLng = 106.816666;
+                    initialLat = -2.5489;
+                    initialLng = 118.0149;
                 }
 
                 pickerMap = L.map('locationPickerMap').setView([initialLat, initialLng], hasExistingCoords ? 17 : 5);
@@ -594,35 +640,31 @@
                 });
 
                 hybrid.addTo(pickerMap);
-                L.control.layers({ "Hybrid": hybrid, "Streets": streets }).addTo(pickerMap);
+                L.control.layers({ 'Hybrid': hybrid, 'Streets': streets }).addTo(pickerMap);
 
-                pickerMarker = L.marker([initialLat, initialLng], { draggable: true }).addTo(pickerMap);
+                if (hasExistingCoords) {
+                    pickerMarker = L.marker([initialLat, initialLng], { draggable: true }).addTo(pickerMap);
+                    pickerMarker.on('dragend', function() {
+                        const pos = pickerMarker.getLatLng();
+                        updateCoordInputs(pos.lat, pos.lng);
+                        clearAccuracyCircle();
+                    });
+                }
 
-                pickerMarker.on('dragend', function() {
-                    const pos = pickerMarker.getLatLng();
-                    updateCoordInputs(pos.lat, pos.lng);
-                });
-
-                // Click on map to move marker
                 pickerMap.on('click', function(e) {
-                    pickerMarker.setLatLng(e.latlng);
-                    updateCoordInputs(e.latlng.lat, e.latlng.lng);
+                    updatePickerPosition(e.latlng.lat, e.latlng.lng, null, pickerMap.getZoom());
+                    clearAccuracyCircle();
                 });
 
-                // Parse Coordinates from Google Maps URL
                 function parseCoordsFromUrl(url) {
                     let match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
                     if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
-                    
                     match = url.match(/[?&](q|query)=(-?\d+\.\d+),(-?\d+\.\d+)/);
                     if (match) return { lat: parseFloat(match[2]), lng: parseFloat(match[3]) };
-                    
                     match = url.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
                     if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
-                    
                     match = url.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
                     if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
-                    
                     return null;
                 }
 
@@ -632,16 +674,16 @@
                         const url = this.value.trim();
                         const coords = parseCoordsFromUrl(url);
                         if (coords) {
-                            updateCoordInputs(coords.lat, coords.lng);
-                            pickerMap.setView([coords.lat, coords.lng], 17);
-                            pickerMarker.setLatLng([coords.lat, coords.lng]);
+                            updatePickerPosition(coords.lat, coords.lng, null, 17);
                         }
                     });
                 }
 
-                // If no saved coords, auto-locate user
                 if (!hasExistingCoords) {
-                    locateMe();
+                    window.setTimeout(() => {
+                        pickerMap.invalidateSize();
+                        locateMe();
+                    }, 250);
                 }
             }
         });

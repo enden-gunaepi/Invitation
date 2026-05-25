@@ -16,6 +16,7 @@ use App\Services\ImageCompressionService;
 use App\Services\ClientPackageService;
 use App\Services\InvitationAccessService;
 use App\Services\InvitationFunnelService;
+use App\Services\InvitationMediaCleanupService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
@@ -27,6 +28,7 @@ class InvitationController extends Controller
         private readonly ClientPackageService $clientPackageService,
         private readonly InvitationFunnelService $funnelService,
         private readonly InvitationAccessService $invitationAccessService,
+        private readonly InvitationMediaCleanupService $mediaCleanupService,
     )
     {
     }
@@ -228,7 +230,7 @@ class InvitationController extends Controller
     {
         $this->authorizeAnyEditor($invitation);
 
-        $invitation->load('photos', 'events', 'guests', 'rsvps', 'wishes', 'package', 'bankAccounts', 'reminderCampaigns', 'vendorLeads', 'collaborators.user', 'backups');
+        $invitation->load('photos', 'events', 'loveStories', 'guests', 'rsvps', 'wishes', 'package', 'bankAccounts', 'reminderCampaigns', 'vendorLeads', 'collaborators.user', 'backups');
 
         $activePackage = $this->clientPackageService->getActivePackage((int) auth()->id());
         $effectivePackage = $activePackage ?: $invitation->package;
@@ -293,6 +295,12 @@ class InvitationController extends Controller
         $this->authorizeAnyEditor($invitation);
         $isOwner = $this->invitationAccessService->isOwner($invitation, (int) auth()->id());
         $previousPackageId = (int) $invitation->package_id;
+        $previousMedia = [
+            'cover_photo' => $invitation->cover_photo,
+            'groom_photo' => $invitation->groom_photo,
+            'bride_photo' => $invitation->bride_photo,
+            'music_url' => $invitation->music_url,
+        ];
 
         if ($uploadError = $this->getUploadErrorMessage($request, 'music_url')) {
             return back()->withInput()->withErrors(['music_url' => $uploadError]);
@@ -419,6 +427,15 @@ class InvitationController extends Controller
 
         $invitation->update($validated);
 
+        foreach (['cover_photo', 'groom_photo', 'bride_photo'] as $field) {
+            if (!empty($previousMedia[$field]) && $previousMedia[$field] !== ($invitation->{$field} ?? null)) {
+                $this->mediaCleanupService->deleteImagePathIfUnused($previousMedia[$field], $invitation->id);
+            }
+        }
+        if (!empty($previousMedia['music_url']) && $previousMedia['music_url'] !== ($invitation->music_url ?? null)) {
+            $this->mediaCleanupService->deleteMusicPathIfUnused($previousMedia['music_url'], $invitation->id);
+        }
+
         $packageChanged = $previousPackageId !== (int) $invitation->package_id;
         if ($packageChanged && $invitation->status === 'active') {
             $invitation->load('package');
@@ -466,13 +483,23 @@ class InvitationController extends Controller
 
         // Handle Love Stories
         if ($request->has('love_stories')) {
+            $retainedStoryPaths = collect($request->input('love_stories', []))
+                ->pluck('photo_path')
+                ->filter()
+                ->map(fn ($path) => (string) $path)
+                ->all();
+            foreach ($invitation->loveStories as $existingStory) {
+                if (!empty($existingStory->photo_path) && !in_array($existingStory->photo_path, $retainedStoryPaths, true)) {
+                    $this->mediaCleanupService->deleteImagePathIfUnused($existingStory->photo_path, $invitation->id);
+                }
+            }
             $invitation->loveStories()->delete();
             $loveStoryPhotos = $request->file('love_story_photos', []);
             foreach ($request->input('love_stories', []) as $i => $ls) {
                 if (!empty($ls['title'])) {
                     $storyPhotoPath = !empty($ls['photo_path']) ? (string) $ls['photo_path'] : null;
                     if (isset($loveStoryPhotos[$i]) && $loveStoryPhotos[$i]->isValid()) {
-                        $this->deletePublicFileIfExists($storyPhotoPath);
+                        $this->mediaCleanupService->deleteImagePathIfUnused($storyPhotoPath, $invitation->id);
                         $storyPhotoPath = $this->storeCompressedLoveStoryPhoto($loveStoryPhotos[$i], $i);
                     }
                     LoveStory::create([
@@ -584,7 +611,7 @@ class InvitationController extends Controller
             ->get()
             ->keyBy('status');
 
-        $categoryCounts = Rsvp::where('invitation_id', $invitation->id)
+        $categoryCounts = Rsvp::where('rsvps.invitation_id', $invitation->id)
             ->leftJoin('guests', 'rsvps.guest_id', '=', 'guests.id')
             ->selectRaw("COALESCE(guests.category, 'Umum') as category, COUNT(*) as total")
             ->groupBy('category')
@@ -617,10 +644,7 @@ class InvitationController extends Controller
             'ig_story_photo.max' => 'Ukuran gambar maksimal 10MB.',
         ]);
 
-        // Delete old ig_story_photo if exists
-        if ($invitation->ig_story_photo) {
-            $this->deletePublicFileIfExists($invitation->ig_story_photo);
-        }
+        $previousIgStoryPhoto = $invitation->ig_story_photo;
 
         try {
             $path = $this->imageCompressionService->compressAndStore(
@@ -634,6 +658,9 @@ class InvitationController extends Controller
         }
 
         $invitation->update(['ig_story_photo' => $path]);
+        if (!empty($previousIgStoryPhoto) && $previousIgStoryPhoto !== $path) {
+            $this->mediaCleanupService->deleteImagePathIfUnused($previousIgStoryPhoto, $invitation->id);
+        }
 
         return back()->with('success', 'Template IG Story berhasil diupload!');
     }
@@ -643,11 +670,72 @@ class InvitationController extends Controller
         $this->authorizeAnyEditor($invitation);
 
         if ($invitation->ig_story_photo) {
-            $this->deletePublicFileIfExists($invitation->ig_story_photo);
+            $previousIgStoryPhoto = $invitation->ig_story_photo;
             $invitation->update(['ig_story_photo' => null]);
+            $this->mediaCleanupService->deleteImagePathIfUnused($previousIgStoryPhoto, $invitation->id);
         }
 
         return back()->with('success', 'Template IG Story berhasil dihapus!');
+    }
+
+    public function updateLoveStories(Request $request, Invitation $invitation)
+    {
+        $this->authorizeAnyEditor($invitation);
+
+        if ($mimeErrors = $this->validateUploadMimeSniff($request)) {
+            return back()->withErrors($mimeErrors);
+        }
+
+        $validated = $request->validate([
+            'love_story_photos.*' => 'nullable|image|max:10240',
+            'love_stories' => 'nullable|array',
+            'love_stories.*.year' => 'nullable|string|max:50',
+            'love_stories.*.title' => 'nullable|string|max:255',
+            'love_stories.*.description' => 'nullable|string|max:1000',
+            'love_stories.*.photo_path' => 'nullable|string|max:255',
+        ], [
+            'love_story_photos.*.max' => 'Ukuran foto love story maksimal 10MB.',
+        ]);
+
+        $invitation->load('loveStories');
+        $inputStories = $validated['love_stories'] ?? [];
+        $retainedStoryPaths = collect($inputStories)
+            ->pluck('photo_path')
+            ->filter()
+            ->map(fn ($path) => (string) $path)
+            ->all();
+
+        foreach ($invitation->loveStories as $existingStory) {
+            if (!empty($existingStory->photo_path) && !in_array($existingStory->photo_path, $retainedStoryPaths, true)) {
+                $this->mediaCleanupService->deleteImagePathIfUnused($existingStory->photo_path, $invitation->id);
+            }
+        }
+
+        $invitation->loveStories()->delete();
+        $loveStoryPhotos = $request->file('love_story_photos', []);
+
+        foreach ($inputStories as $i => $story) {
+            if (empty($story['title'])) {
+                continue;
+            }
+
+            $storyPhotoPath = !empty($story['photo_path']) ? (string) $story['photo_path'] : null;
+            if (isset($loveStoryPhotos[$i]) && $loveStoryPhotos[$i]->isValid()) {
+                $this->mediaCleanupService->deleteImagePathIfUnused($storyPhotoPath, $invitation->id);
+                $storyPhotoPath = $this->storeCompressedLoveStoryPhoto($loveStoryPhotos[$i], $i);
+            }
+
+            LoveStory::create([
+                'invitation_id' => $invitation->id,
+                'year' => $story['year'] ?? null,
+                'title' => $story['title'],
+                'description' => $story['description'] ?? null,
+                'photo_path' => $storyPhotoPath,
+                'sort_order' => $i,
+            ]);
+        }
+
+        return back()->with('success', 'Love story berhasil diperbarui!');
     }
 
     /**
@@ -822,15 +910,4 @@ class InvitationController extends Controller
         }
     }
 
-    private function deletePublicFileIfExists(?string $path): void
-    {
-        if (empty($path)) {
-            return;
-        }
-
-        $fullPath = storage_path('app/public/' . ltrim($path, '/'));
-        if (is_file($fullPath)) {
-            @unlink($fullPath);
-        }
-    }
 }

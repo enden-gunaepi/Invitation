@@ -27,7 +27,10 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $user->fill($request->validated());
+        $validated = $request->validated();
+        unset($validated['company_name'], $validated['company_logo']);
+
+        $user->fill($validated);
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
@@ -38,13 +41,6 @@ class ProfileController extends Controller
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
             }
             $user->avatar = $request->file('avatar')->store('avatars', 'public');
-        }
-
-        if ($request->hasFile('company_logo')) {
-            if ($user->company_logo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->company_logo);
-            }
-            $user->company_logo = $request->file('company_logo')->store('company_logos', 'public');
         }
 
         $user->save();

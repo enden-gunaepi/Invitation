@@ -5,7 +5,7 @@
 
 @section('content')
 {{-- Stats --}}
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
     <div class="card stat-card">
         <div class="stat-icon" style="background: var(--accent-bg); color: var(--accent);"><i class="fas fa-receipt"></i></div>
         <div class="stat-value">{{ $stats['total'] }}</div>
@@ -22,9 +22,35 @@
         <div class="stat-label">Pending</div>
     </div>
     <div class="card stat-card">
+        <div class="stat-icon" style="background: rgba(100,116,139,0.1); color: #64748b;"><i class="fas fa-hourglass-end"></i></div>
+        <div class="stat-value">{{ $stats['expired'] }}</div>
+        <div class="stat-label">Expired</div>
+    </div>
+    <div class="card stat-card">
         <div class="stat-icon" style="background: rgba(52,199,89,0.1); color: var(--success);"><i class="fas fa-wallet"></i></div>
         <div class="stat-value">Rp{{ number_format($stats['revenue'], 0, ',', '.') }}</div>
         <div class="stat-label">Revenue</div>
+    </div>
+</div>
+
+<div class="card p-4 mb-6">
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+            <h3 class="font-bold text-sm">Reliability Pembayaran</h3>
+            <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                @if($latestReconciliation)
+                    Reconciliation terakhir {{ $latestReconciliation->run_date->format('d M Y') }} dengan status {{ strtoupper($latestReconciliation->status) }}.
+                @else
+                    Belum ada reconciliation harian yang tercatat.
+                @endif
+            </p>
+        </div>
+        <form method="POST" action="{{ route('admin.payments.reconcile') }}">
+            @csrf
+            <button type="submit" class="btn btn-secondary btn-sm">
+                <i class="fas fa-rotate-right mr-1"></i> Sync Pending
+            </button>
+        </form>
     </div>
 </div>
 
@@ -40,7 +66,9 @@
                 <option value="">Semua Status</option>
                 <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Lunas</option>
                 <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="expired" {{ request('status') === 'expired' ? 'selected' : '' }}>Expired</option>
                 <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Gagal</option>
+                <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
             </select>
         </div>
         <div>
@@ -91,7 +119,7 @@
                         </span>
                     </td>
                     <td>
-                        <span class="badge badge-{{ $p->payment_status === 'paid' ? 'success' : ($p->payment_status === 'pending' ? 'warning' : 'danger') }}">
+                        <span class="badge badge-{{ $p->payment_status === 'paid' ? 'success' : ($p->payment_status === 'pending' ? 'warning' : ($p->payment_status === 'expired' ? 'default' : 'danger')) }}">
                             {{ ucfirst($p->payment_status) }}
                         </span>
                     </td>
@@ -120,4 +148,29 @@
     </div>
 </div>
 <div class="mt-4">{{ $payments->links() }}</div>
+
+<div class="card overflow-hidden mt-6">
+    <div class="px-6 py-4 border-b" style="border-color: var(--border);">
+        <h3 class="font-bold text-base">Callback Terbaru</h3>
+    </div>
+    <div class="p-4 space-y-2">
+        @forelse($recentReceipts as $receipt)
+            <div class="p-3 rounded-lg" style="background: var(--bg-tertiary);">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold">{{ strtoupper($receipt->gateway) }} · {{ $receipt->status ?: '-' }}</p>
+                        <p class="text-xs mt-1 truncate" style="color: var(--text-secondary);">
+                            {{ $receipt->payment?->invoice_number ?? 'No payment linked' }} · {{ $receipt->event_id ?: 'No event id' }}
+                        </p>
+                    </div>
+                    <span class="text-xs whitespace-nowrap" style="color: var(--text-secondary);">
+                        {{ $receipt->created_at->format('d/m H:i') }}
+                    </span>
+                </div>
+            </div>
+        @empty
+            <p class="text-sm py-6 text-center" style="color: var(--text-secondary);">Belum ada callback gateway.</p>
+        @endforelse
+    </div>
+</div>
 @endsection

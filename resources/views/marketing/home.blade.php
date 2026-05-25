@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>{{ config('app.name') }} | Perayaan Seumur Hidup</title>
+    <title>{{ $brandAppName ?? config('app.name') }} | Perayaan Seumur Hidup</title>
     <meta name="description"
         content="Platform undangan digital estetik: template premium, RSVP real-time, dan operasional acara dalam satu sistem." />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -176,30 +176,34 @@
                 transform: translateX(-100%);
             }
         }
+
         @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
         }
     </style>
 </head>
 
 <body class="bg-background text-on-background font-body-md selection:bg-primary selection:text-white">
 
-    @php
-        $mainAdmin = \App\Models\User::where('role', 'admin')->first();
-        $companyLogo = $mainAdmin && $mainAdmin->company_logo ? Storage::url($mainAdmin->company_logo) : null;
-        $companyName = $mainAdmin && $mainAdmin->company_name ? $mainAdmin->company_name : config('app.name');
-    @endphp
-
     <!-- TopNavBar -->
     <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-3xl border-b border-outline-variant/30">
-        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent opacity-70"></div>
+        <div
+            class="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent opacity-70">
+        </div>
         <div class="flex justify-between items-center px-gutter py-4 max-w-container-max mx-auto">
             <div class="flex items-center gap-3">
-                @if ($companyLogo)
-                    <img src="{{ $companyLogo }}" alt="{{ $companyName }}" class="h-7 w-auto">
+                @if ($brandLogoUrl)
+                    <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}" class="h-7 w-auto">
                 @endif
-                <span class="text-[20px] font-semibold text-primary tracking-tight leading-none">Janji Suci Kita</span>
+                <span class="text-[20px] font-semibold text-primary tracking-tight leading-none">{{ $brandName }}</span>
             </div>
             <div class="hidden md:flex gap-internal-lg">
                 <a class="font-button text-button text-primary border-b-2 border-pink-500 pb-1 transition-colors duration-300"
@@ -213,7 +217,7 @@
             </div>
             <a href="{{ route('login') }}"
                 class="bg-primary hover:bg-pink-600 text-on-primary font-button text-button px-6 py-2 rounded-full active:scale-95 transition-all">
-                Dashboard
+                Login
             </a>
         </div>
     </nav>
@@ -223,14 +227,22 @@
         <section class="relative min-h-screen flex flex-col items-center justify-center pt-32 px-gutter overflow-hidden"
             id="hero">
             <!-- Subtle pink glows -->
-            <div class="absolute top-1/4 left-1/3 -translate-x-1/2 w-[350px] h-[350px] bg-pink-300/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
-            <div class="absolute bottom-1/4 right-1/3 translate-x-1/2 w-[300px] h-[300px] bg-rose-300/10 rounded-full blur-[90px] pointer-events-none z-0"></div>
-            
+            <div
+                class="absolute top-1/4 left-1/3 -translate-x-1/2 w-[350px] h-[350px] bg-pink-300/10 rounded-full blur-[100px] pointer-events-none z-0">
+            </div>
+            <div
+                class="absolute bottom-1/4 right-1/3 translate-x-1/2 w-[300px] h-[300px] bg-rose-300/10 rounded-full blur-[90px] pointer-events-none z-0">
+            </div>
+
             <div class="text-center max-w-[900px] z-10 mb-16 flex flex-col items-center">
-                <img src="{{ asset('assets/maskot/Landingpage.png') }}" alt="Mascot Janji Suci Kita" class="h-28 w-auto mb-6 drop-shadow-md transition-transform duration-500 hover:scale-110" style="animation: float 4s ease-in-out infinite;">
+                <img src="{{ asset('assets/maskot/Landingpage.png') }}" alt="Mascot {{ $brandName }}"
+                    class="h-28 w-auto mb-6 drop-shadow-md transition-transform duration-500 hover:scale-110"
+                    style="animation: float 4s ease-in-out infinite;">
                 <h1
                     class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary text-balanced mb-internal-md">
-                    Perayaan <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-pink-600 to-pink-500">Seumur Hidup</span> Anda
+                    Perayaan <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-pink-600 to-pink-500">Seumur
+                        Hidup</span> Anda
                 </h1>
                 <p class="font-body-md text-body-md text-on-surface-variant max-w-[600px] mx-auto">
                     Platform undangan digital yang menghadirkan pengalaman premium — dari desain elegan, RSVP real-time,
@@ -410,7 +422,8 @@
                         </div>
                         <ul class="space-y-4 mb-10 flex-grow">
                             <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
-                                    class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Undangan
+                                    class="material-symbols-outlined text-pink-500 text-sm">check_circle</span>
+                                Undangan
                                 Digital Standar</li>
                             <li class="flex items-center gap-2 text-body-md text-on-surface-variant"><span
                                     class="material-symbols-outlined text-pink-500 text-sm">check_circle</span> Fitur
@@ -439,19 +452,24 @@
                         </div>
                         <ul class="space-y-4 mb-10 flex-grow">
                             <li class="flex items-center gap-2 text-body-md"><span
-                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Desain Premium &amp;
+                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Desain
+                                Premium &amp;
                                 Eksklusif</li>
                             <li class="flex items-center gap-2 text-body-md"><span
-                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> RSVP &amp; Manajemen
+                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> RSVP
+                                &amp; Manajemen
                                 Tamu</li>
                             <li class="flex items-center gap-2 text-body-md"><span
-                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Galeri Foto &amp;
+                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Galeri
+                                Foto &amp;
                                 Video Tanpa Batas</li>
                             <li class="flex items-center gap-2 text-body-md"><span
-                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Integrasi Musik &amp;
+                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span>
+                                Integrasi Musik &amp;
                                 Maps</li>
                             <li class="flex items-center gap-2 text-body-md"><span
-                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Masa Aktif 1 Tahun
+                                    class="material-symbols-outlined text-pink-400 text-sm">check_circle</span> Masa
+                                Aktif 1 Tahun
                             </li>
                         </ul>
                         <a href="{{ route('register') }}"
@@ -501,7 +519,7 @@
                     <h2 class="font-headline-md text-headline-md text-primary mb-internal-md">Dirancang untuk Momen
                         Berharga</h2>
                     <div class="space-y-6 font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                        <p>{{ $companyName }} adalah platform undangan digital yang menggabungkan estetika modern
+                        <p>{{ $brandName }} adalah platform undangan digital yang menggabungkan estetika modern
                             dengan teknologi terkini. Setiap detail dirancang untuk memastikan momen istimewa Anda
                             terabadikan dengan sempurna.</p>
                         <p>Dari template eksklusif, manajemen tamu real-time, hingga integrasi musik dan peta, semua
@@ -529,7 +547,9 @@
         <section class="py-section-gap bg-surface-container-low" id="details">
             <div class="max-w-container-max mx-auto px-gutter">
                 <div class="text-center mb-16 flex flex-col items-center">
-                    <img src="{{ asset('assets/maskot/fiturunggulan.png') }}" alt="Mascot Fitur Unggulan" class="h-24 w-auto mb-4 drop-shadow-md" style="animation: float 4s ease-in-out infinite; animation-delay: 1s;">
+                    <img src="{{ asset('assets/maskot/fiturunggulan.png') }}" alt="Mascot Fitur Unggulan"
+                        class="h-24 w-auto mb-4 drop-shadow-md"
+                        style="animation: float 4s ease-in-out infinite; animation-delay: 1s;">
                     <h2 class="font-headline-md text-headline-md text-primary mb-4">Fitur Unggulan</h2>
                     <p class="font-body-md text-body-md text-on-surface-variant">Semua yang Anda butuhkan untuk
                         undangan digital yang sempurna.</p>
@@ -543,7 +563,7 @@
                         </div>
                         <h3 class="font-title-lg text-title-lg mb-2">Template Premium</h3>
                         <p class="font-body-md text-on-surface-variant">Pilihan desain eksklusif yang responsif di
-                        semua perangkat. Tampilan elegan yang mencerminkan keunikan cinta Anda.</p>
+                            semua perangkat. Tampilan elegan yang mencerminkan keunikan cinta Anda.</p>
                     </div>
                     <!-- Feature 2 -->
                     <div
@@ -606,14 +626,18 @@
         <!-- Strong CTA Section -->
         <section class="py-32 px-gutter bg-primary text-center relative overflow-hidden">
             <!-- Background pink gradient decorative blur -->
-            <div class="absolute -top-24 -left-24 w-80 h-80 bg-pink-500/15 rounded-full blur-[80px] pointer-events-none"></div>
-            <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-pink-500/15 rounded-full blur-[80px] pointer-events-none"></div>
-            
+            <div
+                class="absolute -top-24 -left-24 w-80 h-80 bg-pink-500/15 rounded-full blur-[80px] pointer-events-none">
+            </div>
+            <div
+                class="absolute -bottom-24 -right-24 w-80 h-80 bg-pink-500/15 rounded-full blur-[80px] pointer-events-none">
+            </div>
+
             <div class="max-w-3xl mx-auto relative z-10">
                 <h2 class="font-display-lg-mobile md:text-headline-md text-on-primary mb-8 leading-tight">Abadikan
                     Momen Indah Anda Selamanya</h2>
                 <p class="font-body-md text-on-primary/80 mb-12">Rancang undangan pernikahan digital yang mewakili
-                    keunikan cinta Anda bersama {{ $companyName }}.</p>
+                    keunikan cinta Anda bersama {{ $brandName }}.</p>
                 <a href="{{ route('register') }}"
                     class="bg-white hover:bg-pink-500 hover:text-white text-primary font-button px-12 py-5 rounded-full text-lg transition-all duration-300 active:scale-95 inline-block shadow-lg shadow-black/20 hover:shadow-pink-500/30">
                     Mulai Buat Undangan
@@ -659,7 +683,7 @@
         <div class="max-w-container-max mx-auto px-gutter grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
             <div class="col-span-1 md:col-span-2">
                 <div class="font-display-lg-mobile text-display-lg-mobile text-primary leading-none mb-6">
-                    {{ $companyName }}
+                    {{ $brandName }}
                 </div>
                 <p class="font-body-md text-on-surface-variant max-w-sm mb-4">Membantu pasangan di seluruh Indonesia
                     menciptakan undangan digital yang elegan, personal, dan tak terlupakan.</p>
@@ -693,8 +717,11 @@
         <div
             class="flex flex-col items-center gap-internal-lg text-center px-gutter pt-8 border-t border-outline-variant/30">
             <div class="flex flex-col items-center mb-2">
-                <img src="{{ asset('assets/maskot/hubungikami.png') }}" alt="Mascot Hubungi Kami" class="h-16 w-auto mb-2 drop-shadow-sm transition-transform duration-300 hover:scale-110" style="animation: float 4s ease-in-out infinite; animation-delay: 2s;">
-                <span class="text-xs uppercase tracking-wider text-on-surface-variant/70 font-medium">Hubungi Kami</span>
+                <img src="{{ asset('assets/maskot/hubungikami.png') }}" alt="Mascot Hubungi Kami"
+                    class="h-16 w-auto mb-2 drop-shadow-sm transition-transform duration-300 hover:scale-110"
+                    style="animation: float 4s ease-in-out infinite; animation-delay: 2s;">
+                <span class="text-xs uppercase tracking-wider text-on-surface-variant/70 font-medium">Hubungi
+                    Kami</span>
             </div>
             <div class="flex flex-wrap justify-center gap-6">
                 <a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200 underline underline-offset-4"
@@ -706,7 +733,7 @@
                     href="#">Email</a>
             </div>
             <div class="font-body-md text-on-surface-variant/60 text-sm">
-                &copy; {{ date('Y') }} {{ $companyName }}. Semua hak dilindungi.
+                &copy; {{ date('Y') }} {{ $brandName }}. Semua hak dilindungi.
             </div>
         </div>
     </footer>

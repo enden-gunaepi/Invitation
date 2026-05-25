@@ -1,18 +1,28 @@
 <!DOCTYPE html>
-<html lang="id"
+<html lang="id" data-layout-ready="false"
     x-data="{
         darkMode: localStorage.getItem('darkMode') === 'true',
         sidebarOpen: false,
         sidebarExpanded: localStorage.getItem('clientSidebarExpanded') !== 'false',
         companyModalOpen: false,
         isMobile: window.innerWidth < 1024,
+        hydrated: false,
         get sidebarWidth() { return this.sidebarExpanded ? '260px' : '72px'; },
         get mainMargin() { return this.isMobile ? '0px' : this.sidebarWidth; }
     }"
     x-init="
         $watch('darkMode', val => localStorage.setItem('darkMode', val));
-        $watch('sidebarExpanded', val => localStorage.setItem('clientSidebarExpanded', val));
-        window.addEventListener('resize', () => { isMobile = window.innerWidth < 1024; });
+        const syncLayoutVars = () => {
+            document.documentElement.style.setProperty('--client-sidebar-width', sidebarExpanded ? '260px' : '72px');
+            document.documentElement.style.setProperty('--client-main-offset', isMobile ? '0px' : (sidebarExpanded ? '260px' : '72px'));
+        };
+        $watch('sidebarExpanded', val => { localStorage.setItem('clientSidebarExpanded', val); syncLayoutVars(); });
+        window.addEventListener('resize', () => { isMobile = window.innerWidth < 1024; syncLayoutVars(); });
+        syncLayoutVars();
+        requestAnimationFrame(() => {
+            hydrated = true;
+            document.documentElement.setAttribute('data-layout-ready', 'true');
+        });
     "
     :class="{ 'dark': darkMode }">
 
@@ -26,6 +36,13 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script>
+        (() => {
+            const doc = document.documentElement;
+            const sidebarExpanded = localStorage.getItem('clientSidebarExpanded') !== 'false';
+            const isMobile = window.innerWidth < 1024;
+            doc.style.setProperty('--client-sidebar-width', sidebarExpanded ? '260px' : '72px');
+            doc.style.setProperty('--client-main-offset', isMobile ? '0px' : (sidebarExpanded ? '260px' : '72px'));
+        })();
         if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         }
@@ -33,6 +50,11 @@
     @stack('head')
     <style>
         [x-cloak] { display: none !important; }
+
+        :root {
+            --client-sidebar-width: 260px;
+            --client-main-offset: 260px;
+        }
 
         /* Geist Font */
         body {
@@ -220,28 +242,29 @@
     <!-- Sidebar -->
     <aside
         class="fixed top-0 left-0 h-full z-50 flex flex-col border-r glass-sidebar overflow-hidden"
-        style="border-right-width: 1px; transition: width 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1), background 0.3s ease;"
+        style="border-right-width: 1px; width: var(--client-sidebar-width); transition: none;"
         :style="{
             width: sidebarExpanded ? '260px' : '72px',
             transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-260px)') : 'translateX(0)',
             background: darkMode ? 'rgba(17,19,24,0.96)' : 'rgba(249,249,249,0.92)',
-            borderColor: 'var(--outline-variant)'
+            borderColor: 'var(--outline-variant)',
+            transition: hydrated ? 'width 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1), background 0.3s ease' : 'none'
         }">
 
         <!-- Brand -->
         <div class="px-6 py-5 flex items-center gap-3 shrink-0 border-b cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors" @click="companyModalOpen = true" style="border-color: var(--outline-variant); min-height: 72px;">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold text-sm overflow-hidden"
-                 style="background: var(--primary); color: var(--on-primary);">
-                @if(auth()->user()->company_logo)
-                    <img src="{{ Storage::url(auth()->user()->company_logo) }}" alt="Logo" class="w-full h-full object-cover">
+            <div class="w-8 h-8 flex items-center justify-center shrink-0 font-bold text-sm overflow-visible"
+                 style="{{ $brandLogoUrl ? 'background: transparent; color: var(--on-surface);' : 'background: var(--primary); color: var(--on-primary); border-radius: 0.75rem;' }}">
+                @if($brandLogoUrl)
+                    <img src="{{ $brandLogoUrl }}" alt="Logo" class="max-w-full max-h-full object-contain">
                 @else
-                    {{ substr(auth()->user()->company_name ?? auth()->user()->name, 0, 1) }}
+                    {{ substr($brandName ?? auth()->user()->name, 0, 1) }}
                 @endif
             </div>
             <div class="whitespace-nowrap overflow-hidden"
                  style="transition: opacity 0.25s ease, width 0.3s cubic-bezier(0.4,0,0.2,1);"
                  :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', width: (!isMobile && !sidebarExpanded) ? '0' : 'auto' }">
-                <div class="text-[15px] font-semibold leading-none" style="color: var(--on-surface); letter-spacing: -0.01em;">{{ auth()->user()->company_name ?? 'Janji Suci Kita' }}</div>
+                <div class="text-[15px] font-semibold leading-none" style="color: var(--on-surface); letter-spacing: -0.01em;">{{ $brandName ?? 'Janji Suci Kita' }}</div>
                 <div class="text-[11px] mt-0.5" style="color: var(--on-surface-variant); letter-spacing: 0.04em; text-transform: uppercase;">Client Portal</div>
             </div>
         </div>
@@ -422,8 +445,8 @@
     <!-- App Wrapper -->
     <div
         class="flex flex-col h-screen overflow-hidden"
-        style="transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);"
-        :style="{ marginLeft: isMobile ? '0px' : (sidebarExpanded ? '260px' : '72px') }">
+        style="margin-left: var(--client-main-offset); transition: none;"
+        :style="{ marginLeft: isMobile ? '0px' : (sidebarExpanded ? '260px' : '72px'), transition: hydrated ? 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)' : 'none' }">
 
         <!-- Topbar -->
         <header class="sticky top-0 z-40 flex items-center justify-between px-5 shrink-0 border-b glass-sidebar"
@@ -676,9 +699,9 @@
 
             <!-- Top Image/Logo Section -->
             <div style="position: relative; width: 100%; height: 200px; background: linear-gradient(135deg, #fdf2f8, #fbcfe8); display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                @if(auth()->user()->company_logo)
+                @if($brandLogoUrl)
                     <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px;">
-                        <img src="{{ Storage::url(auth()->user()->company_logo) }}" alt="Company Cover" style="max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));">
+                        <img src="{{ $brandLogoUrl }}" alt="Company Cover" style="max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));">
                     </div>
                 @else
                     <i class="fas fa-building" style="font-size: 72px; color: rgba(219, 39, 119, 0.3); position: absolute;"></i>
@@ -698,7 +721,7 @@
             <!-- Content Section -->
             <div style="padding: 24px 32px 32px 32px; position: relative; z-index: 20; background: var(--surface-lowest);">
                 <h2 style="font-size: 24px; font-weight: 700; color: var(--text); margin-top: 0; margin-bottom: 16px; font-family: 'Geist', sans-serif; letter-spacing: -0.02em;">
-                    {{ auth()->user()->company_name ?? 'My Company' }}
+                    {{ $brandName ?? 'My Company' }}
                 </h2>
                 
                 <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px;">

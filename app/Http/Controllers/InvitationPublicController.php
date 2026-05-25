@@ -11,7 +11,9 @@ use App\Services\InvitationFunnelService;
 use App\Services\PhoneNormalizerService;
 use App\Services\TemplateRenderService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 
 class InvitationPublicController extends Controller
@@ -85,17 +87,198 @@ class InvitationPublicController extends Controller
         return redirect()->away($invitation->maps_deep_link);
     }
 
+    public function downloadIgStory(string $slug): Response
+    {
+        $invitation = Invitation::query()
+            ->where('slug', $slug)
+            ->active()
+            ->select(['id', 'slug', 'title', 'bride_name', 'groom_name', 'ig_story_photo', 'event_date'])
+            ->firstOrFail();
+
+        abort_if(empty($invitation->ig_story_photo), 404);
+        abort_unless(function_exists('imagecreatefromstring') && function_exists('imagejpeg'), 500, 'GD JPEG support is required.');
+
+        $disk = Storage::disk('public');
+        abort_unless($disk->exists($invitation->ig_story_photo), 404);
+
+        $binary = $disk->get($invitation->ig_story_photo);
+        $source = @imagecreatefromstring($binary);
+        abort_unless($source instanceof \GdImage, 422, 'Template story tidak dapat diproses.');
+
+        $width = imagesx($source);
+        $height = imagesy($source);
+        $canvas = imagecreatetruecolor($width, $height);
+
+        $white = imagecolorallocate($canvas, 255, 255, 255);
+        imagefill($canvas, 0, 0, $white);
+        imagecopy($canvas, $source, 0, 0, 0, 0, $width, $height);
+
+        $this->renderIgStoryOverlay($canvas, $invitation, $width, $height);
+
+        ob_start();
+        imageinterlace($canvas, true);
+        imagejpeg($canvas, null, 94);
+        $jpgBinary = (string) ob_get_clean();
+
+        imagedestroy($source);
+        imagedestroy($canvas);
+
+        $baseName = trim(
+            collect([$invitation->bride_name, $invitation->groom_name])
+                ->filter()
+                ->implode(' & ')
+        );
+        $baseName = $baseName !== '' ? $baseName : $invitation->title;
+        $safeName = str($baseName)->slug('-')->toString() ?: 'instagram-story';
+        $fileName = $safeName . '-story-hd.jpg';
+
+        return response($jpgBinary, 200, [
+            'Content-Type' => 'image/jpeg',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Content-Length' => (string) strlen($jpgBinary),
+            'Cache-Control' => 'public, max-age=300',
+        ]);
+    }
+
     private function preparePublicInvitation(Invitation $invitation): Invitation
     {
         if (!empty($invitation->music_url)) {
-            $invitation->music_signed_url = URL::temporarySignedRoute(
-                'media.music',
-                now()->addHours(12),
-                ['invitation' => $invitation->id]
-            );
+            $invitation->music_signed_url = app()->environment('local')
+                ? Storage::url($invitation->music_url)
+                : URL::temporarySignedRoute(
+                    'media.music',
+                    now()->addHours(12),
+                    ['invitation' => $invitation->id]
+                );
         }
 
         return $invitation;
+    }
+
+    private function renderIgStoryOverlay(\GdImage $canvas, Invitation $invitation, int $width, int $height): void
+    {
+        imagealphablending($canvas, true);
+        imagesavealpha($canvas, true);
+
+        $name = trim(
+            collect([$invitation->bride_name, $invitation->groom_name])
+                ->filter()
+                ->implode(' & ')
+        );
+        $name = $name !== '' ? $name : $invitation->title;
+        $eventDate = $invitation->event_date
+            ? \Carbon\Carbon::parse($invitation->event_date)->format('d  .  m  .  Y')
+            : now()->format('d  .  m  .  Y');
+
+        $white = imagecolorallocate($canvas, 255, 255, 255);
+        $softWhite = imagecolorallocatealpha($canvas, 255, 255, 255, 22);
+        $mutedWhite = imagecolorallocatealpha($canvas, 255, 255, 255, 38);
+        $goldGlow = imagecolorallocatealpha($canvas, 198, 167, 106, 96);
+        $deepOverlay = imagecolorallocatealpha($canvas, 11, 18, 28, 82);
+        $cardFill = imagecolorallocatealpha($canvas, 247, 243, 235, 24);
+        $cardBorder = imagecolorallocatealpha($canvas, 255, 255, 255, 42);
+
+        imagefilledrectangle($canvas, 0, (int) ($height * 0.62), $width, $height, $deepOverlay);
+        imagefilledellipse($canvas, (int) ($width / 2), (int) ($height * 0.78), (int) ($width * 0.8), (int) ($height * 0.34), $goldGlow);
+
+        $boxX = (int) round($width * 0.055);
+        $boxY = (int) round($height * 0.73);
+        $boxW = $width - ($boxX * 2);
+        $boxH = (int) round($height * 0.19);
+        $this->drawRoundedRectangle($canvas, $boxX, $boxY, $boxW, $boxH, 24, $cardFill, $cardBorder);
+
+        $scriptFont = $this->pickFont([
+            'C:\\Windows\\Fonts\\segoesc.ttf',
+            'C:\\Windows\\Fonts\\Gabriola.ttf',
+            'C:\\Windows\\Fonts\\georgiai.ttf',
+        ]);
+        $bodyFont = $this->pickFont([
+            'C:\\Windows\\Fonts\\arial.ttf',
+            'C:\\Windows\\Fonts\\georgia.ttf',
+        ]);
+
+        $centerX = (int) ($width / 2);
+        $nameY = (int) round($height * 0.665);
+        $dateY = (int) round($height * 0.706);
+        $wishY = (int) round($height * 0.736);
+        $footerY = $height - 34;
+
+        $this->drawCenteredText($canvas, $name, $centerX, $nameY, 34, $white, $scriptFont, 5);
+        $this->drawCenteredText($canvas, $eventDate, $centerX, $dateY, 14, $softWhite, $bodyFont, 3);
+        $this->drawCenteredText($canvas, 'Wish', $centerX, $wishY, 16, $softWhite, $bodyFont, 4);
+
+        $this->drawFooterLink($canvas, $width, $footerY, 'janjisucikita.com', $bodyFont, $mutedWhite, $softWhite);
+    }
+
+    private function drawRoundedRectangle(\GdImage $image, int $x, int $y, int $width, int $height, int $radius, int $fillColor, int $borderColor): void
+    {
+        imagefilledrectangle($image, $x + $radius, $y, $x + $width - $radius, $y + $height, $fillColor);
+        imagefilledrectangle($image, $x, $y + $radius, $x + $width, $y + $height - $radius, $fillColor);
+        imagefilledellipse($image, $x + $radius, $y + $radius, $radius * 2, $radius * 2, $fillColor);
+        imagefilledellipse($image, $x + $width - $radius, $y + $radius, $radius * 2, $radius * 2, $fillColor);
+        imagefilledellipse($image, $x + $radius, $y + $height - $radius, $radius * 2, $radius * 2, $fillColor);
+        imagefilledellipse($image, $x + $width - $radius, $y + $height - $radius, $radius * 2, $radius * 2, $fillColor);
+
+        imageline($image, $x + $radius, $y, $x + $width - $radius, $y, $borderColor);
+        imageline($image, $x + $radius, $y + $height, $x + $width - $radius, $y + $height, $borderColor);
+        imageline($image, $x, $y + $radius, $x, $y + $height - $radius, $borderColor);
+        imageline($image, $x + $width, $y + $radius, $x + $width, $y + $height - $radius, $borderColor);
+        imagearc($image, $x + $radius, $y + $radius, $radius * 2, $radius * 2, 180, 270, $borderColor);
+        imagearc($image, $x + $width - $radius, $y + $radius, $radius * 2, $radius * 2, 270, 360, $borderColor);
+        imagearc($image, $x + $radius, $y + $height - $radius, $radius * 2, $radius * 2, 90, 180, $borderColor);
+        imagearc($image, $x + $width - $radius, $y + $height - $radius, $radius * 2, $radius * 2, 0, 90, $borderColor);
+    }
+
+    private function drawCenteredText(\GdImage $image, string $text, int $centerX, int $baselineY, int $size, int $color, ?string $fontPath, int $fallbackFont = 3): void
+    {
+        if ($fontPath && function_exists('imagettfbbox') && function_exists('imagettftext')) {
+            $box = imagettfbbox($size, 0, $fontPath, $text);
+            if (is_array($box)) {
+                $textWidth = (int) abs($box[2] - $box[0]);
+                $x = (int) round($centerX - ($textWidth / 2));
+                imagettftext($image, $size, 0, $x, $baselineY, $color, $fontPath, $text);
+                return;
+            }
+        }
+
+        $fontWidth = imagefontwidth($fallbackFont);
+        $x = (int) round($centerX - ((strlen($text) * $fontWidth) / 2));
+        imagestring($image, $fallbackFont, $x, max(0, $baselineY - imagefontheight($fallbackFont)), $text, $color);
+    }
+
+    private function drawFooterLink(\GdImage $image, int $width, int $baselineY, string $label, ?string $fontPath, int $textColor, int $iconColor): void
+    {
+        $fontSize = 14;
+        $iconX = (int) round($width * 0.08);
+        $iconY = $baselineY - 11;
+        $iconSize = 16;
+
+        imageellipse($image, $iconX, $iconY, $iconSize, $iconSize, $iconColor);
+        imageline($image, $iconX - 6, $iconY, $iconX + 6, $iconY, $iconColor);
+        imageline($image, $iconX, $iconY - 6, $iconX, $iconY + 6, $iconColor);
+        imagearc($image, $iconX, $iconY, 8, 16, 90, 270, $iconColor);
+        imagearc($image, $iconX, $iconY, 8, 16, 270, 90, $iconColor);
+        imagearc($image, $iconX, $iconY, 16, 8, 0, 180, $iconColor);
+        imagearc($image, $iconX, $iconY, 16, 8, 180, 360, $iconColor);
+
+        $textX = $iconX + 16;
+        if ($fontPath && function_exists('imagettftext')) {
+            imagettftext($image, $fontSize, 0, $textX, $baselineY, $textColor, $fontPath, $label);
+            return;
+        }
+
+        imagestring($image, 4, $textX, max(0, $baselineY - imagefontheight(4)), $label, $textColor);
+    }
+
+    private function pickFont(array $paths): ?string
+    {
+        foreach ($paths as $path) {
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+
+        return null;
     }
 
     public function rsvp(Request $request, $slug)

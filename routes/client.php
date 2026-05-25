@@ -66,6 +66,7 @@ Route::delete('/invitations/{invitation}/photos/{photo}', [PhotoController::clas
 // IG Story Template
 Route::post('/invitations/{invitation}/ig-story', [InvitationController::class, 'uploadIgStory'])->name('invitations.ig-story.upload');
 Route::delete('/invitations/{invitation}/ig-story', [InvitationController::class, 'destroyIgStory'])->name('invitations.ig-story.destroy');
+Route::post('/invitations/{invitation}/love-stories', [InvitationController::class, 'updateLoveStories'])->name('invitations.love-stories.update');
 
 // Collaborators
 Route::post('/invitations/{invitation}/collaborators', [InvitationCollaboratorController::class, 'store'])->name('invitations.collaborators.store');

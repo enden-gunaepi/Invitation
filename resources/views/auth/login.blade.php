@@ -141,12 +141,6 @@
     </style>
 </head>
 <body>
-    @php
-        $mainAdmin = \App\Models\User::where('role', 'admin')->first();
-        $companyLogo = $mainAdmin && $mainAdmin->company_logo ? Storage::url($mainAdmin->company_logo) : null;
-        $companyName = $mainAdmin && $mainAdmin->company_name ? $mainAdmin->company_name : config('app.name');
-    @endphp
-
     <div class="split-layout">
         <!-- Visual & Animation Side -->
         <div class="visual-side">
@@ -162,12 +156,12 @@
         <div class="form-side">
             <div class="auth-container">
                 <a href="/" class="auth-logo">
-                    @if($companyLogo)
-                        <img src="{{ $companyLogo }}" alt="Logo" style="height: 28px; border-radius: 4px;">
+                    @if($brandLogoUrl)
+                        <img src="{{ $brandLogoUrl }}" alt="Logo" style="height: 28px; border-radius: 4px;">
                     @else
                         <i class="fas fa-layer-group"></i>
                     @endif
-                    {{ $companyName }}
+                    {{ $brandName }}
                 </a>
 
                 <div class="auth-header">

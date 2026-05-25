@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\InvitationMediaCleanupService;
 
 class Invitation extends Model
 {
@@ -255,74 +255,21 @@ class Invitation extends Model
 
     private function deleteOwnedMediaFiles(): void
     {
-        $this->deleteImagePathIfUnused($this->cover_photo);
-        $this->deleteImagePathIfUnused($this->ig_story_photo);
-        $this->deleteImagePathIfUnused($this->groom_photo);
-        $this->deleteImagePathIfUnused($this->bride_photo);
+        $cleanup = app(InvitationMediaCleanupService::class);
+
+        $cleanup->deleteImagePathIfUnused($this->cover_photo, $this->id);
+        $cleanup->deleteImagePathIfUnused($this->ig_story_photo, $this->id);
+        $cleanup->deleteImagePathIfUnused($this->groom_photo, $this->id);
+        $cleanup->deleteImagePathIfUnused($this->bride_photo, $this->id);
 
         foreach ($this->photos()->pluck('file_path') as $galleryPath) {
-            $this->deleteImagePathIfUnused($galleryPath);
+            $cleanup->deleteImagePathIfUnused($galleryPath, $this->id);
         }
 
         foreach ($this->loveStories()->pluck('photo_path') as $storyPath) {
-            $this->deleteImagePathIfUnused($storyPath);
+            $cleanup->deleteImagePathIfUnused($storyPath, $this->id);
         }
 
-        $this->deleteMusicPathIfUnused($this->music_url);
-    }
-
-    private function deleteImagePathIfUnused(?string $path): void
-    {
-        if (empty($path)) {
-            return;
-        }
-
-        $isUsedByOtherInvitation = self::query()
-            ->where('id', '!=', $this->id)
-            ->where(function ($q) use ($path) {
-                $q->where('cover_photo', $path)
-                    ->orWhere('ig_story_photo', $path)
-                    ->orWhere('groom_photo', $path)
-                    ->orWhere('bride_photo', $path);
-            })
-            ->exists();
-
-        $isUsedByOtherGallery = InvitationPhoto::query()
-            ->where('file_path', $path)
-            ->where('invitation_id', '!=', $this->id)
-            ->exists();
-
-        $isUsedByOtherLoveStory = LoveStory::query()
-            ->where('photo_path', $path)
-            ->where('invitation_id', '!=', $this->id)
-            ->exists();
-
-        if ($isUsedByOtherInvitation || $isUsedByOtherGallery || $isUsedByOtherLoveStory) {
-            return;
-        }
-
-        Storage::disk('public')->delete(ltrim($path, '/'));
-    }
-
-    private function deleteMusicPathIfUnused(?string $path): void
-    {
-        if (empty($path)) {
-            return;
-        }
-
-        $isSharedMusicTrack = MusicTrack::query()
-            ->where('file_path', $path)
-            ->exists();
-
-        $isUsedByOtherInvitation = self::query()
-            ->where('id', '!=', $this->id)
-            ->where('music_url', $path)
-            ->exists();
-
-        if ($isSharedMusicTrack || $isUsedByOtherInvitation) {
-            return;
-        }
-
-        Storage::disk('public')->delete(ltrim($path, '/'));
+        $cleanup->deleteMusicPathIfUnused($this->music_url, $this->id);
     }
 }

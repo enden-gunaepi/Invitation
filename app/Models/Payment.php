@@ -8,6 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Payment extends Model
 {
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_PAID = 'paid';
+    public const STATUS_EXPIRED = 'expired';
+    public const STATUS_FAILED = 'failed';
+    public const STATUS_CANCELLED = 'cancelled';
+
     protected $fillable = [
         'user_id', 'invitation_id', 'client_package_subscription_id', 'package_id', 'amount', 'payment_method',
         'payment_gateway', 'payment_channel', 'payment_status', 'transaction_id',
@@ -64,27 +71,38 @@ class Payment extends Model
 
     public function isPending(): bool
     {
-        return $this->payment_status === 'pending';
+        return $this->payment_status === self::STATUS_PENDING;
     }
 
     public function isPaid(): bool
     {
-        return $this->payment_status === 'paid';
+        return $this->payment_status === self::STATUS_PAID;
+    }
+
+    public function isFinal(): bool
+    {
+        return in_array($this->payment_status, [
+            self::STATUS_PAID,
+            self::STATUS_EXPIRED,
+            self::STATUS_FAILED,
+            self::STATUS_CANCELLED,
+        ], true);
     }
 
     public function isExpired(): bool
     {
-        return $this->expired_at && $this->expired_at->isPast() && $this->isPending();
+        return $this->payment_status === self::STATUS_EXPIRED
+            || ($this->expired_at && $this->expired_at->isPast() && $this->isPending());
     }
 
     public function markAsPaid(?string $transactionId = null): void
     {
-        if (!in_array($this->payment_status, ['pending', 'failed'], true)) {
+        if ($this->isFinal() && !$this->isPending()) {
             return;
         }
 
         $this->update([
-            'payment_status' => 'paid',
+            'payment_status' => self::STATUS_PAID,
             'paid_at' => now(),
             'transaction_id' => $transactionId ?? $this->transaction_id,
         ]);
@@ -92,10 +110,28 @@ class Payment extends Model
 
     public function markAsFailed(): void
     {
-        if ($this->payment_status !== 'pending') {
+        if ($this->isFinal()) {
             return;
         }
 
-        $this->update(['payment_status' => 'failed']);
+        $this->update(['payment_status' => self::STATUS_FAILED]);
+    }
+
+    public function markAsExpired(): void
+    {
+        if ($this->isFinal()) {
+            return;
+        }
+
+        $this->update(['payment_status' => self::STATUS_EXPIRED]);
+    }
+
+    public function markAsCancelled(): void
+    {
+        if ($this->isFinal()) {
+            return;
+        }
+
+        $this->update(['payment_status' => self::STATUS_CANCELLED]);
     }
 }

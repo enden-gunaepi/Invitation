@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BillingReconciliation;
 use App\Models\Payment;
+use App\Services\Payments\PaymentStatusSyncService;
 use App\Services\ClientPackageService;
 use Illuminate\Http\Request;
 
@@ -11,6 +13,7 @@ class PaymentController extends Controller
 {
     public function __construct(
         private readonly ClientPackageService $clientPackageService,
+        private readonly PaymentStatusSyncService $paymentStatusSyncService,
     ) {
     }
 
@@ -40,10 +43,14 @@ class PaymentController extends Controller
             'paid' => Payment::where('payment_status', 'paid')->count(),
             'pending' => Payment::where('payment_status', 'pending')->count(),
             'failed' => Payment::where('payment_status', 'failed')->count(),
+            'expired' => Payment::where('payment_status', 'expired')->count(),
             'revenue' => Payment::where('payment_status', 'paid')->sum('amount'),
         ];
 
-        return view('admin.payments.index', compact('payments', 'stats'));
+        $recentReceipts = $this->paymentStatusSyncService->recentReceipts(12);
+        $latestReconciliation = BillingReconciliation::query()->latest('run_date')->first();
+
+        return view('admin.payments.index', compact('payments', 'stats', 'recentReceipts', 'latestReconciliation'));
     }
 
     public function show(Payment $payment)
@@ -59,5 +66,15 @@ class PaymentController extends Controller
             $this->clientPackageService->activateFromPayment($payment->fresh(['clientPackageSubscription.package']));
         }
         return back()->with('success', 'Pembayaran ditandai sebagai lunas.');
+    }
+
+    public function reconcile()
+    {
+        $result = $this->paymentStatusSyncService->syncPendingPayments();
+
+        return back()->with(
+            'success',
+            "Reconciliation selesai. Paid tersinkron {$result['synced_paid']}, expired {$result['marked_expired']}, error {$result['errors']}."
+        );
     }
 }

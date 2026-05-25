@@ -9,8 +9,7 @@ use App\Models\CouponRedemption;
 use App\Models\Payment;
 use App\Models\PaymentCallbackReceipt;
 use App\Services\ClientPackageService;
-use App\Services\XenditService;
-use App\Services\TripayService;
+use App\Services\Payments\PaymentGatewayRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -18,6 +17,7 @@ class PaymentCallbackController extends Controller
 {
     public function __construct(
         private readonly ClientPackageService $clientPackageService,
+        private readonly PaymentGatewayRegistry $gatewayRegistry,
     ) {
     }
 
@@ -28,16 +28,15 @@ class PaymentCallbackController extends Controller
     {
         Log::info('Xendit callback received', $request->all());
 
-        $service = new XenditService();
-        $callbackToken = $request->header('x-callback-token');
-
-        if (!$service->verifyCallback($callbackToken)) {
+        $gateway = $this->gatewayRegistry->forCode('xendit');
+        if (!$gateway->verifyWebhook($request->getContent(), $request->headers->all(), $request->all())) {
             Log::warning('Xendit callback: invalid token');
             return response()->json(['message' => 'Invalid callback token'], 403);
         }
 
-        $externalId = $request->input('external_id');
-        $status = $request->input('status');
+        $parsed = $gateway->parseWebhook($request->all());
+        $externalId = $parsed['order_id'];
+        $status = $parsed['status'];
         $idempotencyKey = $this->buildXenditIdempotencyKey($request);
 
         $receipt = PaymentCallbackReceipt::firstOrCreate(
@@ -74,7 +73,7 @@ class PaymentCallbackController extends Controller
             if ($payment->isPaid()) {
                 return response()->json(['message' => 'Already paid']);
             }
-            $paidAmount = (int) ($request->input('paid_amount') ?? $request->input('amount') ?? 0);
+            $paidAmount = (int) $parsed['amount'];
             if ($paidAmount > 0 && $paidAmount < (int) $payment->amount) {
                 Log::warning('Xendit callback: paid amount mismatch', [
                     'payment_id' => $payment->id,
@@ -83,12 +82,12 @@ class PaymentCallbackController extends Controller
                 ]);
                 return response()->json(['message' => 'Amount mismatch'], 422);
             }
-            $payment->markAsPaid($request->input('id'));
+            $payment->markAsPaid($parsed['gateway_reference']);
             $this->finalizePostPaid($payment);
             $this->activateSubscriptionIfNeeded($payment);
             $this->markInvitationAsPaidAwaitingReview($payment);
         } elseif ($status === 'EXPIRED') {
-            $payment->markAsFailed();
+            $payment->markAsExpired();
         }
 
         $receipt->update(['processed_at' => now()]);
@@ -103,16 +102,15 @@ class PaymentCallbackController extends Controller
     {
         Log::info('Tripay callback received', $request->all());
 
-        $service = new TripayService();
-        $rawBody = $request->getContent();
-
-        if (!$service->verifyCallback($rawBody)) {
+        $gateway = $this->gatewayRegistry->forCode('tripay');
+        if (!$gateway->verifyWebhook($request->getContent(), $request->headers->all(), $request->all())) {
             Log::warning('Tripay callback: invalid signature');
             return response()->json(['message' => 'Invalid signature'], 403);
         }
 
-        $merchantRef = $request->input('merchant_ref');
-        $status = $request->input('status');
+        $parsed = $gateway->parseWebhook($request->all());
+        $merchantRef = $parsed['order_id'];
+        $status = $parsed['status'];
         $idempotencyKey = $this->buildTripayIdempotencyKey($request);
 
         $receipt = PaymentCallbackReceipt::firstOrCreate(
@@ -149,7 +147,7 @@ class PaymentCallbackController extends Controller
             if ($payment->isPaid()) {
                 return response()->json(['message' => 'Already paid']);
             }
-            $paidAmount = (int) ($request->input('total_amount') ?? $request->input('amount') ?? 0);
+            $paidAmount = (int) $parsed['amount'];
             if ($paidAmount > 0 && $paidAmount < (int) $payment->amount) {
                 Log::warning('Tripay callback: paid amount mismatch', [
                     'payment_id' => $payment->id,
@@ -158,12 +156,12 @@ class PaymentCallbackController extends Controller
                 ]);
                 return response()->json(['message' => 'Amount mismatch'], 422);
             }
-            $payment->markAsPaid($request->input('reference'));
+            $payment->markAsPaid($parsed['gateway_reference']);
             $this->finalizePostPaid($payment);
             $this->activateSubscriptionIfNeeded($payment);
             $this->markInvitationAsPaidAwaitingReview($payment);
         } elseif (in_array($status, ['EXPIRED', 'FAILED'])) {
-            $payment->markAsFailed();
+            $status === 'EXPIRED' ? $payment->markAsExpired() : $payment->markAsFailed();
         }
 
         $receipt->update(['processed_at' => now()]);

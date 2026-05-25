@@ -51,3 +51,4 @@ Schedule::command('reminders:process-whatsapp')->everyTenMinutes();
 Schedule::command('system:heartbeat')->everyFiveMinutes();
 Schedule::command('billing:reconcile-daily')->dailyAt('00:30');
 Schedule::command('invitations:purge-expired')->dailyAt('01:00');
+Schedule::command('invitations:cleanup-media')->dailyAt('01:30');

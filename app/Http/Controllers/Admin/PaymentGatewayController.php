@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
-use App\Services\XenditService;
 use App\Services\TripayService;
+use App\Services\XenditService;
 use Illuminate\Http\Request;
 
 class PaymentGatewayController extends Controller
@@ -22,6 +22,8 @@ class PaymentGatewayController extends Controller
             'tripay_merchant_code' => Setting::get('tripay_merchant_code', ''),
             'tripay_mode' => Setting::get('tripay_mode', 'sandbox'),
             'tripay_enabled' => Setting::get('tripay_enabled', '0'),
+            'payment_primary_gateway' => Setting::get('payment_primary_gateway', 'xendit'),
+            'payment_expiry_seconds' => Setting::get('payment_expiry_seconds', '86400'),
             'payment_dev_mode' => Setting::get('payment_dev_mode', '0'),
             'payment_allow_qris' => Setting::get('payment_allow_qris', '1'),
             'payment_allow_ewallet' => Setting::get('payment_allow_ewallet', '1'),
@@ -37,9 +39,33 @@ class PaymentGatewayController extends Controller
 
     public function update(Request $request)
     {
+        $validated = $request->validate([
+            'payment_primary_gateway' => 'required|in:xendit,tripay',
+            'payment_expiry_seconds' => 'required|integer|min:1800|max:172800',
+            'payment_discount_type' => 'nullable|in:percent,fixed',
+            'payment_discount_value' => 'nullable|numeric|min:0',
+            'payment_ppn_percent' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        if ($request->input('xendit_enabled') === '1') {
+            if (blank($request->input('xendit_secret_key'))) {
+                return back()->withInput()->with('error', 'Xendit tidak bisa diaktifkan tanpa Secret API Key.');
+            }
+            if ($request->input('xendit_mode') === 'production' && blank($request->input('xendit_callback_token'))) {
+                return back()->withInput()->with('error', 'Xendit production membutuhkan callback verification token.');
+            }
+        }
+
+        if ($request->input('tripay_enabled') === '1') {
+            if (blank($request->input('tripay_api_key')) || blank($request->input('tripay_private_key')) || blank($request->input('tripay_merchant_code'))) {
+                return back()->withInput()->with('error', 'Tripay tidak bisa diaktifkan tanpa API Key, Private Key, dan Merchant Code.');
+            }
+        }
+
         $keys = [
             'xendit_secret_key', 'xendit_callback_token', 'xendit_mode', 'xendit_enabled',
             'tripay_api_key', 'tripay_private_key', 'tripay_merchant_code', 'tripay_mode', 'tripay_enabled',
+            'payment_primary_gateway', 'payment_expiry_seconds',
             'payment_dev_mode',
             'payment_allow_qris', 'payment_allow_ewallet',
             'payment_discount_enabled', 'payment_discount_type', 'payment_discount_value',

@@ -106,6 +106,91 @@
             </div>
         </div>
 
+        {{-- Love Story Management --}}
+        <div class="card overflow-hidden">
+            <div class="px-6 py-4 border-b" style="border-color: var(--border);">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-base"><i class="fas fa-heart mr-2" style="color: var(--accent);"></i>Love Story</h3>
+                    <span class="badge badge-default">{{ $invitation->loveStories->count() }} Story</span>
+                </div>
+                <p class="text-xs mt-1" style="color: var(--text-secondary);">Kelola timeline love story untuk section template undangan.</p>
+            </div>
+            <div class="p-4">
+                <form
+                    method="POST"
+                    action="{{ route('client.invitations.love-stories.update', $invitation) }}"
+                    enctype="multipart/form-data"
+                    x-data="{ stories: {{ json_encode($invitation->loveStories->count() > 0 ? $invitation->loveStories->map(fn($s) => ['year' => $s->year, 'title' => $s->title, 'description' => $s->description, 'photo_path' => $s->photo_path])->values() : [['year' => '', 'title' => '', 'description' => '', 'photo_path' => '']]) }} }"
+                    class="space-y-3"
+                >
+                    @csrf
+
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-semibold uppercase tracking-wider" style="color: var(--text-secondary);">Daftar Story</p>
+                    </div>
+
+                    <template x-for="(story, idx) in stories" :key="idx">
+                        <div class="p-4 rounded-lg space-y-3" style="background: var(--bg-tertiary); border: 1px solid var(--border);">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold" style="color: var(--accent);" x-text="'Story ' + (idx + 1)"></span>
+                                <button type="button" @click="stories.splice(idx, 1)" x-show="stories.length > 1" class="text-xs" style="color: var(--danger);">
+                                    <i class="fas fa-trash mr-1"></i>Hapus
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="form-label text-xs">Tahun</label>
+                                    <input type="text" :name="'love_stories[' + idx + '][year]'" x-model="story.year" class="form-input text-sm">
+                                </div>
+                                <div class="sm:col-span-3">
+                                    <label class="form-label text-xs">Judul</label>
+                                    <input type="text" :name="'love_stories[' + idx + '][title]'" x-model="story.title" class="form-input text-sm">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label text-xs">Cerita</label>
+                                <textarea :name="'love_stories[' + idx + '][description]'" x-model="story.description" class="form-input text-sm" rows="3"></textarea>
+                            </div>
+
+                            <input type="hidden" :name="'love_stories[' + idx + '][photo_path]'" x-model="story.photo_path">
+
+                            <template x-if="story.photo_path">
+                                <div class="flex items-center gap-3 rounded-lg px-3 py-2" style="background: rgba(255,255,255,0.5); border: 1px solid var(--border);">
+                                    <img
+                                        :src="'/storage/' + story.photo_path"
+                                        alt="Foto story saat ini"
+                                        class="rounded-md object-cover shrink-0"
+                                        style="width: 72px; height: 72px; border: 1px solid var(--border);"
+                                    >
+                                    <div class="min-w-0">
+                                        <p class="text-[11px] font-semibold uppercase tracking-wider" style="color: var(--accent);">Preview Foto</p>
+                                        <span class="text-xs block" style="color: var(--text-secondary);">Foto story saat ini</span>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <div>
+                                <label class="form-label text-xs">Ganti / Upload Foto Story</label>
+                                <input type="file" :name="'love_story_photos[' + idx + ']'" class="form-input text-xs" accept="image/*">
+                            </div>
+                        </div>
+                    </template>
+
+                    <div class="flex items-center justify-between gap-3 pt-1">
+                        <button type="button" @click="stories.push({ year: '', title: '', description: '', photo_path: '' })" class="btn btn-secondary btn-sm text-xs">
+                            <i class="fas fa-plus mr-1"></i>Tambah Story
+                        </button>
+
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save mr-1"></i>Simpan Love Story
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         {{-- IG Story Template Upload --}}
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color: var(--border);">
@@ -315,7 +400,22 @@
 
         {{-- Stats --}}
         <div class="card p-6">
-            <h3 class="font-bold text-base mb-4">Statistik</h3>
+            <div class="flex items-start justify-between gap-3 mb-4">
+                <div>
+                    <h3 class="font-bold text-base">Statistik</h3>
+                    <p id="analytics-status" class="text-[11px] mt-1" style="color: var(--text-secondary);">
+                        {{ $invitation->isActive() ? 'Auto refresh setiap 60 detik saat tab aktif.' : 'Refresh manual tersedia. Auto refresh dimatikan untuk undangan nonaktif.' }}
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    id="refresh-analytics-btn"
+                    class="btn btn-secondary btn-sm text-xs"
+                    style="white-space: nowrap;"
+                >
+                    <i class="fas fa-rotate-right mr-1"></i> Refresh
+                </button>
+            </div>
             <div class="space-y-3">
                 <div class="flex items-center justify-between text-sm">
                     <span style="color: var(--text-secondary);"><i class="fas fa-eye mr-2 w-4"></i>Kunjungan</span>
@@ -562,10 +662,36 @@
     (function () {
         const url = "{{ route('client.invitations.analytics', $invitation) }}";
         const catEl = document.getElementById('an-categories');
-        async function refreshAnalytics() {
+        const refreshButton = document.getElementById('refresh-analytics-btn');
+        const statusEl = document.getElementById('analytics-status');
+        const isInvitationActive = @json($invitation->isActive());
+        const pollingIntervalMs = 60000;
+        let pollingId = null;
+        let isRefreshing = false;
+
+        function setStatus(message) {
+            if (statusEl) {
+                statusEl.textContent = message;
+            }
+        }
+
+        async function refreshAnalytics(source = 'auto') {
+            if (isRefreshing) {
+                return;
+            }
+
+            isRefreshing = true;
+            if (refreshButton) {
+                refreshButton.disabled = true;
+            }
+            setStatus(source === 'manual' ? 'Memuat statistik terbaru...' : 'Menyegarkan statistik...');
+
             try {
                 const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                if (!res.ok) return;
+                if (!res.ok) {
+                    setStatus('Gagal memuat statistik. Coba refresh manual.');
+                    return;
+                }
                 const data = await res.json();
                 document.getElementById('an-attending').textContent = data.attending ?? 0;
                 document.getElementById('an-maybe').textContent = data.maybe ?? 0;
@@ -595,12 +721,63 @@
                 byId('fn-map-rate', conv.map_rate ?? 0);
                 byId('fn-rsvp-rate', conv.rsvp_rate ?? 0);
                 byId('fn-checkin-rate', conv.checkin_rate ?? 0);
+
+                const generatedAt = data.generated_at ? new Date(data.generated_at.replace(' ', 'T')) : null;
+                if (generatedAt && !Number.isNaN(generatedAt.getTime())) {
+                    setStatus(`Terakhir diperbarui ${generatedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}.`);
+                } else {
+                    setStatus('Statistik berhasil diperbarui.');
+                }
             } catch (e) {
-                // Ignore polling errors
+                setStatus('Gagal memuat statistik. Coba refresh manual.');
+            } finally {
+                isRefreshing = false;
+                if (refreshButton) {
+                    refreshButton.disabled = false;
+                }
             }
         }
-        refreshAnalytics();
-        setInterval(refreshAnalytics, 15000);
+
+        function stopPolling() {
+            if (pollingId) {
+                clearInterval(pollingId);
+                pollingId = null;
+            }
+        }
+
+        function startPolling() {
+            if (!isInvitationActive || document.hidden || pollingId) {
+                return;
+            }
+
+            pollingId = setInterval(() => {
+                if (!document.hidden) {
+                    refreshAnalytics();
+                }
+            }, pollingIntervalMs);
+        }
+
+        if (refreshButton) {
+            refreshButton.addEventListener('click', () => refreshAnalytics('manual'));
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopPolling();
+                if (isInvitationActive) {
+                    setStatus('Auto refresh dijeda saat tab tidak aktif.');
+                }
+                return;
+            }
+
+            if (isInvitationActive) {
+                refreshAnalytics();
+                startPolling();
+            }
+        });
+
+        refreshAnalytics('initial');
+        startPolling();
     })();
 </script>
 @endpush

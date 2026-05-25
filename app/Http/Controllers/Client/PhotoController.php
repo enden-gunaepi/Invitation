@@ -7,6 +7,7 @@ use App\Models\Invitation;
 use App\Models\InvitationPhoto;
 use App\Services\InvitationAccessService;
 use App\Services\ImageCompressionService;
+use App\Services\InvitationMediaCleanupService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -15,6 +16,7 @@ class PhotoController extends Controller
     public function __construct(
         private readonly ImageCompressionService $imageCompressionService,
         private readonly InvitationAccessService $invitationAccessService,
+        private readonly InvitationMediaCleanupService $mediaCleanupService,
     )
     {
     }
@@ -104,12 +106,7 @@ class PhotoController extends Controller
             abort(403);
         }
 
-        // Delete file from storage
-        $filePath = storage_path('app/public/' . $photo->file_path);
-        if (file_exists($filePath)) {
-            unlink($filePath);
-        }
-
+        $this->mediaCleanupService->deleteImagePathIfUnused($photo->file_path, $invitation->id);
         $photo->delete();
 
         return redirect()->back()
