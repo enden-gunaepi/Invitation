@@ -10,19 +10,28 @@
         <div class="card p-3">
             <div class="flex flex-row lg:flex-col gap-1">
                 <a href="{{ route('admin.integration.telegram') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all {{ request()->routeIs('admin.integration.telegram*') ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'hover:bg-slate-100 dark:hover:bg-slate-800' }}" style="color: {{ request()->routeIs('admin.integration.telegram*') ? 'var(--accent)' : 'var(--text-secondary)' }}">
+                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all {{ request()->routeIs('admin.integration.telegram*') ? 'bg-blue-500/10' : 'hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                    style="color: {{ request()->routeIs('admin.integration.telegram*') ? 'var(--accent)' : 'var(--text-secondary)' }};">
                     <i class="fab fa-telegram text-lg w-5 text-center"></i>
                     <span>Telegram</span>
                 </a>
                 <a href="{{ route('admin.integration.whatsapp') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all {{ request()->routeIs('admin.integration.whatsapp*') ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'hover:bg-slate-100 dark:hover:bg-slate-800' }}" style="color: {{ request()->routeIs('admin.integration.whatsapp*') ? 'var(--success)' : 'var(--text-secondary)' }}">
+                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all {{ request()->routeIs('admin.integration.whatsapp*') ? 'bg-green-500/10' : 'hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                    style="color: {{ request()->routeIs('admin.integration.whatsapp*') ? 'var(--success)' : 'var(--text-secondary)' }};">
                     <i class="fab fa-whatsapp text-lg w-5 text-center"></i>
                     <span>WhatsApp</span>
                 </a>
                 <a href="{{ route('admin.integration.email') }}"
-                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all {{ request()->routeIs('admin.integration.email*') ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'hover:bg-slate-100 dark:hover:bg-slate-800' }}" style="color: {{ request()->routeIs('admin.integration.email*') ? '#8b5cf6' : 'var(--text-secondary)' }}">
+                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all {{ request()->routeIs('admin.integration.email*') ? 'bg-purple-500/10' : 'hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                    style="color: {{ request()->routeIs('admin.integration.email*') ? '#8b5cf6' : 'var(--text-secondary)' }};">
                     <i class="fas fa-envelope text-lg w-5 text-center"></i>
                     <span>Email</span>
+                </a>
+                <a href="{{ route('admin.integration.payment-gateway') }}"
+                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all {{ request()->routeIs('admin.integration.payment-gateway*') ? 'bg-amber-500/10' : 'hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                    style="color: {{ request()->routeIs('admin.integration.payment-gateway*') ? '#d97706' : 'var(--text-secondary)' }};">
+                    <i class="fas fa-credit-card text-lg w-5 text-center"></i>
+                    <span>Payment</span>
                 </a>
             </div>
         </div>
@@ -60,8 +69,11 @@
                     </div>
                     <div>
                         <label class="form-label">Chat ID</label>
-                        <input type="text" name="telegram_chat_id" class="form-input" value="{{ $config['telegram_chat_id'] }}" placeholder="-1001234567890">
-                        <p class="text-[11px] mt-1" style="color: var(--text-tertiary);">Chat ID group/channel/user tujuan. Gunakan <a href="https://t.me/userinfobot" target="_blank" class="underline" style="color: var(--accent);">@userinfobot</a> untuk mengetahui ID</p>
+                        <input type="text" name="telegram_chat_id" class="form-input" value="{{ $config['telegram_chat_id'] }}" placeholder="-1001234567890, -1009876543210, 123456789">
+                        <p class="text-[11px] mt-1" style="color: var(--text-tertiary);">
+                            Bisa diisi beberapa Chat ID, pisahkan dengan <strong>koma</strong>. Notifikasi akan dikirim ke semua ID. Command hanya diterima dari ID yang terdaftar.<br>
+                            Gunakan <a href="https://t.me/userinfobot" target="_blank" class="underline" style="color: var(--accent);">@userinfobot</a> atau ketik <code>/chatid</code> via bot untuk mengetahui ID.
+                        </p>
                     </div>
                 </div>
 
@@ -153,30 +165,24 @@
             <div class="mt-6 pt-4" style="border-top: 1px solid var(--border);">
                 <h4 class="font-bold text-sm mb-3">Command yang Tersedia</h4>
                 <div class="space-y-2">
-                    <div class="flex items-start gap-3 p-2.5 rounded-lg" style="background: var(--hover-bg);">
-                        <code class="text-xs font-bold shrink-0 px-2 py-0.5 rounded" style="background: var(--accent-bg); color: var(--accent);">/topup</code>
+                    @foreach([
+                        ['/topup',   'var(--accent)',   '/topup email@example.com 50000',  'Tambah saldo user'],
+                        ['/saldo',   'var(--accent)',   '/saldo email@example.com',        'Cek saldo user'],
+                        ['/user',    'var(--accent)',   '/user email@example.com',         'Info lengkap user (nama, role, undangan, pembayaran)'],
+                        ['/stats',   '#d97706',        '/stats',                           'Statistik sistem: users, undangan, revenue hari ini & bulan ini'],
+                        ['/chatid',  'var(--accent)',   '/chatid',                         'Info detail chat & pengirim (untuk mengetahui Chat ID)'],
+                        ['/help',    'var(--accent)',   '/help',                           'Tampilkan daftar command'],
+                    ] as [$cmd, $color, $example, $desc])
+                    <div class="p-2.5 rounded-lg" style="background: var(--hover-bg);">
+                        <div class="flex items-center gap-2 mb-1">
+                            <code class="text-xs font-bold px-2 py-0.5 rounded" style="background: var(--accent-bg); color: {{ $color }};">{{ $cmd }}</code>
+                        </div>
                         <div class="text-xs" style="color: var(--text-secondary);">
-                            <code>/topup email@example.com 50000</code> — Topup saldo user
+                            <code>{{ $example }}</code><br>
+                            <span class="mt-0.5 block" style="color: var(--text-tertiary);">{{ $desc }}</span>
                         </div>
                     </div>
-                    <div class="flex items-start gap-3 p-2.5 rounded-lg" style="background: var(--hover-bg);">
-                        <code class="text-xs font-bold shrink-0 px-2 py-0.5 rounded" style="background: var(--accent-bg); color: var(--accent);">/saldo</code>
-                        <div class="text-xs" style="color: var(--text-secondary);">
-                            <code>/saldo email@example.com</code> — Cek saldo user
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 p-2.5 rounded-lg" style="background: var(--hover-bg);">
-                        <code class="text-xs font-bold shrink-0 px-2 py-0.5 rounded" style="background: var(--accent-bg); color: var(--accent);">/chatid</code>
-                        <div class="text-xs" style="color: var(--text-secondary);">
-                            <code>/chatid</code> — Info detail chat (ID, type, title, pengirim)
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 p-2.5 rounded-lg" style="background: var(--hover-bg);">
-                        <code class="text-xs font-bold shrink-0 px-2 py-0.5 rounded" style="background: var(--accent-bg); color: var(--accent);">/help</code>
-                        <div class="text-xs" style="color: var(--text-secondary);">
-                            Tampilkan daftar command
-                        </div>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>

@@ -54,10 +54,10 @@ Route::patch('/affiliate/payouts/{payout}/mark-paid', [AffiliateController::clas
 Route::get('/invitations/{invitation}/checkin', [GuestOpsController::class, 'checkin'])->name('invitations.checkin');
 Route::post('/invitations/{invitation}/checkin', [GuestOpsController::class, 'checkinScan'])->name('invitations.checkin.scan');
 
-// Payment Gateway Config
-Route::get('/payment-gateway', [PaymentGatewayController::class, 'index'])->name('payment-gateway.index');
-Route::put('/payment-gateway', [PaymentGatewayController::class, 'update'])->name('payment-gateway.update');
-Route::post('/payment-gateway/test', [PaymentGatewayController::class, 'testConnection'])->name('payment-gateway.test');
+// Payment Gateway Config (lama → redirect ke halaman integrasi)
+Route::get('/payment-gateway', fn() => redirect()->route('admin.integration.payment-gateway'))->name('payment-gateway.index');
+Route::put('/payment-gateway', fn() => redirect()->route('admin.integration.payment-gateway'))->name('payment-gateway.update');
+Route::post('/payment-gateway/test', fn() => redirect()->route('admin.integration.payment-gateway'))->name('payment-gateway.test');
 
 // Settings
 Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
@@ -76,6 +76,9 @@ Route::put('/integration/whatsapp', [IntegrationController::class, 'whatsappUpda
 Route::post('/integration/whatsapp/test', [IntegrationController::class, 'whatsappTestConnection'])->name('integration.whatsapp.test');
 Route::post('/integration/whatsapp/test-message', [IntegrationController::class, 'whatsappTestMessage'])->name('integration.whatsapp.test-message');
 Route::get('/integration/email', [IntegrationController::class, 'email'])->name('integration.email');
+Route::get('/integration/payment-gateway', [IntegrationController::class, 'paymentGateway'])->name('integration.payment-gateway');
+Route::put('/integration/payment-gateway', [IntegrationController::class, 'paymentGatewayUpdate'])->name('integration.payment-gateway.update');
+Route::post('/integration/payment-gateway/test', [IntegrationController::class, 'paymentGatewayTest'])->name('integration.payment-gateway.test');
 
 // Reliability Monitoring
 Route::get('/system/reliability', [ReliabilityController::class, 'index'])->name('system.reliability');

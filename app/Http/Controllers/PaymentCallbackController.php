@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\PaymentCallbackReceipt;
 use App\Services\ClientPackageService;
 use App\Services\Payments\PaymentGatewayRegistry;
+use App\Services\TelegramNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -86,8 +87,10 @@ class PaymentCallbackController extends Controller
             $this->finalizePostPaid($payment);
             $this->activateSubscriptionIfNeeded($payment);
             $this->markInvitationAsPaidAwaitingReview($payment);
+            (new TelegramNotificationService())->paymentPaid($payment->load('user'));
         } elseif ($status === 'EXPIRED') {
             $payment->markAsExpired();
+            (new TelegramNotificationService())->paymentExpired($payment->load('user'));
         }
 
         $receipt->update(['processed_at' => now()]);
@@ -160,8 +163,15 @@ class PaymentCallbackController extends Controller
             $this->finalizePostPaid($payment);
             $this->activateSubscriptionIfNeeded($payment);
             $this->markInvitationAsPaidAwaitingReview($payment);
+            (new TelegramNotificationService())->paymentPaid($payment->load('user'));
         } elseif (in_array($status, ['EXPIRED', 'FAILED'])) {
-            $status === 'EXPIRED' ? $payment->markAsExpired() : $payment->markAsFailed();
+            if ($status === 'EXPIRED') {
+                $payment->markAsExpired();
+                (new TelegramNotificationService())->paymentExpired($payment->load('user'));
+            } else {
+                $payment->markAsFailed();
+                (new TelegramNotificationService())->paymentFailed($payment->load('user'));
+            }
         }
 
         $receipt->update(['processed_at' => now()]);
@@ -266,6 +276,10 @@ class PaymentCallbackController extends Controller
         }
 
         $payment->update(['affiliate_commission_amount' => $commission]);
+
+        (new TelegramNotificationService())->affiliateCommissionCreated(
+            $affiliateCommission->load('referrer', 'referred')
+        );
     }
 
     private function buildXenditIdempotencyKey(Request $request): string

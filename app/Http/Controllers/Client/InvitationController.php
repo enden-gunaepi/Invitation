@@ -222,6 +222,8 @@ class InvitationController extends Controller
             }
         }
 
+        (new \App\Services\TelegramNotificationService())->invitationCreated($invitation->load('user', 'package'));
+
         return redirect()->route('client.invitations.index')
             ->with('success', 'Undangan berhasil dibuat!');
     }

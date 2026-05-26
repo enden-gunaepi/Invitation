@@ -9,18 +9,30 @@ use Illuminate\Support\Facades\Log;
 class TelegramService
 {
     protected string $botToken;
-    protected string $chatId;
+    protected string $chatIds;
     protected string $baseUrl = 'https://api.telegram.org';
 
     public function __construct()
     {
-        $this->botToken = Setting::get('telegram_bot_token', '');
-        $this->chatId = Setting::get('telegram_chat_id', '');
+        $this->botToken = (string) Setting::get('telegram_bot_token', '');
+        $this->chatIds  = (string) Setting::get('telegram_chat_id', '');
     }
 
     public function isConfigured(): bool
     {
-        return !empty($this->botToken) && !empty($this->chatId);
+        return !empty($this->botToken) && !empty($this->chatIds);
+    }
+
+    /** Semua chat ID yang dikonfigurasi (pisah koma). */
+    public function getAllChatIds(): array
+    {
+        return array_filter(array_map('trim', explode(',', $this->chatIds)));
+    }
+
+    /** Chat ID pertama — dipakai sebagai default untuk broadcast/notifikasi. */
+    public function primaryChatId(): string
+    {
+        return $this->getAllChatIds()[0] ?? '';
     }
 
     public function sendMessage(string $text, ?string $chatId = null): array
@@ -29,15 +41,15 @@ class TelegramService
             return ['success' => false, 'error' => 'Bot token belum dikonfigurasi.'];
         }
 
-        $targetChatId = $chatId ?? $this->chatId;
+        $targetChatId = $chatId ?? $this->primaryChatId();
         if (empty($targetChatId)) {
             return ['success' => false, 'error' => 'Chat ID belum dikonfigurasi.'];
         }
 
         try {
             $response = Http::timeout(10)->post("{$this->baseUrl}/bot{$this->botToken}/sendMessage", [
-                'chat_id' => $targetChatId,
-                'text' => $text,
+                'chat_id'    => $targetChatId,
+                'text'       => $text,
                 'parse_mode' => 'HTML',
             ]);
 
@@ -50,6 +62,27 @@ class TelegramService
             Log::error('Telegram sendMessage failed', ['error' => $e->getMessage()]);
             return ['success' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    /** Broadcast ke semua chat ID yang dikonfigurasi. */
+    public function broadcast(string $text): array
+    {
+        $ids = $this->getAllChatIds();
+        if (empty($ids)) {
+            return ['success' => false, 'error' => 'Chat ID belum dikonfigurasi.'];
+        }
+
+        $errors = [];
+        foreach ($ids as $id) {
+            $result = $this->sendMessage($text, $id);
+            if (!$result['success']) {
+                $errors[] = "ID {$id}: " . ($result['error'] ?? 'error');
+            }
+        }
+
+        return empty($errors)
+            ? ['success' => true]
+            : ['success' => false, 'error' => implode('; ', $errors)];
     }
 
     public function setWebhook(string $url): array

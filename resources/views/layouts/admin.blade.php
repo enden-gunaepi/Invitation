@@ -402,28 +402,17 @@
                      style="color: var(--on-surface-variant); transition: opacity 0.25s ease;"
                      :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '0.5' }">Sistem</div>
 
+                @php $isIntegration = request()->routeIs('admin.integration.*'); @endphp
                 <a href="{{ route('admin.integration.telegram') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.integration.*') ? 'nav-item-active' : '' }}"
-                    style="{{ !request()->routeIs('admin.integration.*') ? 'color: var(--on-surface-variant);' : '' }}"
-                    onmouseover="{{ !request()->routeIs('admin.integration.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
-                    onmouseout="{{ !request()->routeIs('admin.integration.*') ? 'this.style.background=\"\"' : '' }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ $isIntegration ? 'nav-item-active' : '' }}"
+                    style="{{ !$isIntegration ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !$isIntegration ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !$isIntegration ? 'this.style.background=\"\"' : '' }}"
                     title="Integrasi">
                     <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">hub</span>
                     <span class="text-sm whitespace-nowrap overflow-hidden"
                           style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
                           :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Integrasi</span>
-                </a>
-
-                <a href="{{ route('admin.payment-gateway.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.payment-gateway.*') ? 'nav-item-active' : '' }}"
-                    style="{{ !request()->routeIs('admin.payment-gateway.*') ? 'color: var(--on-surface-variant);' : '' }}"
-                    onmouseover="{{ !request()->routeIs('admin.payment-gateway.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
-                    onmouseout="{{ !request()->routeIs('admin.payment-gateway.*') ? 'this.style.background=\"\"' : '' }}"
-                    title="Payment Gateway">
-                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">cable</span>
-                    <span class="text-sm whitespace-nowrap overflow-hidden"
-                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
-                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Payment Gateway</span>
                 </a>
 
                 <a href="{{ route('admin.system.reliability') }}"

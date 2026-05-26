@@ -14,9 +14,9 @@ class WeaGateService
 
     public function __construct()
     {
-        $this->token = Setting::get('whatsapp_weagate_token', '');
-        $this->domainApi = rtrim(Setting::get('whatsapp_weagate_domain_api', 'https://mywifi.weagate.com'), '/');
-        $this->instan = Setting::get('whatsapp_weagate_instan', '1') === '1';
+        $this->token = (string) (Setting::get('whatsapp_weagate_token', '') ?? '');
+        $this->domainApi = rtrim((string) (Setting::get('whatsapp_weagate_domain_api', 'https://mywifi.weagate.com') ?? 'https://mywifi.weagate.com'), '/');
+        $this->instan = (Setting::get('whatsapp_weagate_instan', '1') ?? '1') === '1';
     }
 
     public function isConfigured(): bool
