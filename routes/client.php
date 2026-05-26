@@ -12,6 +12,7 @@ use App\Http\Controllers\Client\TemplateCatalogController;
 use App\Http\Controllers\Client\InvitationCollaboratorController;
 use App\Http\Controllers\Client\InvitationBackupController;
 use App\Http\Controllers\Client\ClientPackageController;
+use App\Http\Controllers\Client\BalanceController;
 use App\Http\Controllers\Client\Planner\OnboardingController as PlannerOnboardingController;
 use App\Http\Controllers\Client\Planner\DashboardController as PlannerDashboardController;
 use App\Http\Controllers\Client\Planner\ChecklistController as PlannerChecklistController;
@@ -82,6 +83,13 @@ Route::get('/checkout/{invitation}', [CheckoutController::class, 'show'])->name(
 Route::post('/checkout/{invitation}/process', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::get('/checkout/{invitation}/status', [CheckoutController::class, 'status'])->name('checkout.status');
 Route::post('/checkout/{invitation}/simulate-paid', [CheckoutController::class, 'simulatePaid'])->name('checkout.simulate-paid');
+
+// Balance & Top-up
+Route::get('/balance', [BalanceController::class, 'index'])->name('balance.index');
+Route::get('/balance/topup', [BalanceController::class, 'topupForm'])->name('balance.topup');
+Route::post('/balance/topup', [BalanceController::class, 'topupProcess'])->name('balance.topup.process');
+Route::get('/balance/topup/status', [BalanceController::class, 'topupStatus'])->name('balance.topup.status');
+Route::post('/balance/topup/{payment}/simulate-paid', [BalanceController::class, 'simulatePaid'])->name('balance.topup.simulate-paid');
 
 // Affiliate
 Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');

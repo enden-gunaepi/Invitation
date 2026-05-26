@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AffiliateController;
 use App\Http\Controllers\Admin\GuestOpsController;
 use App\Http\Controllers\Admin\ReliabilityController;
 use App\Http\Controllers\Admin\MediaMaintenanceController;
+use App\Http\Controllers\Admin\BalanceController;
 use Illuminate\Support\Facades\Route;
 
 // Admin Dashboard
@@ -21,6 +22,12 @@ Route::post('/seeders/initial', [DashboardController::class, 'runInitialSeeders'
 
 // User Management
 Route::resource('users', UserController::class);
+
+// Balance Management
+Route::get('/balance', [BalanceController::class, 'index'])->name('balance.index');
+Route::get('/balance/transactions', [BalanceController::class, 'transactions'])->name('balance.transactions');
+Route::get('/balance/{user}', [BalanceController::class, 'show'])->name('balance.show');
+Route::post('/balance/{user}/adjust', [BalanceController::class, 'adjust'])->name('balance.adjust');
 
 // Invitation Management
 Route::get('/invitations', [InvitationController::class, 'index'])->name('invitations.index');

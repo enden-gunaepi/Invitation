@@ -15,9 +15,13 @@ class Payment extends Model
     public const STATUS_FAILED = 'failed';
     public const STATUS_CANCELLED = 'cancelled';
 
+    public const PURPOSE_TOPUP = 'topup';
+    public const PURPOSE_INVITATION = 'invitation';
+    public const PURPOSE_SUBSCRIPTION = 'subscription';
+
     protected $fillable = [
         'user_id', 'invitation_id', 'client_package_subscription_id', 'package_id', 'amount', 'payment_method',
-        'payment_gateway', 'payment_channel', 'payment_status', 'transaction_id',
+        'payment_gateway', 'payment_channel', 'payment_status', 'payment_purpose', 'transaction_id',
         'gateway_reference', 'callback_token', 'paid_at', 'expired_at',
         'payment_url', 'gateway_response', 'base_amount', 'discount_amount',
         'tax_amount', 'total_amount', 'invoice_number', 'invoice_due_at',

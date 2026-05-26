@@ -221,14 +221,14 @@
 
     <!-- Toasts -->
     @if (session('success'))
-        <div class="fixed top-6 right-6 z-[9999] border px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] flex items-center gap-3 animate-slide-up"
+        <div data-toast class="fixed top-6 right-6 z-[9999] border px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] flex items-center gap-3 animate-slide-up transition-all duration-500"
              style="background: var(--surface-lowest); border-color: rgba(21,128,61,0.2); color: #15803d;">
             <span class="material-symbols-outlined" style="font-size:18px;">check_circle</span>
             <span class="text-sm font-medium">{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="fixed top-6 right-6 z-[9999] border px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] flex items-center gap-3 animate-slide-up"
+        <div data-toast class="fixed top-6 right-6 z-[9999] border px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] flex items-center gap-3 animate-slide-up transition-all duration-500"
              style="background: var(--surface-lowest); border-color: rgba(186,26,26,0.2); color: #ba1a1a;">
             <span class="material-symbols-outlined" style="font-size:18px;">error</span>
             <span class="text-sm font-medium">{{ session('error') }}</span>
@@ -252,7 +252,7 @@
         }">
 
         <!-- Brand -->
-        <div class="px-6 py-5 flex items-center gap-3 shrink-0 border-b cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors" @click="companyModalOpen = true" style="border-color: var(--outline-variant); min-height: 72px;">
+        <a href="{{ route('client.dashboard') }}" class="px-6 py-5 flex items-center gap-3 shrink-0 border-b cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors" style="border-color: var(--outline-variant); min-height: 72px;">
             <div class="w-8 h-8 flex items-center justify-center shrink-0 font-bold text-sm overflow-visible"
                  style="{{ $brandLogoUrl ? 'background: transparent; color: var(--on-surface);' : 'background: var(--primary); color: var(--on-primary); border-radius: 0.75rem;' }}">
                 @if($brandLogoUrl)
@@ -267,7 +267,7 @@
                 <div class="text-[15px] font-semibold leading-none" style="color: var(--on-surface); letter-spacing: -0.01em;">{{ $brandName ?? 'Janji Suci Kita' }}</div>
                 <div class="text-[11px] mt-0.5" style="color: var(--on-surface-variant); letter-spacing: 0.04em; text-transform: uppercase;">Client Portal</div>
             </div>
-        </div>
+        </a>
 
         <!-- Navigation Links -->
         <nav class="flex-1 overflow-y-auto scrollbar-hide px-3 py-4 flex flex-col gap-5">
@@ -288,6 +288,23 @@
                     <span class="text-sm whitespace-nowrap overflow-hidden"
                           style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
                           :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Dashboard</span>
+                </a>
+
+                <a href="{{ route('client.balance.index') }}"
+                    class="flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.balance.*') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('client.balance.*') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('client.balance.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('client.balance.*') ? 'this.style.background=\"\"' : '' }}"
+                    title="Dompet & Saldo">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">account_balance_wallet</span>
+                        <span class="text-sm whitespace-nowrap overflow-hidden"
+                              style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                              :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Dompet & Saldo</span>
+                    </div>
+                    <span x-show="!isMobile && sidebarExpanded" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-pink-100 dark:bg-pink-900/30 text-[var(--accent)] whitespace-nowrap">
+                        Rp {{ number_format(auth()->user()->balance, 0, ',', '.') }}
+                    </span>
                 </a>
             </div>
 
@@ -741,5 +758,14 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('[data-toast]').forEach((toast) => {
+            window.setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+                window.setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        });
+    </script>
 </body>
 </html>

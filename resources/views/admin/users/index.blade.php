@@ -36,6 +36,7 @@
                     <th>User</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Saldo</th>
                     <th>Status</th>
                     <th>Bergabung</th>
                     <th class="text-right">Aksi</th>
@@ -59,6 +60,15 @@
                                 class="badge {{ $user->role === 'admin' ? 'bg-indigo-500/15 text-indigo-400' : 'bg-emerald-500/15 text-emerald-400' }}">
                                 {{ ucfirst($user->role) }}
                             </span>
+                        </td>
+                        <td>
+                            @if($user->role === 'client')
+                                <a href="{{ route('admin.balance.show', $user) }}" class="font-semibold text-slate-800 dark:text-slate-200 hover:text-pink-500">
+                                    Rp{{ number_format($user->balance, 0, ',', '.') }}
+                                </a>
+                            @else
+                                <span class="text-slate-400">-</span>
+                            @endif
                         </td>
                         <td>
                             @if ($user->is_active)

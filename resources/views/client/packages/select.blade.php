@@ -4,39 +4,78 @@
 @section('page-subtitle', 'Aktifkan paket dulu sebelum membuat undangan')
 
 @section('content')
-<div class="max-w-6xl mx-auto space-y-6">
+<div class="w-full max-w-[88rem] mx-auto space-y-6">
+    <!-- User Balance Info Banner -->
+    <div class="card p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-r from-pink-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-[var(--accent)]">
+        <div>
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block">Saldo Dompet Anda</span>
+            <span class="text-xl font-bold text-gray-800 dark:text-gray-200">Rp {{ number_format(auth()->user()->balance, 0, ',', '.') }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('client.balance.topup') }}" class="btn btn-primary px-5 py-2.5 rounded-xl font-bold">
+                <span class="material-symbols-outlined mr-1" style="font-size: 16px;">add_circle</span>
+                Top Up Saldo
+            </a>
+            <a href="{{ route('client.balance.index') }}" class="btn btn-secondary px-5 py-2.5 rounded-xl">
+                <span class="material-symbols-outlined mr-1" style="font-size: 16px;">history</span>
+                Riwayat
+            </a>
+        </div>
+    </div>
+
     @if($activeSubscription && $activeSubscription->package)
-    <div class="card p-4" style="border-color: rgba(52,199,89,.35);">
-        <p class="text-sm font-semibold" style="color: var(--success);">
-            Paket aktif saat ini: {{ $activeSubscription->package->name }}
+    <div class="card p-4" style="border-color: rgba(52,199,89,.35); background: rgba(52,199,89,0.02);">
+        <p class="text-sm font-semibold text-green-700 dark:text-green-400">
+            <i class="fas fa-check-circle mr-1"></i> Paket aktif saat ini: <strong>{{ $activeSubscription->package->name }}</strong>
         </p>
-        <p class="text-xs mt-1" style="color: var(--text-secondary);">
+        <p class="text-xs mt-1 text-gray-500">
             Berlaku sampai {{ $activeSubscription->expires_at?->format('d M Y H:i') ?? 'tanpa batas waktu' }}.
         </p>
-        <a href="{{ route('client.invitations.create') }}" class="btn btn-primary mt-3 inline-block text-sm">Buat Undangan</a>
+        <a href="{{ route('client.invitations.create') }}" class="btn btn-primary mt-3 px-5 py-2 rounded-xl text-sm font-bold">Buat Undangan</a>
     </div>
     @endif
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         @foreach($packages as $package)
-        <div class="card p-5">
-            <h3 class="font-bold text-base">{{ $package->name }}</h3>
-            <p class="text-xs mt-1" style="color: var(--text-secondary);">{{ $package->description }}</p>
-            <p class="text-xl font-bold mt-4" style="color: var(--accent);">Rp{{ number_format((float) $package->price, 0, ',', '.') }}</p>
-            <p class="text-xs mt-1" style="color: var(--text-secondary);">
-                {{ ($package->billing_type ?? 'one_time') === 'subscription' ? 'Subscription ' . strtoupper($package->billing_cycle ?? 'monthly') : 'One-time' }}
-            </p>
+        <div class="card p-6 flex flex-col justify-between hover:shadow-md transition duration-300">
+            <div>
+                <div class="flex items-start justify-between">
+                    <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">{{ $package->name }}</h3>
+                    @if(auth()->user()->balance >= $package->price)
+                        <span class="badge badge-success text-[10px] px-2 py-0.5">Saldo Cukup</span>
+                    @else
+                        <span class="badge badge-default text-[10px] px-2 py-0.5" style="background: rgba(186, 26, 26, 0.05); color: #ba1a1a;">Saldo Kurang</span>
+                    @endif
+                </div>
+                <p class="text-xs mt-1 text-gray-500 leading-relaxed">{{ $package->description }}</p>
+                
+                <div class="my-4">
+                    <span class="text-2xl font-extrabold text-[var(--accent)]">Rp {{ number_format((float) $package->price, 0, ',', '.') }}</span>
+                    <span class="text-xs text-gray-400 block mt-0.5">
+                        {{ ($package->billing_type ?? 'one_time') === 'subscription' ? 'Langganan ' . strtoupper($package->billing_cycle ?? 'monthly') : 'Sekali Bayar' }}
+                    </span>
+                </div>
 
-            <div class="mt-4 text-xs space-y-1" style="color: var(--text-secondary);">
-                <p>Max Undangan: <strong>{{ $package->max_invitations ?? 1 }}</strong></p>
-                <p>Max Tamu/Undangan: <strong>{{ $package->max_guests ?? 100 }}</strong></p>
-                <p>Max Foto/Undangan: <strong>{{ $package->max_photos ?? 10 }}</strong></p>
+                <div class="mt-4 pt-4 border-t border-[var(--outline-variant)] text-xs space-y-2 text-gray-600 dark:text-gray-400">
+                    <div class="flex justify-between">
+                        <span>Max Undangan</span>
+                        <span class="font-semibold text-gray-800 dark:text-gray-200">{{ $package->max_invitations ?? 1 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Max Tamu/Undangan</span>
+                        <span class="font-semibold text-gray-800 dark:text-gray-200">{{ $package->max_guests ?? 100 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Max Foto/Undangan</span>
+                        <span class="font-semibold text-gray-800 dark:text-gray-200">{{ $package->max_photos ?? 10 }}</span>
+                    </div>
+                </div>
             </div>
 
-            <form method="POST" action="{{ route('client.packages.select.store') }}" class="mt-4">
+            <form method="POST" action="{{ route('client.packages.select.store') }}" class="mt-6">
                 @csrf
                 <input type="hidden" name="package_id" value="{{ $package->id }}">
-                <button type="submit" class="btn btn-primary w-full text-sm">
+                <button type="submit" class="btn btn-primary w-full py-2.5 text-center font-bold text-sm rounded-xl justify-center">
                     Pilih Paket Ini
                 </button>
             </form>
@@ -45,4 +84,3 @@
     </div>
 </div>
 @endsection
-

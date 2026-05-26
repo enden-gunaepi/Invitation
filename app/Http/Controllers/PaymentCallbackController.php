@@ -84,9 +84,13 @@ class PaymentCallbackController extends Controller
                 return response()->json(['message' => 'Amount mismatch'], 422);
             }
             $payment->markAsPaid($parsed['gateway_reference']);
-            $this->finalizePostPaid($payment);
-            $this->activateSubscriptionIfNeeded($payment);
-            $this->markInvitationAsPaidAwaitingReview($payment);
+            if ($payment->payment_purpose === Payment::PURPOSE_TOPUP) {
+                app(\App\Services\BalanceService::class)->topUp($payment->user, (float) $payment->amount, $payment);
+            } else {
+                $this->finalizePostPaid($payment);
+                $this->activateSubscriptionIfNeeded($payment);
+                $this->markInvitationAsPaidAwaitingReview($payment);
+            }
             (new TelegramNotificationService())->paymentPaid($payment->load('user'));
         } elseif ($status === 'EXPIRED') {
             $payment->markAsExpired();
@@ -160,9 +164,13 @@ class PaymentCallbackController extends Controller
                 return response()->json(['message' => 'Amount mismatch'], 422);
             }
             $payment->markAsPaid($parsed['gateway_reference']);
-            $this->finalizePostPaid($payment);
-            $this->activateSubscriptionIfNeeded($payment);
-            $this->markInvitationAsPaidAwaitingReview($payment);
+            if ($payment->payment_purpose === Payment::PURPOSE_TOPUP) {
+                app(\App\Services\BalanceService::class)->topUp($payment->user, (float) $payment->amount, $payment);
+            } else {
+                $this->finalizePostPaid($payment);
+                $this->activateSubscriptionIfNeeded($payment);
+                $this->markInvitationAsPaidAwaitingReview($payment);
+            }
             (new TelegramNotificationService())->paymentPaid($payment->load('user'));
         } elseif (in_array($status, ['EXPIRED', 'FAILED'])) {
             if ($status === 'EXPIRED') {

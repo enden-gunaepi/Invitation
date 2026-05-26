@@ -267,6 +267,95 @@ class PaymentOrchestratorService
         ];
     }
 
+    public function createTopUpPayment(User $user, int $amount, array $validated): array
+    {
+        $gatewayCode = (string) $validated['gateway'];
+        $channel = (string) $validated['channel'];
+        $paymentType = (string) $validated['payment_type'];
+        $gateway = $this->gatewayRegistry->forCode($gatewayCode);
+        $expirySeconds = max(1800, (int) Setting::get('payment_expiry_seconds', 86400));
+
+        $timestamp = time();
+        $orderId = 'TOPUP-' . $user->id . '-' . $timestamp;
+        
+        $date = now()->format('Ymd');
+        $seq = str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        $invoiceNumber = "TOPUP-{$date}-{$user->id}-{$seq}";
+
+        $payment = Payment::create([
+            'user_id' => $user->id,
+            'invitation_id' => null,
+            'client_package_subscription_id' => null,
+            'package_id' => null,
+            'amount' => $amount,
+            'base_amount' => $amount,
+            'discount_amount' => 0,
+            'tax_amount' => 0,
+            'total_amount' => $amount,
+            'invoice_number' => $invoiceNumber,
+            'invoice_due_at' => now()->addSeconds($expirySeconds),
+            'coupon_code' => null,
+            'coupon_discount_amount' => 0,
+            'referral_code' => null,
+            'payment_gateway' => $gatewayCode,
+            'payment_method' => $paymentType,
+            'payment_channel' => $channel,
+            'payment_purpose' => Payment::PURPOSE_TOPUP,
+            'payment_status' => 'pending',
+            'callback_token' => Str::random(32),
+            'transaction_id' => $orderId,
+        ]);
+
+        if ($this->shouldUseMockPayment($gatewayCode)) {
+            $result = [
+                'success' => true,
+                'data' => [
+                    'mock' => true,
+                    'gateway' => $gatewayCode,
+                    'channel' => $channel,
+                    'message' => 'Simulasi topup saldo mode development',
+                ],
+                'payment_url' => route('client.balance.topup.status', ['payment_id' => $payment->id]),
+                'gateway_reference' => 'MOCK-TOPUP-' . strtoupper($gatewayCode) . '-' . time(),
+                'expired_at' => now()->addSeconds($expirySeconds),
+            ];
+        } else {
+            $result = $gateway->createPaymentIntent([
+                'order_id' => $orderId,
+                'amount' => $amount,
+                'channel' => $channel,
+                'description' => 'Top Up Saldo - ' . $user->name,
+                'email' => $user->email,
+                'name' => $user->name,
+                'phone' => $user->phone ?? '',
+                'success_url' => route('client.balance.topup.status', ['payment_id' => $payment->id]),
+                'failure_url' => route('client.balance.topup.status', ['payment_id' => $payment->id]),
+                'callback_url' => route("callback.{$gatewayCode}"),
+                'return_url' => route('client.balance.topup.status', ['payment_id' => $payment->id]),
+                'item_name' => 'Top Up Saldo',
+                'expiry_seconds' => $expirySeconds,
+            ]);
+        }
+
+        if (!$result['success']) {
+            $payment->markAsFailed();
+            return ['success' => false, 'error' => 'Gagal membuat pembayaran top-up: ' . ($result['error'] ?? 'Unknown error')];
+        }
+
+        $payment->update([
+            'payment_url' => $result['payment_url'] ?? null,
+            'gateway_reference' => $result['gateway_reference'] ?? null,
+            'expired_at' => $result['expired_at'] ?? now()->addSeconds($expirySeconds),
+            'gateway_response' => $result['data'] ?? null,
+        ]);
+
+        return [
+            'success' => true,
+            'payment' => $payment->fresh(),
+            'redirect_url' => $result['payment_url'] ?? null,
+        ];
+    }
+
     public function shouldUseMockPayment(string $gatewayCode): bool
     {
         if ($this->isDevModeEnabled()) {

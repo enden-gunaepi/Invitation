@@ -70,6 +70,29 @@
     }
 </style>
 
+<!-- Balance Dashboard Banner -->
+<div class="card p-6 mb-8 bg-gradient-to-r from-pink-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-[var(--accent)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-pink-100 dark:bg-pink-900/30 text-[var(--accent)] flex items-center justify-center text-xl shrink-0">
+            <span class="material-symbols-outlined">account_balance_wallet</span>
+        </div>
+        <div>
+            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block">Saldo Dompet Anda</span>
+            <span class="text-2xl font-bold text-gray-800 dark:text-gray-200">Rp {{ number_format(auth()->user()->balance, 0, ',', '.') }}</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        <a href="{{ route('client.balance.topup') }}" class="btn btn-primary px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5">
+            <span class="material-symbols-outlined" style="font-size: 16px;">add_circle</span>
+            Top Up Saldo
+        </a>
+        <a href="{{ route('client.balance.index') }}" class="btn btn-secondary px-5 py-2.5 rounded-xl text-xs flex items-center gap-1.5">
+            <span class="material-symbols-outlined" style="font-size: 16px;">history</span>
+            Mutasi Saldo
+        </a>
+    </div>
+</div>
+
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
     <div class="elegant-card">
         <div class="elegant-icon"><i class="fas fa-envelope-open-text"></i></div>

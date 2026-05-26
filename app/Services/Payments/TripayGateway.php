@@ -116,7 +116,11 @@ class TripayGateway implements PaymentGatewayInterface
 
     public function verifyWebhook(string $rawBody, array $headers = [], array $payload = []): bool
     {
-        $signature = (string) ($headers['x-callback-signature'] ?? $headers['X-CALLBACK-SIGNATURE'] ?? '');
+        $signature = $headers['x-callback-signature'] ?? $headers['X-CALLBACK-SIGNATURE'] ?? '';
+        if (is_array($signature)) {
+            $signature = $signature[0] ?? '';
+        }
+        $signature = (string) $signature;
         if ($signature === '') {
             return false;
         }

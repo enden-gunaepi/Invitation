@@ -109,4 +109,27 @@ class User extends Authenticatable
     {
         return $this->hasMany(ClientPackageSubscription::class);
     }
+
+    public function balanceTransactions(): HasMany
+    {
+        return $this->hasMany(BalanceTransaction::class);
+    }
+
+    public function hasSufficientBalance(float $amount): bool
+    {
+        return (float) $this->balance >= $amount;
+    }
+
+    public function addBalance(float $amount): void
+    {
+        $this->increment('balance', $amount);
+    }
+
+    public function deductBalance(float $amount): void
+    {
+        if (!$this->hasSufficientBalance($amount)) {
+            throw new \RuntimeException('Saldo tidak mencukupi.');
+        }
+        $this->decrement('balance', $amount);
+    }
 }

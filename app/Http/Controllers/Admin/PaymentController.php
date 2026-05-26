@@ -27,6 +27,9 @@ class PaymentController extends Controller
         if ($request->filled('gateway')) {
             $query->where('payment_gateway', $request->gateway);
         }
+        if ($request->filled('purpose')) {
+            $query->where('payment_purpose', $request->purpose);
+        }
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {

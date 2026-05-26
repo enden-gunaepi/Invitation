@@ -28,7 +28,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-semibold mb-2">Nama Mempelai Pria</label>
-                    <input type="text" name="partner_1_name" value="{{ old('partner_1_name', $profile->partner_1_name) }}"
+                    <input type="text" name="partner_1_name" value="{{ old('partner_1_name', $profile->partner_1_name === auth()->user()->name ? '' : $profile->partner_1_name) }}"
                         class="form-input w-full" placeholder="Nama lengkap" required>
                     @error('partner_1_name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                 </div>

@@ -8,10 +8,8 @@
     $user = auth()->user();
     $companyGroup = $settings->get('company', collect());
     $generalGroup = $settings->get('general', collect());
-    $emailGroup = $settings->get('email', collect());
-    $integrationGroup = $settings->get('integration', collect());
 @endphp
-<div class="max-w-4xl" x-data="{ tab: 'profile' }">
+<div class="w-full max-w-[88rem]" x-data="{ tab: 'profile' }">
     <div class="flex gap-2 p-1 bg-gray-100/50 rounded-xl mb-6 backdrop-blur-sm border border-gray-200/50 w-full overflow-x-auto">
         <button @click="tab = 'profile'"
             class="flex-1 min-w-[120px] py-2 px-4 rounded-lg text-sm font-semibold transition-all flex items-center justify-center whitespace-nowrap"
@@ -146,51 +144,11 @@
                 </div>
             </div>
 
-            <hr class="border-[var(--border-color)] my-6">
-
-            <h3 class="font-bold text-base mb-4 text-indigo-400"><i class="fas fa-envelope mr-2"></i>Gateway Email (SMTP Fallback)</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
-                <div>
-                    <label class="form-label">Email Pengirim Asal</label>
-                    <input type="email" name="mail_from" value="{{ old('mail_from', $emailGroup->firstWhere('key', 'mail_from')->value ?? '') }}" class="form-input" placeholder="noreply@undangan.com">
-                </div>
-                <div>
-                    <label class="form-label">Nama Pengirim Asal</label>
-                    <input type="text" name="mail_from_name" value="{{ old('mail_from_name', $emailGroup->firstWhere('key', 'mail_from_name')->value ?? '') }}" class="form-input">
-                </div>
+            <div class="mt-2 rounded-2xl border border-indigo-100 bg-indigo-50/70 px-4 py-4 text-sm text-indigo-700">
+                Konfigurasi email gateway dan WhatsApp API sekarang dikelola terpusat dari menu <strong>Integrasi</strong> agar pengaturan operasional tidak tercampur dengan data perusahaan.
             </div>
 
-            <hr class="border-[var(--border-color)] my-6">
-
-            <h3 class="font-bold text-base mb-4 text-indigo-400"><i class="fab fa-whatsapp mr-2"></i>Integrasi WhatsApp API Gateway</h3>
-            @php $waMode = old('whatsapp_mode', $integrationGroup->firstWhere('key', 'whatsapp_mode')->value ?? 'mock'); @endphp
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
-                <div>
-                    <label class="form-label">Mode Notifikasi</label>
-                    <select name="whatsapp_mode" class="form-input">
-                        <option value="mock" {{ $waMode === 'mock' ? 'selected' : '' }}>Mock (Development)</option>
-                        <option value="live" {{ $waMode === 'live' ? 'selected' : '' }}>Live (Meta Official API)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label">API Version</label>
-                    <input type="text" name="whatsapp_api_version" value="{{ old('whatsapp_api_version', $integrationGroup->firstWhere('key', 'whatsapp_api_version')->value ?? 'v20.0') }}" class="form-input">
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="form-label">Phone Number ID</label>
-                    <input type="text" name="whatsapp_phone_number_id" value="{{ old('whatsapp_phone_number_id', $integrationGroup->firstWhere('key', 'whatsapp_phone_number_id')->value ?? '') }}" class="form-input" placeholder="contoh: 123456789012345">
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="form-label">Meta Session API Token</label>
-                    <input type="text" name="whatsapp_api_token" value="{{ old('whatsapp_api_token', $integrationGroup->firstWhere('key', 'whatsapp_api_token')->value ?? '') }}" class="form-input" placeholder="EAAG...">
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="form-label">Base URL (Graph API)</label>
-                    <input type="text" name="whatsapp_base_url" value="{{ old('whatsapp_base_url', $integrationGroup->firstWhere('key', 'whatsapp_base_url')->value ?? 'https://graph.facebook.com') }}" class="form-input">
-                </div>
-            </div>
-
-            <button type="submit" class="btn-primary text-sm">
+            <button type="submit" class="btn-primary mt-6 text-sm">
                 <i class="fas fa-save mr-2"></i>Simpan Data Perusahaan
             </button>
         </form>

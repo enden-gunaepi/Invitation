@@ -149,6 +149,7 @@ class PaymentWebhookSecurityTest extends TestCase
             'payment_gateway' => $gateway,
             'payment_channel' => 'QRIS',
             'payment_status' => 'pending',
+            'payment_purpose' => 'invitation',
             'transaction_id' => $transactionId,
             'referral_code' => $referrer->referral_code,
             'affiliate_commission_amount' => 0,

@@ -99,7 +99,11 @@ class XenditGateway implements PaymentGatewayInterface
 
     public function verifyWebhook(string $rawBody, array $headers = [], array $payload = []): bool
     {
-        $token = (string) ($headers['x-callback-token'] ?? $headers['X-CALLBACK-TOKEN'] ?? '');
+        $token = $headers['x-callback-token'] ?? $headers['X-CALLBACK-TOKEN'] ?? '';
+        if (is_array($token)) {
+            $token = $token[0] ?? '';
+        }
+        $token = (string) $token;
         return !empty($this->callbackToken) && hash_equals($this->callbackToken, $token);
     }
 

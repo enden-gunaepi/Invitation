@@ -104,7 +104,7 @@ class OnboardingController extends Controller
         return WpProfile::firstOrCreate(
             ['user_id' => auth()->id()],
             [
-                'partner_1_name' => auth()->user()->name,
+                'partner_1_name' => '',
                 'concept' => 'simple',
                 'target_guests' => 100,
             ]

@@ -79,6 +79,14 @@
                 <option value="manual" {{ request('gateway') === 'manual' ? 'selected' : '' }}>Manual</option>
             </select>
         </div>
+        <div>
+            <select name="purpose" class="form-input">
+                <option value="">Semua Keperluan</option>
+                <option value="topup" {{ request('purpose') === 'topup' ? 'selected' : '' }}>Top-up Saldo</option>
+                <option value="invitation" {{ request('purpose') === 'invitation' ? 'selected' : '' }}>Undangan</option>
+                <option value="subscription" {{ request('purpose') === 'subscription' ? 'selected' : '' }}>Langganan Paket</option>
+            </select>
+        </div>
         <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter"></i></button>
     </form>
 </div>
@@ -93,6 +101,7 @@
                     <th>Client</th>
                     <th>Undangan</th>
                     <th>Paket</th>
+                    <th>Keperluan</th>
                     <th>Amount</th>
                     <th>Gateway</th>
                     <th>Status</th>
@@ -112,6 +121,17 @@
                     </td>
                     <td class="text-sm">{{ Str::limit($p->invitation?->title ?? ($p->clientPackageSubscription ? 'Langganan Paket Akun' : '-'), 25) }}</td>
                     <td><span class="badge badge-info">{{ $p->package->name ?? '-' }}</span></td>
+                    <td>
+                        @if($p->payment_purpose === 'topup')
+                            <span class="badge bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Top-up Saldo</span>
+                        @elseif($p->payment_purpose === 'invitation')
+                            <span class="badge bg-blue-500/10 text-blue-600 dark:text-blue-400">Undangan</span>
+                        @elseif($p->payment_purpose === 'subscription')
+                            <span class="badge bg-purple-500/10 text-purple-600 dark:text-purple-400">Langganan Paket</span>
+                        @else
+                            <span class="badge badge-default">-</span>
+                        @endif
+                    </td>
                     <td class="font-semibold">Rp{{ number_format($p->amount, 0, ',', '.') }}</td>
                     <td>
                         <span class="badge {{ $p->payment_gateway === 'xendit' ? 'badge-info' : ($p->payment_gateway === 'tripay' ? 'badge-success' : 'badge-default') }}">

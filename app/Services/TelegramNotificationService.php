@@ -147,6 +147,26 @@ class TelegramNotificationService
         );
     }
 
+    public function balanceAdjusted(User $user, float $amount, float $balanceAfter, User $admin, string $note): void
+    {
+        $action = $amount > 0 ? '➕ Penambahan' : '➖ Pengurangan';
+        $amountStr = number_format(abs($amount), 0, ',', '.');
+        $balanceStr = number_format($balanceAfter, 0, ',', '.');
+        
+        $this->send(
+            "⚖️ <b>Penyesuaian Saldo Manual (Admin)</b>\n"
+            . "──────────────────\n"
+            . "👤 User    : {$this->e($user->name)}\n"
+            . "📧 Email   : <code>{$this->e($user->email)}</code>\n"
+            . "🔧 Tindakan: {$action}\n"
+            . "💰 Nominal : Rp{$amountStr}\n"
+            . "💳 Saldo Akhir: Rp{$balanceStr}\n"
+            . "🛡️ Admin   : {$this->e($admin->name)}\n"
+            . "📝 Catatan : <i>{$this->e($note)}</i>\n"
+            . "🕐 Waktu   : " . now()->format('d M Y, H:i')
+        );
+    }
+
     public function affiliateCommissionCreated(\App\Models\AffiliateCommission $commission): void
     {
         $referrer = $commission->referrer ?? null;
