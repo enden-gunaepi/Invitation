@@ -68,11 +68,19 @@
                         <p class="text-[11px] mt-1" style="color: var(--text-tertiary);">Dapatkan dari <a href="https://t.me/BotFather" target="_blank" class="underline" style="color: var(--accent);">@BotFather</a> di Telegram</p>
                     </div>
                     <div>
-                        <label class="form-label">Chat ID</label>
-                        <input type="text" name="telegram_chat_id" class="form-input" value="{{ $config['telegram_chat_id'] }}" placeholder="-1001234567890, -1009876543210, 123456789">
+                        <label class="form-label">Command Chat ID</label>
+                        <input type="text" name="telegram_chat_id" class="form-input" value="{{ $config['telegram_chat_id'] }}" placeholder="-1001234567890, 123456789">
                         <p class="text-[11px] mt-1" style="color: var(--text-tertiary);">
-                            Bisa diisi beberapa Chat ID, pisahkan dengan <strong>koma</strong>. Notifikasi akan dikirim ke semua ID. Command hanya diterima dari ID yang terdaftar.<br>
-                            Gunakan <a href="https://t.me/userinfobot" target="_blank" class="underline" style="color: var(--accent);">@userinfobot</a> atau ketik <code>/chatid</code> via bot untuk mengetahui ID.
+                            Chat ID yang <strong>diizinkan mengirim command</strong> (/topup, /saldo, /user, /stats). Pisahkan dengan koma jika lebih dari satu.<br>
+                            Command <code>/chatid</code> bisa digunakan oleh siapa saja (tanpa perlu terdaftar di sini).
+                        </p>
+                    </div>
+                    <div>
+                        <label class="form-label">Notify Chat ID <span class="text-[10px] font-normal" style="color: var(--text-tertiary);">(opsional)</span></label>
+                        <input type="text" name="telegram_notify_chat_id" class="form-input" value="{{ $config['telegram_notify_chat_id'] }}" placeholder="-1009876543210">
+                        <p class="text-[11px] mt-1" style="color: var(--text-tertiary);">
+                            Chat ID tujuan <strong>notifikasi otomatis</strong> (user register, undangan, pembayaran, dll). Biasanya ID group admin.<br>
+                            Jika kosong, notifikasi akan dikirim ke Command Chat ID. Pisahkan dengan koma jika lebih dari satu.
                         </p>
                     </div>
                 </div>

@@ -10,12 +10,14 @@ class TelegramService
 {
     protected string $botToken;
     protected string $chatIds;
+    protected string $notifyChatIds;
     protected string $baseUrl = 'https://api.telegram.org';
 
     public function __construct()
     {
-        $this->botToken = (string) Setting::get('telegram_bot_token', '');
-        $this->chatIds  = (string) Setting::get('telegram_chat_id', '');
+        $this->botToken      = (string) Setting::get('telegram_bot_token', '');
+        $this->chatIds       = (string) Setting::get('telegram_chat_id', '');
+        $this->notifyChatIds = (string) Setting::get('telegram_notify_chat_id', '');
     }
 
     public function isConfigured(): bool
@@ -23,13 +25,13 @@ class TelegramService
         return !empty($this->botToken) && !empty($this->chatIds);
     }
 
-    /** Semua chat ID yang dikonfigurasi (pisah koma). */
+    /** Chat ID untuk command (authorize list). */
     public function getAllChatIds(): array
     {
         return array_filter(array_map('trim', explode(',', $this->chatIds)));
     }
 
-    /** Chat ID pertama — dipakai sebagai default untuk broadcast/notifikasi. */
+    /** Chat ID pertama dari authorize list. */
     public function primaryChatId(): string
     {
         return $this->getAllChatIds()[0] ?? '';
@@ -64,12 +66,19 @@ class TelegramService
         }
     }
 
-    /** Broadcast ke semua chat ID yang dikonfigurasi. */
+    /** Chat ID tujuan notifikasi (notify group). Fallback ke authorize list jika kosong. */
+    public function getNotifyChatIds(): array
+    {
+        $ids = array_filter(array_map('trim', explode(',', $this->notifyChatIds)));
+        return !empty($ids) ? $ids : $this->getAllChatIds();
+    }
+
+    /** Broadcast notifikasi ke semua notify chat ID. */
     public function broadcast(string $text): array
     {
-        $ids = $this->getAllChatIds();
+        $ids = $this->getNotifyChatIds();
         if (empty($ids)) {
-            return ['success' => false, 'error' => 'Chat ID belum dikonfigurasi.'];
+            return ['success' => false, 'error' => 'Notify Chat ID belum dikonfigurasi.'];
         }
 
         $errors = [];

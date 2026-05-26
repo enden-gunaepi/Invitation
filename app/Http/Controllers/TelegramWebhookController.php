@@ -26,20 +26,33 @@ class TelegramWebhookController extends Controller
             return response()->json(['ok' => true]);
         }
 
-        $text    = trim($message['text']);
-        $chatId  = (string) $message['chat']['id'];
+        $text   = trim($message['text']);
+        $chatId = (string) $message['chat']['id'];
 
         $allowedRaw = (string) (Setting::get('telegram_chat_id', '') ?? '');
         $allowedIds = array_filter(array_map('trim', explode(',', $allowedRaw)));
 
-        if (!empty($allowedIds) && !in_array($chatId, $allowedIds, true)) {
-            Log::warning('Telegram webhook: unauthorized chat_id', ['chat_id' => $chatId]);
+        if (!str_starts_with($text, '/')) {
             return response()->json(['ok' => true]);
         }
 
-        if (str_starts_with($text, '/')) {
-            $this->handleCommand($text, $chatId, $message);
+        // /chatid boleh diakses siapa saja (tidak perlu authorize)
+        $parts   = preg_split('/\s+/', $text);
+        $command = strtolower(preg_replace('/@.*$/', '', $parts[0]));
+
+        if ($command === '/chatid') {
+            $this->commandChatId($chatId, $message);
+            return response()->json(['ok' => true]);
         }
+
+        // Command lain hanya untuk chat ID yang terdaftar
+        if (!empty($allowedIds) && !in_array($chatId, $allowedIds, true)) {
+            Log::warning('Telegram webhook: unauthorized chat_id', ['chat_id' => $chatId]);
+            $this->reply($chatId, "🚫 <b>Akses Dilarang</b>\n\nChat ID <code>{$chatId}</code> tidak terdaftar sebagai pengguna yang diizinkan.\n\nHubungi administrator untuk mendapatkan akses.");
+            return response()->json(['ok' => true]);
+        }
+
+        $this->handleCommand($text, $chatId, $message);
 
         return response()->json(['ok' => true]);
     }

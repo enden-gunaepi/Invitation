@@ -20,10 +20,11 @@ class IntegrationController extends Controller
     public function telegram()
     {
         $config = [
-            'telegram_bot_token' => Setting::get('telegram_bot_token', ''),
-            'telegram_chat_id' => Setting::get('telegram_chat_id', ''),
-            'telegram_enabled' => Setting::get('telegram_enabled', '0'),
-            'telegram_webhook_active' => Setting::get('telegram_webhook_active', '0'),
+            'telegram_bot_token'       => Setting::get('telegram_bot_token', ''),
+            'telegram_chat_id'         => Setting::get('telegram_chat_id', ''),
+            'telegram_notify_chat_id'  => Setting::get('telegram_notify_chat_id', ''),
+            'telegram_enabled'         => Setting::get('telegram_enabled', '0'),
+            'telegram_webhook_active'  => Setting::get('telegram_webhook_active', '0'),
         ];
 
         $webhookInfo = null;
@@ -47,7 +48,7 @@ class IntegrationController extends Controller
             'telegram_chat_id' => 'nullable|string|max:100',
         ]);
 
-        $keys = ['telegram_bot_token', 'telegram_chat_id', 'telegram_enabled'];
+        $keys = ['telegram_bot_token', 'telegram_chat_id', 'telegram_notify_chat_id', 'telegram_enabled'];
 
         foreach ($keys as $key) {
             if ($request->has($key)) {
