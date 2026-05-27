@@ -6,6 +6,7 @@ use App\Models\BalanceTransaction;
 use App\Models\ClientPackageSubscription;
 use App\Models\Invitation;
 use App\Models\Payment;
+use App\Models\PayoutRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -151,6 +152,31 @@ class BalanceService
                 'description'    => "Refund: {$reason}",
                 'reference_type' => 'refund',
                 'reference_id'   => $referenceId,
+            ]);
+        });
+    }
+
+    /**
+     * Cairkan komisi affiliate ke saldo user.
+     */
+    public function creditAffiliatePayout(User $user, float $amount, PayoutRequest $payout, ?User $admin = null): BalanceTransaction
+    {
+        return DB::transaction(function () use ($user, $amount, $payout, $admin) {
+            $lockedUser = $this->lockUser($user);
+            $balanceBefore = (float) $lockedUser->balance;
+            $lockedUser->addBalance($amount);
+
+            return BalanceTransaction::create([
+                'user_id'        => $lockedUser->id,
+                'type'           => BalanceTransaction::TYPE_ADJUSTMENT,
+                'amount'         => $amount,
+                'balance_before' => $balanceBefore,
+                'balance_after'  => $balanceBefore + $amount,
+                'description'    => 'Pencairan komisi affiliate ke saldo',
+                'reference_type' => 'affiliate_payout',
+                'reference_id'   => $payout->id,
+                'performed_by'   => $admin?->id,
+                'admin_note'     => 'Payout affiliate dicairkan ke saldo user.',
             ]);
         });
     }

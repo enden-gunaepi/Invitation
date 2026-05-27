@@ -30,7 +30,7 @@ class AffiliateController extends Controller
             'approved' => (float) AffiliateCommission::where('referrer_user_id', $user->id)->where('status', 'approved')->sum('commission_amount'),
             'paid' => (float) AffiliateCommission::where('referrer_user_id', $user->id)->where('status', 'paid')->sum('commission_amount'),
             'available' => (float) AffiliateCommission::where('referrer_user_id', $user->id)
-                ->where('status', 'approved')
+                ->whereIn('status', ['approved', 'paid'])
                 ->whereNull('payout_request_id')
                 ->sum('commission_amount'),
             'clicks' => AffiliateClick::where('referrer_user_id', $user->id)->count(),
@@ -53,34 +53,21 @@ class AffiliateController extends Controller
         ]);
 
         $availableCommissions = AffiliateCommission::where('referrer_user_id', $user->id)
-            ->where('status', 'approved')
+            ->whereIn('status', ['approved', 'paid'])
             ->whereNull('payout_request_id')
             ->orderBy('id')
             ->get();
 
-        $requestedAmount = (float) $validated['amount'];
         $availableAmount = (float) $availableCommissions->sum('commission_amount');
-
-        if ($requestedAmount > $availableAmount) {
-            return back()->with('error', 'Jumlah payout melebihi saldo komisi yang tersedia.');
+        if ($availableAmount < 10000) {
+            return back()->with('error', 'Komisi yang tersedia belum memenuhi minimum pencairan.');
         }
 
-        $selectedIds = [];
-        $allocated = 0.0;
-        foreach ($availableCommissions as $c) {
-            $value = (float) $c->commission_amount;
-            if (($allocated + $value) <= $requestedAmount) {
-                $selectedIds[] = $c->id;
-                $allocated += $value;
-            }
-
-            if (abs($allocated - $requestedAmount) < 0.01) {
-                break;
-            }
-        }
+        $selectedIds = $availableCommissions->pluck('id')->all();
+        $allocated = $availableAmount;
 
         if ($allocated < 10000 || empty($selectedIds)) {
-            return back()->with('error', 'Nominal tidak bisa diproses. Coba nominal yang lebih kecil atau gunakan saldo tersedia.');
+            return back()->with('error', 'Belum ada komisi yang bisa dicairkan ke saldo.');
         }
 
         DB::transaction(function () use ($user, $validated, $allocated, $selectedIds): void {
@@ -100,6 +87,6 @@ class AffiliateController extends Controller
             ]);
         });
 
-        return back()->with('success', 'Request payout berhasil dikirim ke admin.');
+        return back()->with('success', 'Request berhasil dikirim. Semua komisi available sebesar Rp' . number_format($allocated, 0, ',', '.') . ' diajukan untuk dicairkan ke saldo.');
     }
 }

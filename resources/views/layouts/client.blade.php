@@ -31,6 +31,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') â€” Client</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -213,11 +215,151 @@
         tbody tr { transition: background 0.1s ease; }
         tbody tr:hover { background: var(--hover-bg); }
         tbody tr:last-child td { border-bottom: none; }
+
+        .mobile-shell {
+            padding: 1.5rem;
+            padding-bottom: 7.5rem;
+            min-height: 100%;
+        }
+
+        .mobile-dock {
+            position: relative;
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+            overflow: visible;
+        }
+
+        .mobile-bottom-nav {
+            display: none;
+        }
+
+        .mobile-dock::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(255,255,255,0.95) 0, rgba(255,255,255,0) 14%),
+                radial-gradient(circle at 50% -26px, rgba(219, 39, 119, 0.08) 0, rgba(219, 39, 119, 0) 24%),
+                linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.02));
+            pointer-events: none;
+        }
+
+        .mobile-dock-item {
+            position: relative;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            color: var(--on-surface-variant);
+            transition: transform 0.28s ease, color 0.28s ease, background 0.28s ease, box-shadow 0.28s ease;
+        }
+
+        .mobile-dock-item.is-active {
+            color: var(--accent);
+            background: var(--secondary-container);
+            box-shadow: none;
+            transform: translateY(-0.95rem);
+        }
+
+        .mobile-dock-item.is-active::before {
+            content: '';
+            position: absolute;
+            top: -0.55rem;
+            left: 50%;
+            width: 5.5rem;
+            height: 2.4rem;
+            transform: translateX(-50%);
+            border-radius: 9999px;
+            background: transparent;
+            z-index: -1;
+        }
+
+        .mobile-dock-rail {
+            position: absolute;
+            top: 0.7rem;
+            height: 1.25rem;
+            border-radius: 9999px 9999px 0 0;
+            background: linear-gradient(180deg, rgba(219, 39, 119, 0.10), rgba(219, 39, 119, 0.02));
+            filter: blur(0.2px);
+            transition: left 0.25s ease;
+            pointer-events: none;
+        }
+
+        @media (max-width: 1023px) {
+            .mobile-bottom-nav {
+                display: block;
+                position: fixed;
+                left: 0.75rem;
+                right: 0.75rem;
+                bottom: 0.75rem;
+                z-index: 10000;
+            }
+
+            .card {
+                border-radius: 20px;
+                padding: 1rem;
+                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+            }
+
+            .btn {
+                min-height: 2.75rem;
+                justify-content: center;
+            }
+
+            .table-container {
+                margin-inline: -0.15rem;
+            }
+
+            table thead th,
+            table tbody td {
+                padding-left: 0.85rem;
+                padding-right: 0.85rem;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .mobile-shell {
+                padding: 1rem;
+                padding-bottom: 8rem;
+            }
+
+            .mobile-dock {
+                border-radius: 1.85rem;
+            }
+
+            .card,
+            .elegant-card {
+                border-radius: 22px !important;
+            }
+
+            .elegant-card {
+                padding: 1.1rem !important;
+                box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+            }
+
+            .elegant-card:hover {
+                transform: none;
+            }
+        }
     </style>
 </head>
 
 <body class="text-[--on-surface] font-sans antialiased overflow-hidden transition-colors duration-300"
       style="background-color: var(--surface);">
+
+    @php
+        $activeClientSubscription = auth()->user()
+            ?->packageSubscriptions()
+            ->with('package')
+            ->where('status', 'active')
+            ->latest('id')
+            ->first();
+        $clientPackageName = $activeClientSubscription?->package?->name ?? 'Free';
+    @endphp
 
     <!-- Toasts -->
     @if (session('success'))
@@ -265,7 +407,11 @@
                  style="transition: opacity 0.25s ease, width 0.3s cubic-bezier(0.4,0,0.2,1);"
                  :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', width: (!isMobile && !sidebarExpanded) ? '0' : 'auto' }">
                 <div class="text-[15px] font-semibold leading-none" style="color: var(--on-surface); letter-spacing: -0.01em;">{{ $brandName ?? 'Janji Suci Kita' }}</div>
-                <div class="text-[11px] mt-0.5" style="color: var(--on-surface-variant); letter-spacing: 0.04em; text-transform: uppercase;">Client Portal</div>
+                <div class="mt-1 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]"
+                     style="background: var(--secondary-container); color: var(--on-secondary-container);">
+                    <span class="material-symbols-outlined" style="font-size: 13px;">workspace_premium</span>
+                    <span>{{ $clientPackageName }}</span>
+                </div>
             </div>
         </a>
 
@@ -466,7 +612,7 @@
         :style="{ marginLeft: isMobile ? '0px' : (sidebarExpanded ? '260px' : '72px'), transition: hydrated ? 'margin-left 0.3s cubic-bezier(0.4,0,0.2,1)' : 'none' }">
 
         <!-- Topbar -->
-        <header class="sticky top-0 z-40 flex items-center justify-between px-5 shrink-0 border-b glass-sidebar"
+        <header class="sticky top-0 z-40 flex items-center justify-between px-4 sm:px-5 shrink-0 border-b glass-sidebar"
                 style="height: 64px; transition: background 0.3s ease, border-color 0.3s ease;"
                 :style="{
                     background: darkMode ? 'rgba(17,19,24,0.92)' : 'rgba(249,249,249,0.88)',
@@ -487,15 +633,15 @@
                 </button>
 
                 <!-- Page Title -->
-                <div class="flex flex-col justify-center">
-                    <h1 class="text-[15px] font-semibold leading-tight" style="color: var(--on-surface); letter-spacing: -0.01em;">@yield('page-title', 'Dashboard')</h1>
+                <div class="flex flex-col justify-center min-w-0">
+                    <h1 class="text-[14px] sm:text-[15px] font-semibold leading-tight truncate" style="color: var(--on-surface); letter-spacing: -0.01em;">@yield('page-title', 'Dashboard')</h1>
                     @hasSection('page-subtitle')
-                        <p class="text-[11px] mt-0.5" style="color: var(--on-surface-variant);">@yield('page-subtitle')</p>
+                        <p class="text-[11px] mt-0.5 truncate max-w-[48vw] sm:max-w-none" style="color: var(--on-surface-variant);">@yield('page-subtitle')</p>
                     @endif
                 </div>
             </div>
 
-            <div class="flex items-center gap-2" x-data="{ userMenuOpen: false }">
+            <div class="flex items-center gap-2 shrink-0" x-data="{ userMenuOpen: false }">
                 <!-- Theme Toggle -->
                 <button @click="darkMode = !darkMode"
                     class="w-9 h-9 rounded-lg flex items-center justify-center transition-all focus:outline-none"
@@ -507,12 +653,12 @@
                 </button>
 
                 <!-- Divider -->
-                <div class="w-px h-5 mx-1" style="background: var(--outline-variant);"></div>
+                <div class="hidden sm:block w-px h-5 mx-1" style="background: var(--outline-variant);"></div>
 
                 <!-- User Dropdown -->
                 <div class="relative">
                     <button @click="userMenuOpen = !userMenuOpen"
-                        class="flex items-center gap-2.5 px-3 py-1.5 rounded-full transition-all focus:outline-none"
+                        class="flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-full transition-all focus:outline-none"
                         style="background: var(--surface-container); color: var(--on-surface);"
                         onmouseover="this.style.background='var(--surface-container-high)'"
                         onmouseout="this.style.background='var(--surface-container)'">
@@ -567,65 +713,71 @@
         </header>
 
         <!-- Main Content Area -->
-        <main class="flex-1 overflow-y-auto scrollbar-hide transition-colors duration-300" style="background: var(--surface-lowest);">
-            <div class="p-6 pb-28 lg:pb-10 min-h-full">
+        <main class="flex-1 overflow-y-auto scrollbar-hide transition-colors duration-300" style="background: var(--surface);">
+            <div class="mobile-shell lg:p-6 lg:pb-10">
                 @yield('content')
             </div>
         </main>
     </div>
 
-    <nav class="lg:hidden fixed bottom-4 left-4 right-4 rounded-2xl shadow-xl z-50 p-2 border"
-         :style="{ background: darkMode ? 'rgba(17,19,24,0.95)' : 'rgba(249,249,249,0.95)', borderColor: 'var(--outline-variant)' }"
-         style="backdrop-filter: blur(24px);">
-        <div class="flex gap-1 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-1" data-mobile-dock-track>
-            <div class="snap-start shrink-0 w-1/5 flex justify-center">
-                <a href="{{ route('client.dashboard') }}"
-                    class="w-11 h-11 flex flex-col items-center justify-center rounded-xl transition-all duration-200"
-                    style="{{ request()->routeIs('client.dashboard') ? 'background: var(--primary); color: var(--on-primary);' : 'color: var(--on-surface-variant);' }}">
-                    <span class="material-symbols-outlined" style="font-size: 22px;">dashboard</span>
+    @php
+        $mobileDockItems = [
+            [
+                'label' => 'Dashboard',
+                'route' => route('client.dashboard'),
+                'active' => request()->routeIs('client.dashboard'),
+                'icon' => 'home',
+            ],
+            [
+                'label' => 'Undangan',
+                'route' => route('client.invitations.index'),
+                'active' => request()->routeIs('client.invitations.*'),
+                'icon' => 'search',
+            ],
+            [
+                'label' => 'Saldo',
+                'route' => route('client.balance.index'),
+                'active' => request()->routeIs('client.balance.*'),
+                'icon' => 'account_balance_wallet',
+            ],
+            [
+                'label' => 'Affiliate',
+                'route' => route('client.affiliate.index'),
+                'active' => request()->routeIs('client.affiliate.*'),
+                'icon' => 'schedule',
+            ],
+            [
+                'label' => 'Profil',
+                'route' => route('profile.edit'),
+                'active' => request()->routeIs('profile.*'),
+                'icon' => 'person',
+            ],
+        ];
+    @endphp
+
+    <nav class="mobile-bottom-nav rounded-[2rem] px-3 pt-3 pb-[max(0.6rem,env(safe-area-inset-bottom))] border mobile-dock"
+         :style="{ background: darkMode ? 'rgba(17,19,24,0.92)' : 'rgba(255,255,255,0.88)', borderColor: darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)' }">
+        <div class="relative flex items-end justify-between gap-1">
+            @php
+                $activeIndex = collect($mobileDockItems)->search(fn ($item) => $item['active']);
+                $activeIndex = $activeIndex === false ? 0 : $activeIndex;
+                $railWidth = '20%';
+                $railLeft = 'calc(' . $activeIndex . ' * 20% + 6%)';
+            @endphp
+            <div class="mobile-dock-rail" style="left: {{ $railLeft }}; width: calc({{ $railWidth }} - 12%);"></div>
+            @foreach($mobileDockItems as $item)
+                <a href="{{ $item['route'] }}"
+                    class="mobile-dock-item {{ $item['active'] ? 'is-active' : '' }}"
+                    aria-label="{{ $item['label'] }}"
+                    title="{{ $item['label'] }}">
+                    <span class="material-symbols-outlined" style="font-size: 22px;">{{ $item['icon'] }}</span>
                 </a>
-            </div>
-            <div class="snap-start shrink-0 w-1/5 flex justify-center">
-                <a href="{{ route('client.invitations.index') }}"
-                    class="w-11 h-11 flex flex-col items-center justify-center rounded-xl transition-all duration-200"
-                    style="{{ request()->routeIs('client.invitations.*') ? 'background: var(--primary); color: var(--on-primary);' : 'color: var(--on-surface-variant);' }}">
-                    <span class="material-symbols-outlined" style="font-size: 22px;">mail</span>
-                </a>
-            </div>
-            <div class="snap-start shrink-0 w-1/5 flex justify-center">
-                <a href="{{ route('client.invitations.create') }}"
-                    class="w-11 h-11 flex flex-col items-center justify-center rounded-xl transition-all duration-200"
-                    style="{{ request()->routeIs('client.invitations.create') ? 'background: var(--primary); color: var(--on-primary);' : 'color: var(--on-surface-variant);' }}">
-                    <span class="material-symbols-outlined" style="font-size: 22px;">add_circle</span>
-                </a>
-            </div>
-            <div class="snap-start shrink-0 w-1/5 flex justify-center">
-                <a href="{{ route('client.affiliate.index') }}"
-                    class="w-11 h-11 flex flex-col items-center justify-center rounded-xl transition-all duration-200"
-                    style="{{ request()->routeIs('client.affiliate.*') ? 'background: var(--primary); color: var(--on-primary);' : 'color: var(--on-surface-variant);' }}">
-                    <span class="material-symbols-outlined" style="font-size: 22px;">hub</span>
-                </a>
-            </div>
-            <div class="snap-start shrink-0 w-1/5 flex justify-center">
-                <a href="{{ route('profile.edit') }}"
-                    class="w-11 h-11 flex flex-col items-center justify-center rounded-xl transition-all duration-200"
-                    style="{{ request()->routeIs('profile.*') ? 'background: var(--primary); color: var(--on-primary);' : 'color: var(--on-surface-variant);' }}">
-                    <span class="material-symbols-outlined" style="font-size: 22px;">manage_accounts</span>
-                </a>
-            </div>
+            @endforeach
+        </div>
+        <div class="mt-2 flex justify-center">
+            <div class="h-1.5 w-24 rounded-full" style="background: rgba(148, 163, 184, 0.55);"></div>
         </div>
     </nav>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const track = document.querySelector('[data-mobile-dock-track]');
-            if (!track) return;
-            const key = 'client_mobile_dock_scroll_new';
-            const saved = localStorage.getItem(key);
-            if (saved !== null) { track.scrollLeft = parseInt(saved, 10) || 0; }
-            track.addEventListener('scroll', () => localStorage.setItem(key, String(track.scrollLeft)), { passive: true });
-        });
-    </script>
     @stack('scripts')
 
     {{-- Floating Donation Ad Card (Only for Free Users) --}}
@@ -653,7 +805,7 @@
         x-transition:enter-start="opacity-0 translate-y-10" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-10"
-        class="fixed bottom-6 right-6 z-[9999] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 border border-amber-400/30"
+        class="hidden lg:block fixed bottom-6 right-6 z-[9999] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 border border-amber-400/30"
         :style="sidebarExpanded ? 'width: 212px;' : 'width: 56px; height: 56px; border-radius: 16px;'">
 
         <button x-show="sidebarExpanded" @click="closeAd()"

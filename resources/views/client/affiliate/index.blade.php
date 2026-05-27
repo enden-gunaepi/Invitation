@@ -1,7 +1,7 @@
 @extends('layouts.client')
 @section('title', 'Affiliate Dashboard')
 @section('page-title', 'Affiliate Dashboard')
-@section('page-subtitle', 'Komisi referral, histori, dan payout request')
+@section('page-subtitle', 'Komisi referral, histori, dan pencairan komisi ke saldo')
 
 @section('content')
 <div class="card p-4 mb-6">
@@ -77,7 +77,7 @@
 
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color: var(--border);">
-                <h3 class="font-bold text-base">Histori Payout</h3>
+                <h3 class="font-bold text-base">Histori Pencairan</h3>
             </div>
             <div class="p-4">
                 @forelse($payouts as $p)
@@ -97,7 +97,7 @@
                         @endif
                     </div>
                 @empty
-                    <p class="text-sm py-6 text-center" style="color: var(--text-secondary);">Belum ada payout request.</p>
+                    <p class="text-sm py-6 text-center" style="color: var(--text-secondary);">Belum ada request pencairan komisi.</p>
                 @endforelse
             </div>
         </div>
@@ -106,39 +106,39 @@
 
     <div class="space-y-6">
         <div class="card p-6">
-            <h3 class="font-bold text-base mb-3">Request Payout</h3>
-            <p class="text-xs mb-4" style="color: var(--text-secondary);">Saldo tersedia: <strong>Rp{{ number_format($stats['available'], 0, ',', '.') }}</strong></p>
+            <h3 class="font-bold text-base mb-3">Cairkan Komisi ke Saldo</h3>
+            <p class="text-xs mb-4" style="color: var(--text-secondary);">Komisi tersedia: <strong>Rp{{ number_format($stats['available'], 0, ',', '.') }}</strong>. Komisi yang belum pernah diajukan pencairan akan masuk ke saldo setelah request diproses admin.</p>
             <form method="POST" action="{{ route('client.affiliate.payout-request') }}" class="space-y-3">
                 @csrf
                 <div>
-                    <label class="form-label">Jumlah Payout</label>
-                    <input type="number" name="amount" min="10000" max="{{ (int) floor($stats['available']) }}" step="1000" value="{{ old('amount', (int) floor($stats['available'])) }}" class="form-input" required>
+                    <label class="form-label">Jumlah Pencairan</label>
+                    <input type="number" name="amount" min="10000" max="{{ max(10000, (int) floor($stats['available'])) }}" step="1000" value="{{ $stats['available'] >= 10000 ? old('amount', (int) floor($stats['available'])) : '' }}" class="form-input" placeholder="{{ $stats['available'] >= 10000 ? 'Semua komisi available akan diajukan' : 'Menunggu komisi tersedia minimal Rp10.000' }}" {{ $stats['available'] < 10000 ? 'disabled' : '' }} required readonly>
+                    <p class="mt-2 text-xs" style="color: var(--text-secondary);">Untuk saat ini sistem otomatis mengajukan seluruh komisi available agar pencairan tidak gagal karena pecahan nominal komisi.</p>
                 </div>
                 <div>
                     <label class="form-label">Metode</label>
                     <select name="method" class="form-input" required>
-                        <option value="bank_transfer" {{ old('method') === 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                        <option value="ewallet" {{ old('method') === 'ewallet' ? 'selected' : '' }}>E-Wallet</option>
+                        <option value="saldo" selected>Saldo Akun</option>
                     </select>
                 </div>
                 <div>
                     <label class="form-label">Nama Akun</label>
-                    <input type="text" name="account_name" value="{{ old('account_name') }}" class="form-input" required>
+                    <input type="text" name="account_name" value="{{ old('account_name', auth()->user()->name) }}" class="form-input" required readonly>
                 </div>
                 <div>
-                    <label class="form-label">No Rekening / No Wallet</label>
-                    <input type="text" name="account_number" value="{{ old('account_number') }}" class="form-input" required>
+                    <label class="form-label">Tujuan Pencairan</label>
+                    <input type="text" name="account_number" value="{{ old('account_number', 'Saldo Akun Internal') }}" class="form-input" required readonly>
                 </div>
                 <div>
                     <label class="form-label">Catatan (opsional)</label>
-                    <textarea name="notes" class="form-input" rows="2">{{ old('notes') }}</textarea>
+                    <textarea name="notes" class="form-input" rows="2" {{ $stats['available'] < 10000 ? 'disabled' : '' }}>{{ old('notes') }}</textarea>
                 </div>
-                <button class="btn btn-primary w-full text-sm" {{ $stats['available'] < 10000 ? 'disabled' : '' }}>
-                    <i class="fas fa-paper-plane mr-2"></i> Kirim Request
+                <button class="btn btn-primary w-full text-sm {{ $stats['available'] < 10000 ? 'opacity-60 cursor-not-allowed' : '' }}" {{ $stats['available'] < 10000 ? 'disabled' : '' }}>
+                    <i class="fas fa-wallet mr-2"></i> Kirim Request Pencairan
                 </button>
             </form>
             @if($stats['available'] < 10000)
-                <p class="text-xs mt-3" style="color: var(--warning);">Minimum payout Rp10.000. Komisi available belum mencukupi.</p>
+                <p class="text-xs mt-3" style="color: var(--warning);">Minimum pencairan Rp10.000. Saat ini komisi available masih Rp{{ number_format($stats['available'], 0, ',', '.') }}.</p>
             @endif
         </div>
     </div>

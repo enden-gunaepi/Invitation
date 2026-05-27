@@ -5,11 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AffiliateCommission;
 use App\Models\PayoutRequest;
+use App\Services\BalanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AffiliateController extends Controller
 {
+    public function __construct(private readonly BalanceService $balanceService)
+    {
+    }
+
     public function index(Request $request)
     {
         $query = AffiliateCommission::with(['referrer', 'referred', 'payment'])->latest();
@@ -152,8 +157,15 @@ class AffiliateController extends Controller
             AffiliateCommission::where('payout_request_id', $payout->id)
                 ->whereNull('approved_at')
                 ->update(['approved_at' => now()]);
+
+            $this->balanceService->creditAffiliatePayout(
+                $payout->user()->firstOrFail(),
+                (float) $payout->amount,
+                $payout,
+                auth()->user()
+            );
         });
 
-        return back()->with('success', 'Payout request ditandai selesai dibayar.');
+        return back()->with('success', 'Komisi affiliate berhasil dicairkan ke saldo user.');
     }
 }
