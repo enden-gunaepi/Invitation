@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Guest;
 use App\Models\Invitation;
 use Illuminate\Http\Request;
 use App\Services\InvitationFunnelService;
@@ -29,12 +30,12 @@ class GuestOpsController extends Controller
         ]);
 
         $token = trim($validated['token']);
-        if (str_contains($token, '/inv/')) {
+        if (str_contains($token, '/')) {
             $parts = explode('/', trim($token, '/'));
             $token = end($parts);
         }
 
-        $guest = $invitation->guests()->where('token', $token)->first();
+        $guest = Guest::resolveForInvitation((int) $invitation->id, $token);
         if (!$guest) {
             return back()->with('error', 'Guest token tidak ditemukan untuk undangan ini.');
         }

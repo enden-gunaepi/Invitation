@@ -91,7 +91,7 @@ class ProcessWhatsAppReminderCampaigns extends Command
     {
         $inv = $campaign->invitation;
         $personalLink = !empty($guest->token)
-            ? url("/inv/{$inv->slug}/{$guest->token}")
+            ? $guest->getInvitationUrl()
             : $inv->getPublicUrl();
 
         $replace = [

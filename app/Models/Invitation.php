@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 use App\Services\InvitationMediaCleanupService;
 
@@ -40,9 +42,13 @@ class Invitation extends Model
 
     protected static function booted(): void
     {
-        static::creating(function ($invitation) {
+        static::creating(function (self $invitation) {
             if (empty($invitation->slug)) {
-                $invitation->slug = Str::slug($invitation->title) . '-' . Str::random(6);
+                $invitation->slug = self::generateUniquePublicSlug(
+                    $invitation->groom_name,
+                    $invitation->bride_name,
+                    $invitation->title
+                );
             }
         });
 
@@ -156,7 +162,14 @@ class Invitation extends Model
     // Helpers
     public function getPublicUrl(): string
     {
-        return url("/inv/{$this->slug}");
+        $path = "/u/{$this->slug}";
+        $request = Request::instance();
+
+        if ($request) {
+            return rtrim($request->getSchemeAndHttpHost(), '/') . $path;
+        }
+
+        return rtrim((string) config('app.url'), '/') . $path;
     }
 
     public function isActive(): bool
@@ -271,5 +284,44 @@ class Invitation extends Model
         }
 
         $cleanup->deleteMusicPathIfUnused($this->music_url, $this->id);
+    }
+
+    public static function generateUniquePublicSlug(?string $groomName, ?string $brideName, ?string $title = null): string
+    {
+        $parts = array_filter([
+            self::extractPrimaryName($groomName),
+            self::extractPrimaryName($brideName),
+        ]);
+
+        $base = Str::slug(implode(' dan ', $parts));
+
+        if ($base === '') {
+            $base = Str::slug((string) $title);
+        }
+
+        if ($base === '') {
+            $base = 'undangan';
+        }
+
+        $slug = $base;
+        $counter = 2;
+
+        while (DB::table('invitations')->where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
+    private static function extractPrimaryName(?string $name): string
+    {
+        $name = trim((string) $name);
+        if ($name === '') {
+            return '';
+        }
+
+        $tokens = preg_split('/\s+/', $name) ?: [];
+        return trim((string) ($tokens[0] ?? ''));
     }
 }

@@ -44,9 +44,7 @@ class InvitationPublicController extends Controller
     {
         $invitation = $this->preparePublicInvitation($this->getCachedPublicInvitation($slug));
 
-        $guest = Guest::where('token', $token)
-            ->where('invitation_id', $invitation->id)
-            ->first();
+        $guest = Guest::resolveForInvitation((int) $invitation->id, (string) $token);
 
         $personalization = $this->guestPersonalization->forCategory($guest?->category);
 
@@ -69,10 +67,7 @@ class InvitationPublicController extends Controller
         $token = trim((string) $request->query('token', ''));
         $guest = null;
         if ($token !== '') {
-            $guest = Guest::query()
-                ->where('invitation_id', $invitation->id)
-                ->where('token', $token)
-                ->first();
+            $guest = Guest::resolveForInvitation((int) $invitation->id, $token);
         }
 
         $this->funnelService->track((int) $invitation->id, 'map_clicked', [

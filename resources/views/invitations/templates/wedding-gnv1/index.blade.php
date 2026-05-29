@@ -57,7 +57,7 @@
         $mapsTrackedUrl = $isDemoMode
             ? $mapsUrl
             : route('invitation.map.click', ['slug' => $invitation->slug, 'token' => $guest->token ?? null]);
-        $guestInvitationUrl = !empty($guest?->token) ? url('/inv/' . $invitation->slug . '/' . $guest->token) : url('/inv/' . $invitation->slug);
+        $guestInvitationUrl = !empty($guest?->token) ? $guest->getInvitationUrl() : $invitation->getPublicUrl();
         $slideshowImages = $invitation->photos->map(fn($photo) => asset('storage/' . $photo->file_path))->values()->all();
         if (count($slideshowImages) === 0 && $coverPhoto) {
             $slideshowImages[] = $coverPhoto;

@@ -761,7 +761,7 @@
                     @empty
                         <article
                             class="mx-auto max-w-2xl rounded-[30px] border border-white/15 bg-black/25 px-6 py-8 text-center backdrop-blur-md shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
-                            <h3 class="font-title text-3xl mb-5">{{ $invitation->venue_name }}</h3>
+                            <h3 class="font-title text-xl mb-5">{{ $invitation->venue_name }}</h3>
                             <div class="flex items-center justify-center gap-4 mb-5">
                                 <div class="min-w-[56px] text-center">
                                     <p class="text-xs uppercase tracking-[0.2em] text-white/60">

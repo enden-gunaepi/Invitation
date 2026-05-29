@@ -26,14 +26,6 @@
             @csrf
 
             <h3 class="font-bold text-base mb-4" style="color: var(--accent);"><i class="fas fa-layer-group mr-2"></i> Template</h3>
-            <div class="p-4 rounded-lg mb-4" style="background: var(--bg-tertiary); border:1px solid var(--border);">
-                <p class="text-xs mb-1" style="color: var(--text-secondary);">Paket aktif akun</p>
-                <p class="text-sm font-semibold">{{ $activePackage->name }} - Rp{{ number_format($activePackage->price, 0, ',', '.') }}</p>
-                <p class="text-xs mt-1" style="color: var(--text-secondary);">
-                    Kuota undangan: {{ $activePackage->max_invitations ?? 1 }} | Kuota tamu: {{ $activePackage->max_guests ?? 100 }} | Kuota foto: {{ $activePackage->max_photos ?? 10 }}
-                </p>
-            </div>
-
             <div class="mb-4">
                 <label class="form-label">Template</label>
                 <select name="template_id" class="form-input" required id="templateSelect" onchange="updateTemplatePreview()">

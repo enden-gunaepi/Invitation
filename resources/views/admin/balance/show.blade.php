@@ -10,7 +10,37 @@
     </a>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6"
+    x-data="{
+        confirmOpen: false,
+        confirmActionType: 'add',
+        confirmAmount: '',
+        confirmNote: '',
+        confirmForm: null,
+        formatRupiah(value) {
+            const amount = Number(value || 0);
+            return 'Rp' + amount.toLocaleString('id-ID');
+        },
+        openConfirm(form) {
+            this.confirmForm = form;
+            this.confirmActionType = form.action_type.value;
+            this.confirmAmount = form.amount.value;
+            this.confirmNote = form.admin_note.value;
+            this.confirmOpen = true;
+        },
+        submitConfirmedForm() {
+            if (!this.confirmForm) return;
+            this.confirmOpen = false;
+            this.confirmForm.submit();
+        }
+    }"
+    @open-balance-confirm="
+        confirmForm = $event.detail.form;
+        confirmActionType = $event.detail.actionType;
+        confirmAmount = $event.detail.amount;
+        confirmNote = $event.detail.note;
+        confirmOpen = true;
+    ">
     {{-- User Info & Adjustment Form --}}
     <div class="space-y-6">
         {{-- User Info Card --}}
@@ -43,7 +73,7 @@
                 <i class="fas fa-sliders text-pink-500"></i> Penyesuaian Saldo Manual
             </h4>
 
-            <form method="POST" action="{{ route('admin.balance.adjust', $user) }}" class="space-y-4" x-data="{ actionType: 'add' }">
+            <form method="POST" action="{{ route('admin.balance.adjust', $user) }}" class="space-y-4" x-data="{ actionType: 'add' }" @submit.prevent="$dispatch('open-balance-confirm', { form: $el, actionType, amount: $el.amount.value, note: $el.admin_note.value })">
                 @csrf
                 
                 <div>
@@ -85,7 +115,7 @@
                         class="form-input resize-none" minlength="5"></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-full justify-center" onclick="return confirm('Apakah Anda yakin ingin menyesuaikan saldo user ini?')">
+                <button type="submit" class="btn btn-primary w-full justify-center">
                     <i class="fas fa-check mr-2"></i> Proses Penyesuaian
                 </button>
             </form>
@@ -174,5 +204,69 @@
             </div>
         </div>
     </div>
+
+    <div x-show="confirmOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-950/45 backdrop-blur-sm" @click="confirmOpen = false"></div>
+
+    <div x-show="confirmOpen"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+        x-transition:leave-end="opacity-0 translate-y-3 scale-95"
+        class="relative w-full max-w-md overflow-hidden rounded-[28px] border shadow-[0_24px_70px_rgba(15,23,42,0.18)]"
+        style="background: var(--surface-lowest); border-color: var(--outline-variant);"
+        @click.stop>
+        <div class="p-6">
+            <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+                    :style="confirmActionType === 'add'
+                        ? 'background: rgba(16,185,129,0.12); color: #059669;'
+                        : 'background: rgba(239,68,68,0.12); color: #dc2626;'">
+                    <i class="fas" :class="confirmActionType === 'add' ? 'fa-plus' : 'fa-minus'"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Konfirmasi</div>
+                    <h3 class="mt-2 text-lg font-bold text-slate-900 dark:text-slate-100">
+                        <span x-text="confirmActionType === 'add' ? 'Tambah saldo sekarang?' : 'Kurangi saldo sekarang?'"></span>
+                    </h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-500">
+                        Pastikan nominal dan catatan admin sudah sesuai sebelum perubahan disimpan.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-5 rounded-2xl border p-4"
+                style="background: var(--surface-container-low); border-color: var(--outline-variant);">
+                <div class="flex items-center justify-between gap-4 text-sm">
+                    <span class="text-slate-500">User</span>
+                    <span class="font-semibold text-slate-800 dark:text-slate-100">{{ $user->name }}</span>
+                </div>
+                <div class="mt-3 flex items-center justify-between gap-4 text-sm">
+                    <span class="text-slate-500">Tindakan</span>
+                    <span class="font-semibold"
+                        :class="confirmActionType === 'add' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
+                        x-text="confirmActionType === 'add' ? 'Tambah saldo' : 'Kurangi saldo'"></span>
+                </div>
+                <div class="mt-3 flex items-center justify-between gap-4 text-sm">
+                    <span class="text-slate-500">Nominal</span>
+                    <span class="font-semibold text-slate-800 dark:text-slate-100" x-text="formatRupiah(confirmAmount)"></span>
+                </div>
+                <div class="mt-3 text-sm">
+                    <div class="text-slate-500">Catatan</div>
+                    <div class="mt-1 font-medium text-slate-700 dark:text-slate-200" x-text="confirmNote"></div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex items-center justify-end gap-3">
+                <button type="button" class="btn btn-secondary" @click="confirmOpen = false">Kembali</button>
+                <button type="button" class="btn btn-primary" @click="submitConfirmedForm()">
+                    <i class="fas fa-check mr-2"></i> Ya, proses
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 @endsection

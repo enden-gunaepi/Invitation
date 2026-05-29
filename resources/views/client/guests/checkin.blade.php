@@ -17,7 +17,7 @@
             @csrf
             <div>
                 <label class="form-label">Token / URL Undangan Tamu</label>
-                <input type="text" name="token" class="form-input" placeholder="Tempel URL /inv/{slug}/{token} atau token saja" required>
+                <input type="text" name="token" class="form-input" placeholder="Tempel URL undangan tamu atau token saja" required>
             </div>
             <button class="btn btn-primary w-full text-sm">
                 <i class="fas fa-check-circle mr-2"></i> Proses Check-in
@@ -41,4 +41,3 @@
     </div>
 </div>
 @endsection
-

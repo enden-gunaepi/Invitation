@@ -523,35 +523,51 @@ class InvitationController extends Controller
     public function submit(Invitation $invitation)
     {
         $this->authorizeOwner($invitation);
+        $activePackage = $this->clientPackageService->getActivePackage((int) auth()->id());
 
-        // Check direct invitation payment OR subscription-level payment for the same package
-        $hasPaid = Payment::query()
-            ->where('invitation_id', $invitation->id)
-            ->where('payment_status', 'paid')
-            ->exists();
-        if (!$hasPaid) {
-            $hasPaid = Payment::where('user_id', $invitation->user_id)
-                ->where('package_id', $invitation->package_id)
-                ->where('payment_status', 'paid')
-                ->exists();
-        }
-
-        $hasActivePackage = (bool) $this->clientPackageService->getActiveSubscription((int) auth()->id());
-
-        if (!$hasPaid && !$hasActivePackage) {
+        if (!$activePackage) {
             return redirect()->route('client.packages.select')
-                ->with('error', 'Sebelum submit untuk review admin, aktifkan paket akun Anda terlebih dahulu.');
+                ->with('error', 'Anda harus memiliki paket aktif untuk mempublikasikan undangan.');
         }
 
-        if ($invitation->status === 'pending') {
+        $ownedInvitationCount = Invitation::where('user_id', auth()->id())->count();
+        $maxInvitations = $activePackage->max_invitations ?? 1;
+        if ($ownedInvitationCount > $maxInvitations) {
+            return redirect()->route('client.packages.select')
+                ->with('error', "Kuota undangan pada paket {$activePackage->name} tidak mencukupi. Silakan upgrade paket terlebih dahulu.");
+        }
+
+        if (!$activePackage->allowsTemplate((int) $invitation->template_id)) {
+            return redirect()->route('client.invitations.edit', $invitation)
+                ->with('error', "Template undangan ini tidak tersedia pada paket aktif {$activePackage->name}. Silakan ubah template atau upgrade paket.");
+        }
+
+        if ($invitation->status === 'active' && $invitation->isActive()) {
             return redirect()->route('client.invitations.show', $invitation)
-                ->with('success', 'Undangan sudah dalam antrean review admin.');
+                ->with('success', 'Undangan ini sudah dipublikasikan.');
         }
 
-        $invitation->update(['status' => 'pending']);
+        $publishedAt = now();
+        $expiresAt = null;
+        if (!empty($activePackage->active_duration_value) && !empty($activePackage->active_duration_unit)) {
+            $duration = (int) $activePackage->active_duration_value;
+            if ($duration > 0) {
+                $expiresAt = $activePackage->active_duration_unit === 'month'
+                    ? $publishedAt->copy()->addMonthsNoOverflow($duration)
+                    : $publishedAt->copy()->addDays($duration);
+            }
+        }
+
+        $invitation->update([
+            'package_id' => $activePackage->id,
+            'status' => 'active',
+            'published_at' => $publishedAt,
+            'expires_at' => $expiresAt,
+            'admin_notes' => null,
+        ]);
 
         return redirect()->route('client.invitations.show', $invitation)
-            ->with('success', 'Undangan berhasil disubmit untuk review admin!');
+            ->with('success', 'Undangan berhasil dipublikasikan.');
     }
 
     public function upgradeSuggested(Invitation $invitation)

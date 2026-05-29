@@ -573,6 +573,8 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            align-items: center;
+            justify-content: center;
         }
 
         .event-section::before {
@@ -589,13 +591,14 @@
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 400px;
-            margin-left: auto;
+            max-width: 460px;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
             gap: 1.7rem;
-            padding: 3rem 0;
+            padding: 3rem 1.25rem;
         }
 
         .event-header {
@@ -622,10 +625,12 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            width: 100%;
         }
 
         .event-item {
             text-align: center;
+            width: 100%;
             padding: 0 .8rem;
         }
 

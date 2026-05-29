@@ -95,12 +95,12 @@ class GuestController extends Controller
         ]);
 
         $token = trim($validated['token']);
-        if (str_contains($token, '/inv/')) {
+        if (str_contains($token, '/')) {
             $parts = explode('/', trim($token, '/'));
             $token = end($parts);
         }
 
-        $guest = $invitation->guests()->where('token', $token)->first();
+        $guest = Guest::resolveForInvitation((int) $invitation->id, $token);
         if (!$guest) {
             return back()->with('error', 'Guest token tidak ditemukan.');
         }

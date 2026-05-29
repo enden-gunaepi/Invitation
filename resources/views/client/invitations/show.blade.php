@@ -292,9 +292,26 @@
                 <form method="POST" action="{{ route('client.invitations.submit', $invitation) }}">
                     @csrf @method('PATCH')
                     <button type="submit" class="btn btn-secondary w-full text-sm py-3" style="color: var(--warning);">
-                        <i class="fas fa-paper-plane mr-2"></i> Submit Review (Wajib Lunas)
+                        <i class="fas fa-paper-plane mr-2"></i> Publikasikan Undangan
                     </button>
                 </form>
+                <div class="p-3 rounded-lg text-xs" style="background: rgba(245,158,11,0.08); color: var(--warning);">
+                    <i class="fas fa-file-alt mr-1"></i> Undangan ini masih draft dan belum dipublikasikan ke publik.
+                </div>
+                @elseif($invitation->status === 'pending')
+                <form method="POST" action="{{ route('client.invitations.submit', $invitation) }}">
+                    @csrf @method('PATCH')
+                    <button type="submit" class="btn btn-secondary w-full text-sm py-3" style="color: var(--warning);">
+                        <i class="fas fa-bolt mr-2"></i> Aktifkan Sekarang
+                    </button>
+                </form>
+                <div class="p-3 rounded-lg text-xs" style="background: rgba(245,158,11,0.08); color: var(--warning);">
+                    <i class="fas fa-clock mr-1"></i> Status pending adalah data lama. Publikasikan ulang untuk langsung aktif tanpa review admin.
+                </div>
+                @elseif($invitation->status === 'active')
+                <div class="p-3 rounded-lg text-xs" style="background: rgba(52,199,89,0.08); color: var(--success);">
+                    <i class="fas fa-check-circle mr-1"></i> Undangan sudah dipublikasikan dan aktif ke publik.
+                </div>
                 @endif
                 @if($invitation->isActive())
                 <a href="{{ $invitation->getPublicUrl() }}" target="_blank" class="btn btn-secondary w-full text-center block text-sm py-3">
