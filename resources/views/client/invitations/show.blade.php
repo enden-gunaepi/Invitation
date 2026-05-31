@@ -252,8 +252,11 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
                                 <span class="text-sm font-semibold truncate">{{ $rsvp->name }}</span>
-                                @if($rsvp->phone || $rsvp->normalized_phone)
-                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $rsvp->normalized_phone ?: $rsvp->phone) }}" 
+                                @php
+                                    $rsvpWhatsapp = $rsvp->guest?->phone ?: ($rsvp->normalized_phone ?: $rsvp->phone);
+                                @endphp
+                                @if($rsvpWhatsapp)
+                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $rsvpWhatsapp) }}" 
                                    target="_blank" class="text-green-500 hover:text-green-600 transition-colors" title="Kirim WhatsApp">
                                     <i class="fab fa-whatsapp"></i>
                                 </a>
@@ -288,23 +291,18 @@
                 <a href="{{ route('client.invitations.edit', $invitation) }}" class="btn btn-primary w-full text-center block text-sm py-3">
                     <i class="fas fa-edit mr-2"></i> Edit Undangan
                 </a>
-                @if($invitation->status === 'draft')
-                <form method="POST" action="{{ route('client.invitations.submit', $invitation) }}">
+                <form method="POST" action="{{ route('client.invitations.toggle-status', $invitation) }}">
                     @csrf @method('PATCH')
-                    <button type="submit" class="btn btn-secondary w-full text-sm py-3" style="color: var(--warning);">
-                        <i class="fas fa-paper-plane mr-2"></i> Publikasikan Undangan
+                    <button type="submit" class="btn {{ $invitation->status === 'active' && $invitation->isActive() ? 'btn-danger' : 'btn-secondary' }} w-full text-sm py-3" style="{{ $invitation->status === 'active' && $invitation->isActive() ? '' : 'color: var(--warning);' }}">
+                        <i class="fas {{ $invitation->status === 'active' && $invitation->isActive() ? 'fa-toggle-off' : ($invitation->status === 'pending' ? 'fa-bolt' : 'fa-paper-plane') }} mr-2"></i>
+                        {{ $invitation->status === 'active' && $invitation->isActive() ? 'Nonaktifkan Undangan' : ($invitation->status === 'pending' ? 'Aktifkan Sekarang' : 'Aktifkan Undangan') }}
                     </button>
                 </form>
+                @if($invitation->status === 'draft')
                 <div class="p-3 rounded-lg text-xs" style="background: rgba(245,158,11,0.08); color: var(--warning);">
                     <i class="fas fa-file-alt mr-1"></i> Undangan ini masih draft dan belum dipublikasikan ke publik.
                 </div>
                 @elseif($invitation->status === 'pending')
-                <form method="POST" action="{{ route('client.invitations.submit', $invitation) }}">
-                    @csrf @method('PATCH')
-                    <button type="submit" class="btn btn-secondary w-full text-sm py-3" style="color: var(--warning);">
-                        <i class="fas fa-bolt mr-2"></i> Aktifkan Sekarang
-                    </button>
-                </form>
                 <div class="p-3 rounded-lg text-xs" style="background: rgba(245,158,11,0.08); color: var(--warning);">
                     <i class="fas fa-clock mr-1"></i> Status pending adalah data lama. Publikasikan ulang untuk langsung aktif tanpa review admin.
                 </div>

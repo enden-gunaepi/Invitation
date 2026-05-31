@@ -14,7 +14,7 @@ use App\Services\InvitationMediaCleanupService;
 class Invitation extends Model
 {
     protected $fillable = [
-        'user_id', 'template_id', 'package_id', 'slug', 'event_type', 'title',
+        'user_id', 'template_id', 'package_id', 'client_package_subscription_id', 'slug', 'event_type', 'title',
         'groom_name', 'groom_parent_name', 'bride_name', 'bride_parent_name', 'host_name', 'event_date', 'event_time',
         'event_end_time', 'venue_name', 'venue_address', 'venue_lat', 'venue_lng',
         'google_maps_url', 'livestream_enabled', 'livestream_url', 'livestream_label', 'cover_photo', 'ig_story_photo', 'groom_photo', 'bride_photo', 'groom_instagram', 'bride_instagram', 'groom_facebook', 'bride_facebook', 'opening_text', 'closing_text',
@@ -71,6 +71,11 @@ class Invitation extends Model
     public function package(): BelongsTo
     {
         return $this->belongsTo(Package::class);
+    }
+
+    public function clientPackageSubscription(): BelongsTo
+    {
+        return $this->belongsTo(ClientPackageSubscription::class);
     }
 
     public function photos(): HasMany
@@ -162,7 +167,7 @@ class Invitation extends Model
     // Helpers
     public function getPublicUrl(): string
     {
-        $path = "/u/{$this->slug}";
+        $path = "/wedding/{$this->slug}";
         $request = Request::instance();
 
         if ($request) {

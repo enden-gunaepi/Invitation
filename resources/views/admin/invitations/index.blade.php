@@ -84,6 +84,14 @@
                                                 class="fas fa-times"></i></button>
                                     </form>
                                 @endif
+                                <form method="POST" action="{{ route('admin.invitations.destroy', $inv) }}"
+                                    class="inline"
+                                    onsubmit="return confirm('Hapus undangan ini? Tindakan ini permanen.')">
+                                    @csrf @method('DELETE')
+                                    <button class="text-red-500 hover:text-red-300 text-sm" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>

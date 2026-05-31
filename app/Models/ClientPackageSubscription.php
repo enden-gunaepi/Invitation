@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ClientPackageSubscription extends Model
 {
@@ -39,6 +40,11 @@ class ClientPackageSubscription extends Model
         return $this->belongsTo(Payment::class);
     }
 
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(Invitation::class);
+    }
+
     public function isActive(): bool
     {
         if ($this->status !== 'active') {
@@ -48,4 +54,3 @@ class ClientPackageSubscription extends Model
         return !$this->expires_at || $this->expires_at->isFuture();
     }
 }
-

@@ -44,7 +44,7 @@ class Guest extends Model
 
     public function getInvitationUrl(): string
     {
-        $path = "/u/{$this->invitation->slug}/{$this->getPublicToken()}";
+        $path = "/wedding/{$this->invitation->slug}/{$this->getPublicToken()}";
         $request = Request::instance();
 
         if ($request) {

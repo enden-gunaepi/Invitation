@@ -351,16 +351,6 @@
 <body class="text-[--on-surface] font-sans antialiased overflow-hidden transition-colors duration-300"
       style="background-color: var(--surface);">
 
-    @php
-        $activeClientSubscription = auth()->user()
-            ?->packageSubscriptions()
-            ->with('package')
-            ->where('status', 'active')
-            ->latest('id')
-            ->first();
-        $clientPackageName = $activeClientSubscription?->package?->name ?? 'Free';
-    @endphp
-
     <!-- Toasts -->
     @if (session('success'))
         <div data-toast class="fixed top-6 right-6 z-[9999] border px-5 py-3 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] flex items-center gap-3 animate-slide-up transition-all duration-500"
@@ -407,10 +397,9 @@
                  style="transition: opacity 0.25s ease, width 0.3s cubic-bezier(0.4,0,0.2,1);"
                  :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', width: (!isMobile && !sidebarExpanded) ? '0' : 'auto' }">
                 <div class="text-[15px] font-semibold leading-none" style="color: var(--on-surface); letter-spacing: -0.01em;">{{ $brandName ?? 'Janji Suci Kita' }}</div>
-                <div class="mt-1 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]"
-                     style="background: var(--secondary-container); color: var(--on-secondary-container);">
-                    <span class="material-symbols-outlined" style="font-size: 13px;">workspace_premium</span>
-                    <span>{{ $clientPackageName }}</span>
+                <div class="mt-1 text-[11px] font-semibold"
+                     style="color: var(--accent);">
+                    Rp {{ number_format((float) auth()->user()->balance, 0, ',', '.') }}
                 </div>
             </div>
         </a>
@@ -437,20 +426,15 @@
                 </a>
 
                 <a href="{{ route('client.balance.index') }}"
-                    class="flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.balance.*') ? 'nav-item-active' : '' }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('client.balance.*') ? 'nav-item-active' : '' }}"
                     style="{{ !request()->routeIs('client.balance.*') ? 'color: var(--on-surface-variant);' : '' }}"
                     onmouseover="{{ !request()->routeIs('client.balance.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
                     onmouseout="{{ !request()->routeIs('client.balance.*') ? 'this.style.background=\"\"' : '' }}"
                     title="Dompet & Saldo">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">account_balance_wallet</span>
-                        <span class="text-sm whitespace-nowrap overflow-hidden"
-                              style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
-                              :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Dompet & Saldo</span>
-                    </div>
-                    <span x-show="!isMobile && sidebarExpanded" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-pink-100 dark:bg-pink-900/30 text-[var(--accent)] whitespace-nowrap">
-                        Rp {{ number_format(auth()->user()->balance, 0, ',', '.') }}
-                    </span>
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">account_balance_wallet</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden"
+                          style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                          :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !sidebarExpanded) ? '0' : '200px' }">Dompet & Saldo</span>
                 </a>
             </div>
 

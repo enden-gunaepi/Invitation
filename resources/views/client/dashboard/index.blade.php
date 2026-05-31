@@ -161,7 +161,7 @@
                 <div class="text-center py-12" style="color: gap;">
                     <i class="fas fa-envelope-open text-4xl mb-4 text-gray-300"></i>
                     <p class="text-sm mb-4 text-gray-500">Belum ada undangan. Buat undangan pertama Anda!</p>
-                    <a href="{{ $hasActivePackage ? route('client.invitations.create') : route('client.packages.select') }}"
+                    <a href="{{ $hasActivePackage ? route('client.invitations.create', ['subscription_id' => $defaultSubscription?->id]) : route('client.packages.select') }}"
                         class="bg-[var(--accent)] hover:bg-blue-800 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition-all inline-block shadow-md">
                         <i class="fas {{ $hasActivePackage ? 'fa-plus' : 'fa-box-open' }} mr-2"></i>
                         {{ $hasActivePackage ? 'Buat Undangan' : 'Pilih Paket' }}
@@ -195,7 +195,7 @@
                 @endforeach
             </div>
 
-            <a href="{{ $onboarding['next_url'] ?? ($hasActivePackage ? route('client.invitations.create') : route('client.packages.select')) }}"
+            <a href="{{ $onboarding['next_url'] ?? ($hasActivePackage ? route('client.invitations.create', ['subscription_id' => $defaultSubscription?->id]) : route('client.packages.select')) }}"
                 class="btn-primary w-full text-center block py-3">
                 <i class="fas fa-arrow-right mr-2"></i> {{ $onboarding['next_label'] ?? 'Lanjutkan Setup' }}
             </a>

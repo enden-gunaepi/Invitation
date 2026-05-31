@@ -37,7 +37,7 @@ Route::middleware('auth')->group(function () {
 // Public invitation routes
 Route::middleware(['track.view'])->group(function () {
     Route::get('/inv/{slug}', [InvitationPublicController::class, 'show'])->name('invitation.show');
-    Route::get('/u/{slug}', [InvitationPublicController::class, 'show'])->name('invitation.show.short');
+    Route::get('/wedding/{slug}', [InvitationPublicController::class, 'show'])->name('invitation.show.short');
 });
 Route::get('/inv/{slug}/ig-story.jpg', [InvitationPublicController::class, 'downloadIgStory'])
     ->name('invitation.ig-story.download');
@@ -46,7 +46,7 @@ Route::middleware(['track.view'])->group(function () {
     Route::get('/inv/{slug}/{token}', [InvitationPublicController::class, 'showGuest'])
         ->where('token', '^(?!maps$).+')
         ->name('invitation.guest');
-    Route::get('/u/{slug}/{token}', [InvitationPublicController::class, 'showGuest'])
+    Route::get('/wedding/{slug}/{token}', [InvitationPublicController::class, 'showGuest'])
         ->where('token', '^(?!maps$).+')
         ->name('invitation.guest.short');
 });

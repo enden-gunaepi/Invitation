@@ -35,35 +35,87 @@ class InvitationController extends Controller
 
     public function index()
     {
-        $invitations = auth()->user()->invitations()
+        $userId = (int) auth()->id();
+        $subscriptions = $this->clientPackageService->getUsableSubscriptions($userId)
+            ->load([
+                'invitations' => fn ($query) => $query
+                    ->with('template', 'package')
+                    ->withCount('guests')
+                    ->latest(),
+            ]);
+
+        $subscriptionCards = $subscriptions->map(function ($subscription) {
+            return [
+                'subscription' => $subscription,
+                'usage' => $this->clientPackageService->getSubscriptionUsage($subscription),
+                'invitations' => $subscription->invitations,
+            ];
+        });
+
+        $legacyInvitations = auth()->user()->invitations()
             ->with('template', 'package')
             ->withCount('guests')
+            ->whereNull('client_package_subscription_id')
             ->latest()
-            ->paginate(10);
+            ->get();
 
-        $hasActivePackage = (bool) $this->clientPackageService->getActiveSubscription((int) auth()->id());
+        $totalInvitations = (int) auth()->user()->invitations()->count();
+        $hasUsableSubscription = $subscriptions->isNotEmpty();
 
-        return view('client.invitations.index', compact('invitations', 'hasActivePackage'));
+        return view('client.invitations.index', compact(
+            'subscriptionCards',
+            'legacyInvitations',
+            'totalInvitations',
+            'hasUsableSubscription'
+        ));
     }
 
     public function create()
     {
-        $activePackage = $this->clientPackageService->getActivePackage((int) auth()->id());
-        if (!$activePackage) {
+        $userId = (int) auth()->id();
+        $usableSubscriptions = $this->clientPackageService->getUsableSubscriptions($userId);
+
+        if ($usableSubscriptions->isEmpty()) {
             return redirect()->route('client.packages.select')
                 ->with('error', 'Pilih paket aktif terlebih dahulu sebelum membuat undangan.');
         }
 
+        $subscriptionId = request()->integer('subscription_id');
+        if (!$subscriptionId && $usableSubscriptions->count() === 1) {
+            $subscriptionId = (int) $usableSubscriptions->first()->id;
+        }
+
+        if (!$subscriptionId) {
+            return redirect()->route('client.invitations.index')
+                ->with('error', 'Pilih paket yang akan dipakai untuk membuat undangan.');
+        }
+
+        $selectedSubscription = $this->clientPackageService->findAuthorizedUsableSubscription($userId, $subscriptionId);
+        if (!$selectedSubscription || !$selectedSubscription->package) {
+            return redirect()->route('client.invitations.index')
+                ->with('error', 'Paket yang dipilih tidak aktif atau tidak ditemukan.');
+        }
+
+        $selectedPackage = $selectedSubscription->package;
+
         $templatesQuery = Template::where('is_active', true);
-        if (!empty($activePackage->allowed_template_ids)) {
-            $templatesQuery->whereIn('id', $activePackage->allowed_template_ids);
+        if (!empty($selectedPackage->allowed_template_ids)) {
+            $templatesQuery->whereIn('id', $selectedPackage->allowed_template_ids);
         }
         $templates = $templatesQuery->get();
 
         $musicTracks = MusicTrack::where('is_public', true)->latest()->limit(100)->get();
         $preselectedTemplateId = request()->integer('template_id');
+        $subscriptionUsage = $this->clientPackageService->getSubscriptionUsage($selectedSubscription);
 
-        return view('client.invitations.create', compact('templates', 'musicTracks', 'preselectedTemplateId', 'activePackage'));
+        return view('client.invitations.create', compact(
+            'templates',
+            'musicTracks',
+            'preselectedTemplateId',
+            'selectedSubscription',
+            'selectedPackage',
+            'subscriptionUsage'
+        ));
     }
 
     public function store(Request $request)
@@ -76,6 +128,7 @@ class InvitationController extends Controller
         }
 
         $validated = $request->validate([
+            'client_package_subscription_id' => 'required|integer|exists:client_package_subscriptions,id',
             'template_id' => 'required|exists:templates,id',
             'event_type' => 'required|in:wedding,birthday,graduation,corporate,other',
             'title' => 'required|string|max:200',
@@ -119,37 +172,21 @@ class InvitationController extends Controller
             'love_story_photos.*.max' => 'Ukuran foto love story maksimal 10MB.',
         ]);
 
-        $package = $this->clientPackageService->getActivePackage((int) auth()->id());
-        if (!$package) {
-            return redirect()->route('client.packages.select')
-                ->with('error', 'Paket aktif tidak ditemukan. Silakan pilih paket terlebih dahulu.');
-        }
+        [$canCreate, $subscriptionMessage, $selectedSubscription] = $this->clientPackageService->canCreateInvitationWithSubscription(
+            (int) auth()->id(),
+            (int) $validated['client_package_subscription_id'],
+            (int) $validated['template_id']
+        );
 
-        // Enforce template access based on active account package
-        $template = Template::findOrFail($validated['template_id']);
-
-        if ($template->is_premium && !$this->packageCanAccessPremium($package)) {
+        if (!$canCreate || !$selectedSubscription || !$selectedSubscription->package) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', "Template \"{$template->name}\" hanya tersedia untuk paket Premium atau Exclusive. Silahkan pilih paket yang sesuai.");
-        }
-
-        if (!$package->allowsTemplate((int) $validated['template_id'])) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', "Template \"{$template->name}\" tidak diizinkan untuk paket {$package->name}.");
-        }
-
-        $usedInvitations = Invitation::where('user_id', auth()->id())->count();
-        $maxInvitations = $package->max_invitations ?? 1;
-        if ($usedInvitations >= $maxInvitations) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', "Paket {$package->name} hanya boleh membuat {$maxInvitations} undangan.");
+                ->with('error', $subscriptionMessage ?? 'Paket aktif tidak ditemukan. Silakan pilih paket terlebih dahulu.');
         }
 
         $validated['user_id'] = auth()->id();
-        $validated['package_id'] = $package->id;
+        $validated['package_id'] = $selectedSubscription->package->id;
+        $validated['client_package_subscription_id'] = $selectedSubscription->id;
         $validated['status'] = 'draft';
         $validated['livestream_enabled'] = $request->boolean('livestream_enabled');
 
@@ -232,17 +269,16 @@ class InvitationController extends Controller
     {
         $this->authorizeAnyEditor($invitation);
 
-        $invitation->load('photos', 'events', 'loveStories', 'guests', 'rsvps', 'wishes', 'package', 'bankAccounts', 'reminderCampaigns', 'vendorLeads', 'collaborators.user', 'backups');
+        $invitation->load('photos', 'events', 'loveStories', 'guests', 'rsvps.guest', 'wishes', 'package', 'clientPackageSubscription.package', 'bankAccounts', 'reminderCampaigns', 'vendorLeads', 'collaborators.user', 'backups');
 
-        $activePackage = $this->clientPackageService->getActivePackage((int) auth()->id());
-        $effectivePackage = $activePackage ?: $invitation->package;
+        $effectivePackage = $this->resolveInvitationPackage($invitation);
 
         $maxGuests = $effectivePackage->max_guests ?? 100;
         $maxPhotos = $effectivePackage->max_photos ?? 10;
         $maxInvitations = $effectivePackage->max_invitations ?? 1;
         $currentGuests = $invitation->guests->count();
         $currentPhotos = $invitation->photos->count();
-        $currentInvitations = Invitation::where('user_id', auth()->id())->count();
+        $currentInvitations = $this->resolveInvitationQuotaUsage($invitation);
 
         $guestPercent = $maxGuests > 0 ? (int) round(($currentGuests / $maxGuests) * 100) : 0;
         $photoPercent = $maxPhotos > 0 ? (int) round(($currentPhotos / $maxPhotos) * 100) : 0;
@@ -267,6 +303,8 @@ class InvitationController extends Controller
                 ->first();
         }
 
+        $activePackage = $effectivePackage;
+
         return view('client.invitations.show', compact(
             'invitation',
             'maxGuests',
@@ -277,7 +315,8 @@ class InvitationController extends Controller
             'currentInvitations',
             'nextPackage',
             'upsellReasons',
-            'activePackage'
+            'activePackage',
+            'effectivePackage'
         ));
     }
 
@@ -371,9 +410,10 @@ class InvitationController extends Controller
             $validated['template_id'] = $invitation->template_id;
         }
         $validated['package_id'] = $invitation->package_id;
+        $validated['client_package_subscription_id'] = $invitation->client_package_subscription_id;
 
         // Enforce template access on update too
-        $package = Package::findOrFail($validated['package_id']);
+        $package = $this->resolveInvitationPackage($invitation);
         $template = Template::findOrFail($validated['template_id']);
 
         if ($template->is_premium && !$this->packageCanAccessPremium($package)) {
@@ -389,14 +429,19 @@ class InvitationController extends Controller
         }
 
         if ($isOwner) {
-            $usedInvitations = Invitation::where('user_id', auth()->id())
-                ->where('id', '!=', $invitation->id)
-                ->count();
-            $maxInvitations = $package->max_invitations ?? 1;
+            $usedInvitations = $invitation->client_package_subscription_id
+                ? Invitation::where('client_package_subscription_id', $invitation->client_package_subscription_id)
+                    ->where('id', '!=', $invitation->id)
+                    ->count()
+                : Invitation::where('user_id', auth()->id())
+                    ->where('package_id', $invitation->package_id)
+                    ->where('id', '!=', $invitation->id)
+                    ->count();
+            $maxInvitations = $package?->max_invitations ?? 1;
             if ($usedInvitations >= $maxInvitations) {
                 return redirect()->back()
                     ->withInput()
-                    ->with('error', "Batas undangan untuk paket {$package->name} sudah tercapai ({$maxInvitations}).");
+                    ->with('error', "Batas undangan untuk paket {$package?->name} sudah tercapai ({$maxInvitations}).");
             }
         }
 
@@ -523,23 +568,50 @@ class InvitationController extends Controller
     public function submit(Invitation $invitation)
     {
         $this->authorizeOwner($invitation);
-        $activePackage = $this->clientPackageService->getActivePackage((int) auth()->id());
+        return $this->activateInvitation($invitation, 'Undangan berhasil dipublikasikan.');
+    }
 
-        if (!$activePackage) {
+    public function toggleStatus(Invitation $invitation)
+    {
+        $this->authorizeOwner($invitation);
+
+        if ($invitation->status === 'active' && $invitation->isActive()) {
+            $invitation->update([
+                'status' => 'draft',
+                'published_at' => null,
+                'expires_at' => null,
+            ]);
+
+            return back()->with('success', 'Undangan berhasil dinonaktifkan.');
+        }
+
+        return $this->activateInvitation($invitation, 'Undangan berhasil diaktifkan.');
+    }
+
+    private function activateInvitation(Invitation $invitation, string $successMessage)
+    {
+        $subscription = $invitation->client_package_subscription_id
+            ? $this->clientPackageService->findAuthorizedUsableSubscription((int) auth()->id(), (int) $invitation->client_package_subscription_id)
+            : null;
+        $effectivePackage = $subscription?->package ?: $this->resolveInvitationPackage($invitation);
+
+        if (!$effectivePackage) {
             return redirect()->route('client.packages.select')
                 ->with('error', 'Anda harus memiliki paket aktif untuk mempublikasikan undangan.');
         }
 
-        $ownedInvitationCount = Invitation::where('user_id', auth()->id())->count();
-        $maxInvitations = $activePackage->max_invitations ?? 1;
+        $ownedInvitationCount = $invitation->client_package_subscription_id
+            ? Invitation::where('client_package_subscription_id', $invitation->client_package_subscription_id)->count()
+            : Invitation::where('user_id', auth()->id())->where('package_id', $invitation->package_id)->count();
+        $maxInvitations = $effectivePackage->max_invitations ?? 1;
         if ($ownedInvitationCount > $maxInvitations) {
             return redirect()->route('client.packages.select')
-                ->with('error', "Kuota undangan pada paket {$activePackage->name} tidak mencukupi. Silakan upgrade paket terlebih dahulu.");
+                ->with('error', "Kuota undangan pada paket {$effectivePackage->name} tidak mencukupi. Silakan upgrade paket terlebih dahulu.");
         }
 
-        if (!$activePackage->allowsTemplate((int) $invitation->template_id)) {
+        if (!$effectivePackage->allowsTemplate((int) $invitation->template_id)) {
             return redirect()->route('client.invitations.edit', $invitation)
-                ->with('error', "Template undangan ini tidak tersedia pada paket aktif {$activePackage->name}. Silakan ubah template atau upgrade paket.");
+                ->with('error', "Template undangan ini tidak tersedia pada paket {$effectivePackage->name}. Silakan ubah template atau upgrade paket.");
         }
 
         if ($invitation->status === 'active' && $invitation->isActive()) {
@@ -548,18 +620,10 @@ class InvitationController extends Controller
         }
 
         $publishedAt = now();
-        $expiresAt = null;
-        if (!empty($activePackage->active_duration_value) && !empty($activePackage->active_duration_unit)) {
-            $duration = (int) $activePackage->active_duration_value;
-            if ($duration > 0) {
-                $expiresAt = $activePackage->active_duration_unit === 'month'
-                    ? $publishedAt->copy()->addMonthsNoOverflow($duration)
-                    : $publishedAt->copy()->addDays($duration);
-            }
-        }
+        $expiresAt = $this->calculateInvitationExpiryFromPackage($effectivePackage, $publishedAt);
 
         $invitation->update([
-            'package_id' => $activePackage->id,
+            'package_id' => $effectivePackage->id,
             'status' => 'active',
             'published_at' => $publishedAt,
             'expires_at' => $expiresAt,
@@ -567,15 +631,15 @@ class InvitationController extends Controller
         ]);
 
         return redirect()->route('client.invitations.show', $invitation)
-            ->with('success', 'Undangan berhasil dipublikasikan.');
+            ->with('success', $successMessage);
     }
 
     public function upgradeSuggested(Invitation $invitation)
     {
         $this->authorizeOwner($invitation);
 
-        $invitation->load('package', 'template');
-        $currentPackage = $this->clientPackageService->getActivePackage((int) auth()->id()) ?: $invitation->package;
+        $invitation->load('package', 'clientPackageSubscription.package', 'template');
+        $currentPackage = $this->resolveInvitationPackage($invitation);
         if (!$currentPackage) {
             return back()->with('error', 'Paket akun tidak ditemukan.');
         }
@@ -771,6 +835,49 @@ class InvitationController extends Controller
         }
 
         return false;
+    }
+
+    private function resolveInvitationPackage(Invitation $invitation): ?Package
+    {
+        if ($invitation->relationLoaded('clientPackageSubscription') && $invitation->clientPackageSubscription?->package) {
+            return $invitation->clientPackageSubscription->package;
+        }
+
+        if ($invitation->client_package_subscription_id) {
+            $subscription = $invitation->clientPackageSubscription()->with('package')->first();
+            if ($subscription?->package) {
+                return $subscription->package;
+            }
+        }
+
+        return $invitation->package;
+    }
+
+    private function resolveInvitationQuotaUsage(Invitation $invitation): int
+    {
+        if ($invitation->client_package_subscription_id) {
+            return Invitation::where('client_package_subscription_id', $invitation->client_package_subscription_id)->count();
+        }
+
+        return Invitation::where('user_id', $invitation->user_id)
+            ->where('package_id', $invitation->package_id)
+            ->count();
+    }
+
+    private function calculateInvitationExpiryFromPackage(?Package $package, \Carbon\CarbonInterface $publishedAt): ?\Carbon\CarbonInterface
+    {
+        if (!$package || empty($package->active_duration_value) || empty($package->active_duration_unit)) {
+            return null;
+        }
+
+        $duration = (int) $package->active_duration_value;
+        if ($duration <= 0) {
+            return null;
+        }
+
+        return $package->active_duration_unit === 'month'
+            ? $publishedAt->copy()->addMonthsNoOverflow($duration)
+            : $publishedAt->copy()->addDays($duration);
     }
 
     private function authorizeAnyEditor(Invitation $invitation): void

@@ -23,15 +23,41 @@
         </div>
     </div>
 
-    @if($activeSubscription && $activeSubscription->package)
-    <div class="card p-4" style="border-color: rgba(52,199,89,.35); background: rgba(52,199,89,0.02);">
-        <p class="text-sm font-semibold text-green-700 dark:text-green-400">
-            <i class="fas fa-check-circle mr-1"></i> Paket aktif saat ini: <strong>{{ $activeSubscription->package->name }}</strong>
-        </p>
-        <p class="text-xs mt-1 text-gray-500">
-            Berlaku sampai {{ $activeSubscription->expires_at?->format('d M Y H:i') ?? 'tanpa batas waktu' }}.
-        </p>
-        <a href="{{ route('client.invitations.create') }}" class="btn btn-primary mt-3 px-5 py-2 rounded-xl text-sm font-bold">Buat Undangan</a>
+    @if($subscriptionCards->isNotEmpty())
+    <div class="card p-5 space-y-4" style="border-color: rgba(52,199,89,.35); background: rgba(52,199,89,0.02);">
+        <div>
+            <p class="text-sm font-semibold text-green-700 dark:text-green-400">
+                <i class="fas fa-check-circle mr-1"></i> Paket aktif Anda
+            </p>
+            <p class="text-xs mt-1 text-gray-500">Setiap pembelian paket tetap aktif secara terpisah dan bisa dipakai membuat undangan sendiri.</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            @foreach($subscriptionCards as $card)
+                @php
+                    $subscription = $card['subscription'];
+                    $usage = $card['usage'];
+                @endphp
+                <div class="rounded-2xl border px-4 py-4 bg-white/70 dark:bg-slate-900/40">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="font-bold text-sm text-gray-900 dark:text-gray-100">{{ $subscription->package->name }}</p>
+                            <p class="text-xs mt-1 text-gray-500">SUB-{{ str_pad((string) $subscription->id, 4, '0', STR_PAD_LEFT) }}</p>
+                        </div>
+                        <span class="badge badge-success text-[10px] px-2 py-0.5">Aktif</span>
+                    </div>
+                    <p class="text-xs mt-3 text-gray-500">
+                        Terpakai {{ $usage['used'] }}/{{ $usage['max'] }} · Sisa {{ $usage['remaining'] }}
+                    </p>
+                    <p class="text-xs mt-1 text-gray-500">
+                        Berlaku sampai {{ $subscription->expires_at?->format('d M Y H:i') ?? 'tanpa batas waktu' }}
+                    </p>
+                    <a href="{{ route('client.invitations.create', ['subscription_id' => $subscription->id]) }}" class="btn btn-primary mt-3 px-4 py-2 rounded-xl text-sm font-bold">
+                        Buat Undangan
+                    </a>
+                </div>
+            @endforeach
+        </div>
     </div>
     @endif
 

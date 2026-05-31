@@ -21,7 +21,7 @@ class TemplateCatalogController extends Controller
             ->orderBy('name')
             ->paginate(12);
 
-        $hasActivePackage = (bool) $this->clientPackageService->getActiveSubscription((int) auth()->id());
+        $hasActivePackage = $this->clientPackageService->getUsableSubscriptions((int) auth()->id())->isNotEmpty();
 
         return view('client.templates.index', compact('templates', 'hasActivePackage'));
     }

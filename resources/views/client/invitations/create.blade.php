@@ -24,6 +24,21 @@
 
         <form method="POST" action="{{ route('client.invitations.store') }}" enctype="multipart/form-data">
             @csrf
+            <input type="hidden" name="client_package_subscription_id" value="{{ old('client_package_subscription_id', $selectedSubscription->id) }}">
+
+            <div class="mb-6 rounded-2xl border px-4 py-4" style="border-color: color-mix(in srgb, var(--accent) 28%, transparent); background: color-mix(in srgb, var(--accent) 6%, transparent);">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.18em]" style="color: var(--text-secondary);">Paket Yang Dipakai</p>
+                        <h3 class="text-base font-bold mt-1" style="color: var(--accent);">{{ $selectedPackage->name }}</h3>
+                        <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                            Kuota terpakai {{ $subscriptionUsage['used'] }} dari {{ $subscriptionUsage['max'] }} undangan.
+                            Sisa {{ $subscriptionUsage['remaining'] }} undangan.
+                        </p>
+                    </div>
+                    <a href="{{ route('client.invitations.index') }}" class="btn btn-secondary text-sm whitespace-nowrap">Ganti Paket</a>
+                </div>
+            </div>
 
             <h3 class="font-bold text-base mb-4" style="color: var(--accent);"><i class="fas fa-layer-group mr-2"></i> Template</h3>
             <div class="mb-4">

@@ -1,342 +1,356 @@
 <!DOCTYPE html>
 <html lang="id">
+@php
+    $brideFirstNames = trim(($invitation->bride_name ?? '') . ' & ' . ($invitation->groom_name ?? ''), ' &');
+    $eventDate = $invitation->event_date ? \Illuminate\Support\Carbon::parse($invitation->event_date) : null;
+@endphp
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{{ $invitation->title }} — {{ $invitation->venue_name }}">
-    <title>{{ $invitation->title }} — {{ config('app.name') }}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Italiana&family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <title>The Wedding of {{ $brideFirstNames }}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
     <style>
-        :root {
-            --primary: {{ $invitation->custom_colors['primary'] ?? '#000000' }};
-            --bg: #fafaf9;
-            --bg-alt: #f5f5f4;
-            --text: #1c1917;
-            --text-muted: #78716c;
-            --border: #e7e5e4;
-            --accent: {{ $invitation->custom_colors['accent'] ?? '#a8a29e' }};
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; font-size: 14px; }
 
-        /* Cover */
-        .cover-section {
-            min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: var(--bg); position: relative;
+        .font-wedding {
+            font-family: 'Cinzel', serif;
         }
-        .cover-line { position: absolute; background: var(--border); }
-        .cover-line-h { width: 100%; height: 1px; }
-        .cover-line-v { width: 1px; height: 100%; }
-        .line-t { top: 15%; } .line-b { bottom: 15%; } .line-l { left: 8%; } .line-r { right: 8%; }
 
-        .cover-content { text-align: center; padding: 2rem; position: relative; z-index: 10; }
-        .cover-label { font-size: 0.55rem; letter-spacing: 0.6em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; }
-        .cover-names {
-            font-family: 'Bodoni Moda', serif; font-size: clamp(3rem, 10vw, 6rem);
-            font-weight: 400; line-height: 1.1; margin: 2rem 0; color: var(--text);
-            letter-spacing: -0.02em;
+        #cover-section {
+            transition: opacity 0.8s ease;
         }
-        .cover-amp {
-            font-family: 'Italiana', serif; font-size: clamp(1.5rem, 4vw, 2rem);
-            color: var(--accent); display: block; margin: 0.8rem 0; font-weight: 400;
+
+        .floating-control {
+            position: fixed;
+            right: 14px;
+            top: 50%;
+            z-index: 60;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px 6px;
+            border-radius: 9999px;
+            background: rgba(46, 27, 27, 0.34);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
         }
-        .cover-date { font-size: 0.7rem; letter-spacing: 0.4em; color: var(--text-muted); text-transform: uppercase; }
-        .cover-guest { font-size: 0.8rem; color: var(--text-muted); margin-top: 1.5rem; }
-        .cover-guest strong { color: var(--text); }
 
-        .open-btn {
-            margin-top: 3rem; padding: 14px 48px; background: var(--text); color: var(--bg);
-            font-family: 'Inter', sans-serif; font-size: 0.65rem; font-weight: 600;
-            letter-spacing: 0.3em; text-transform: uppercase; border: none;
-            cursor: pointer; transition: all 0.4s ease;
+        .floating-control button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+            font-size: 14px;
+            transition: background 0.2s ease, transform 0.2s ease;
         }
-        .open-btn:hover { background: var(--text-muted); }
 
-        /* Content */
-        .invitation-content { display: none; }
-        .invitation-content.visible { display: block; animation: fadeIn 1s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .inv-section { padding: 5rem 1.5rem; max-width: 640px; margin: 0 auto; text-align: center; }
-        .inv-section-alt { background: var(--bg-alt); }
-        .section-label { font-size: 0.55rem; letter-spacing: 0.5em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; margin-bottom: 1rem; }
-        .section-title { font-family: 'Bodoni Moda', serif; font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 400; margin-bottom: 1.5rem; letter-spacing: -0.01em; }
-        .section-divider { width: 40px; height: 1px; background: var(--border); margin: 1.5rem auto; }
-
-        .couple-name { font-family: 'Bodoni Moda', serif; font-size: clamp(2rem, 6vw, 3rem); font-weight: 400; color: var(--text); }
-        .couple-amp { font-family: 'Italiana', serif; font-size: clamp(1.5rem, 4vw, 2rem); color: var(--accent); display: block; margin: 0.5rem 0; }
-
-        /* Countdown */
-        .countdown { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
-        .countdown-item { text-align: center; }
-        .countdown-number { font-family: 'Bodoni Moda', serif; font-size: 2.5rem; font-weight: 400; color: var(--text); }
-        .countdown-label { font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--text-muted); margin-top: 0.3rem; }
-
-        /* Event */
-        .event-card { border: 1px solid var(--border); padding: 2rem; margin-bottom: 1rem; text-align: left; transition: all 0.3s ease; }
-        .event-card:hover { border-color: var(--text-muted); }
-
-        /* Gallery */
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 4px; }
-        .gallery-item { aspect-ratio: 1; overflow: hidden; }
-        .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; filter: grayscale(0.3); }
-        .gallery-item:hover img { transform: scale(1.05); filter: grayscale(0); }
-
-        /* Forms */
-        .form-card { border: 1px solid var(--border); padding: 2rem; max-width: 420px; margin: 0 auto; }
-        .inv-input {
-            width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border);
-            padding: 12px 0; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px;
-            margin-bottom: 1rem; transition: all 0.3s ease;
+        .floating-control button:hover {
+            background: rgba(255, 255, 255, 0.28);
+            transform: scale(1.04);
         }
-        .inv-input:focus { outline: none; border-bottom-color: var(--text); }
-        .inv-input::placeholder { color: var(--accent); }
-        .inv-select {
-            width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border);
-            padding: 12px 0; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px;
-            margin-bottom: 1rem; appearance: none;
+
+        .floating-control button.is-active {
+            background: #7b0f0f;
         }
-        .inv-btn {
-            width: 100%; padding: 14px; background: var(--text); color: var(--bg);
-            font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.65rem;
-            letter-spacing: 0.2em; text-transform: uppercase; border: none; cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .inv-btn:hover { background: var(--text-muted); }
-
-        /* Wishes */
-        .wish-item { border-bottom: 1px solid var(--border); padding: 1rem 0; text-align: left; }
-        .wish-item:last-child { border-bottom: none; }
-        .wish-name { font-weight: 600; font-size: 0.75rem; color: var(--text); margin-bottom: 0.2rem; }
-        .wish-message { font-size: 0.8rem; color: var(--text-muted); line-height: 1.7; }
-
-        .maps-container { border: 1px solid var(--border); overflow: hidden; }
-
-        /* Music */
-        .music-player {
-            position: fixed; bottom: 24px; right: 24px; z-index: 100; width: 40px; height: 40px;
-            background: var(--text); display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.3s ease;
-        }
-        .music-player.playing { animation: spin 4s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .inv-footer { padding: 3rem 1rem; text-align: center; border-top: 1px solid var(--border); }
-        .inv-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-120%); background: var(--text); color: var(--bg); padding: 12px 28px; font-weight: 600; font-size: 0.75rem; letter-spacing: 0.1em; z-index: 200; transition: transform 0.5s ease; }
-        .inv-toast.show { transform: translateX(-50%) translateY(0); }
-
-        @media (max-width: 640px) { .inv-section { padding: 3rem 1rem; } .countdown { gap: 1.5rem; } .countdown-number { font-size: 2rem; } .line-l, .line-r { display: none; } }
     </style>
 </head>
-<body>
-    @if(session('success'))
-    <div class="inv-toast show" id="invToast">{{ session('success') }}</div>
-    <script>setTimeout(() => document.getElementById('invToast').classList.remove('show'), 4000);</script>
-    @endif
 
-    <section class="cover-section" id="cover">
-        <div class="cover-line cover-line-h line-t"></div>
-        <div class="cover-line cover-line-h line-b"></div>
-        <div class="cover-line cover-line-v line-l"></div>
-        <div class="cover-line cover-line-v line-r"></div>
+<body class="bg-[#f8f5f2]">
+    <section id="cover-section" class="fixed inset-0 z-50 h-screen w-full overflow-hidden">
+        <div class="grid h-full grid-cols-1 lg:grid-cols-2">
+            <div class="relative hidden items-center justify-center bg-[#f8f5f2] px-16 lg:flex">
+                <div class="absolute left-0 top-10 opacity-[0.03]">
+                    <h1 class="font-wedding text-[120px] leading-none text-black">
+                        {{ $invitation->bride_name }}
+                    </h1>
+                    <h1 class="font-wedding mt-5 text-[120px] leading-none text-black">
+                        {{ $invitation->groom_name }}
+                    </h1>
+                </div>
 
-        <div class="cover-content">
-            <div class="cover-label" data-aos="fade-down" data-aos-duration="1000">
-                @if($invitation->event_type === 'wedding') The Wedding of @else {{ ucfirst($invitation->event_type) }} @endif
+                <div class="relative z-10 max-w-xl">
+                    <p class="text-sm uppercase tracking-[0.4em] text-[#8a7a7a]">Wedding Invitation</p>
+
+                    <h1 class="font-wedding mt-6 text-6xl leading-tight text-[#2e1b1b]">
+                        {{ $invitation->bride_name }}
+                        <span class="mx-2 text-[#7c1111]">&</span>
+                        {{ $invitation->groom_name }}
+                    </h1>
+
+                    <div class="mt-10 h-[1px] w-32 bg-[#c8baba]"></div>
+
+                    <p class="mt-10 text-base leading-8 text-[#5e4d4d]">
+                        Dengan penuh rasa syukur dan bahagia, kami mengundang Anda untuk hadir dalam acara
+                        pernikahan kami.
+                    </p>
+
+                    <div class="mt-10">
+                        <p class="text-sm text-[#7a6a6a]">Lokasi Acara</p>
+                        <h2 class="mt-2 text-2xl font-semibold text-[#2e1b1b]">{{ $invitation->venue_name }}</h2>
+                        <p class="mt-3 max-w-md text-sm leading-7 text-[#6f5f5f]">{{ $invitation->venue_address }}</p>
+                    </div>
+                </div>
             </div>
-            <h1 class="cover-names" data-aos="fade-up" data-aos-delay="300">
-                @if($invitation->event_type === 'wedding')
-                    {{ $invitation->groom_name ?? '' }}
-                    <span class="cover-amp">&</span>
-                    {{ $invitation->bride_name ?? '' }}
-                @else
-                    {{ $invitation->title }}
-                @endif
-            </h1>
-            <p class="cover-date" data-aos="fade-up" data-aos-delay="600">{{ $invitation->event_date->format('d · m · Y') }}</p>
-            @if(isset($guest))
-            <p class="cover-guest" data-aos="fade-up" data-aos-delay="700">Kepada <strong>{{ $guest->name }}</strong></p>
-            @endif
-            <button class="open-btn" data-aos="fade-up" data-aos-delay="900" onclick="openInvitation()">Buka Undangan</button>
+
+            <div class="relative flex h-screen items-center justify-center overflow-hidden">
+                <img src="{{ asset('storage/' . $invitation->cover_photo) }}" alt="Wedding Cover"
+                    class="absolute inset-0 h-full w-full object-cover">
+                <div class="absolute inset-0 bg-black/45"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/50"></div>
+
+                <div class="relative z-10 flex w-full items-center justify-center px-8">
+                    <div class="w-full max-w-sm text-center text-white">
+                        <p class="text-xs font-medium uppercase tracking-[0.3em]">The Wedding Of</p>
+
+                        <h1 class="font-wedding mt-8 text-4xl leading-tight md:text-5xl">
+                            {{ $invitation->bride_name }}
+                            <span class="block py-2 text-2xl">&</span>
+                            {{ $invitation->groom_name }}
+                        </h1>
+
+                        <p class="mt-8 text-xl font-semibold tracking-wide">
+                            {{ $eventDate?->format('d.m.Y') ?? '-' }}
+                        </p>
+
+                        <div class="mt-12">
+                            <p class="text-sm text-white/80">Yth Bapak/Ibu/Saudara/i</p>
+                            <h2 class="mt-3 text-2xl font-semibold">{{ $guestName ?? 'Tamu Undangan' }}</h2>
+
+                            <button type="button" onclick="openInvitation()"
+                                class="mt-8 inline-flex items-center gap-2 rounded-full bg-[#7b0f0f] px-8 py-3 text-sm font-medium text-white shadow-2xl transition duration-300 hover:scale-105 hover:bg-[#5f0b0b]">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor"
+                                    viewBox="0 0 20 20">
+                                    <path d="M2.94 6.34A2 2 0 014.5 5h11a2 2 0 011.56.75l-7.06 4.7-7.06-4.11z" />
+                                    <path
+                                        d="M18 8.11l-7.43 4.95a1 1 0 01-1.14 0L2 8.76V14a2 2 0 002 2h12a2 2 0 002-2V8.11z" />
+                                </svg>
+                                Buka Undangan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <div class="invitation-content" id="invitationContent">
-        @if($invitation->opening_text)
-        <section class="inv-section">
-            <p class="text-sm leading-relaxed max-w-sm mx-auto" style="color: var(--text-muted);" data-aos="fade-up">{{ $invitation->opening_text }}</p>
-        </section>
-        @endif
-
-        @if($invitation->event_type === 'wedding')
-        <section class="inv-section inv-section-alt" style="padding: 4rem 1.5rem;">
-            <div class="section-label" data-aos="fade-up">Mempelai</div>
-            <div class="section-divider" data-aos="fade-up" data-aos-delay="100"></div>
-            <div data-aos="fade-up" data-aos-delay="200">
-                <span class="couple-name">{{ $invitation->groom_name ?? 'Groom' }}</span>
-                <span class="couple-amp">&</span>
-                <span class="couple-name">{{ $invitation->bride_name ?? 'Bride' }}</span>
-            </div>
-        </section>
-        @endif
-
-        <section class="inv-section">
-            <div class="section-label" data-aos="fade-up">Menghitung Hari</div>
-            <div class="section-divider" data-aos="fade-up" data-aos-delay="100"></div>
-            <div class="countdown" data-aos="fade-up" data-aos-delay="200" id="countdown" data-date="{{ $invitation->event_date->format('Y-m-d') }}T{{ \Carbon\Carbon::parse($invitation->event_time)->format('H:i:s') }}">
-                <div class="countdown-item"><div class="countdown-number" id="cd-days">0</div><div class="countdown-label">Hari</div></div>
-                <div class="countdown-item"><div class="countdown-number" id="cd-hours">0</div><div class="countdown-label">Jam</div></div>
-                <div class="countdown-item"><div class="countdown-number" id="cd-minutes">0</div><div class="countdown-label">Menit</div></div>
-                <div class="countdown-item"><div class="countdown-number" id="cd-seconds">0</div><div class="countdown-label">Detik</div></div>
-            </div>
-        </section>
-
-        <section class="inv-section inv-section-alt">
-            <div class="section-label" data-aos="fade-up">Acara</div>
-            <h2 class="section-title" data-aos="fade-up" data-aos-delay="100">Detail</h2>
-            <div class="section-divider" data-aos="fade-up" data-aos-delay="150"></div>
-            <div class="event-card" data-aos="fade-up" data-aos-delay="200">
-                <h3 class="font-semibold text-base mb-2">{{ $invitation->venue_name }}</h3>
-                <div class="flex flex-col gap-1 text-sm" style="color: var(--text-muted);">
-                    <p>{{ $invitation->event_date->translatedFormat('l, d F Y') }}</p>
-                    <p>{{ \Carbon\Carbon::parse($invitation->event_time)->format('H:i') }} WIB</p>
-                    <p>{{ $invitation->venue_address }}</p>
-                </div>
-            </div>
-            @foreach($invitation->events as $event)
-            <div class="event-card" data-aos="fade-up" data-aos-delay="{{ 250 + $loop->index * 100 }}">
-                <h3 class="font-semibold text-base mb-2">{{ $event->event_name }}</h3>
-                <div class="flex flex-col gap-1 text-sm" style="color: var(--text-muted);">
-                    <p>{{ $event->event_date->format('d F Y') }} · {{ $event->event_time }}</p>
-                    <p>{{ $event->venue_name }}, {{ $event->venue_address }}</p>
-                </div>
-            </div>
-            @endforeach
-        </section>
-
-        @if($invitation->photos->count())
-        <section class="inv-section">
-            <div class="section-label" data-aos="fade-up">Galeri</div>
-            <div class="section-divider" data-aos="fade-up" data-aos-delay="100"></div>
-            <div class="gallery-grid">
-                @foreach($invitation->photos as $photo)
-                <div class="gallery-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 80 }}"><img src="{{ asset('storage/' . $photo->file_path) }}" alt="{{ $photo->caption ?? '' }}" loading="lazy" decoding="async"></div>
-                @endforeach
-            </div>
-        </section>
-        @endif
-
-        @if($invitation->google_maps_url)
-        <section class="inv-section inv-section-alt">
-            <div class="section-label" data-aos="fade-up">Lokasi</div>
-            <div class="section-divider" data-aos="fade-up" data-aos-delay="100"></div>
-            <div class="maps-container" data-aos="fade-up" data-aos-delay="200">
-                <iframe src="{{ str_replace('/maps/', '/maps/embed/', $invitation->google_maps_url) }}" width="100%" height="280" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-            </div>
-            <a href="{{ $invitation->google_maps_url }}" target="_blank" class="inline-block mt-3 px-5 py-2 text-xs font-semibold tracking-widest uppercase transition" style="border: 1px solid var(--border); color: var(--text-muted);" data-aos="fade-up" data-aos-delay="300">
-                Google Maps →
-            </a>
-        </section>
-        @endif
-
-        @if($invitation->loveStories->count())
-        <section class="inv-section" id="love-story">
-            <div class="section-label" data-aos="fade-up">Perjalanan Cinta</div>
-            <h2 class="section-title" data-aos="fade-up" data-aos-delay="100">Love Story</h2>
-            <div class="section-divider" data-aos="fade-up" data-aos-delay="150"></div>
-            <div style="max-width: 420px; margin: 0 auto;">
-                @foreach($invitation->loveStories as $story)
-                <div class="wish-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 50 }}">
-                    @if($story->year)<div class="wish-name">{{ $story->year }}</div>@endif
-                    <div class="wish-name">{{ $story->title }}</div>
-                    @if($story->description)<div class="wish-message">{{ $story->description }}</div>@endif
-                </div>
-                @endforeach
-            </div>
-        </section>
-        @endif
-
-        <section class="inv-section" id="rsvp">
-            <div class="section-label" data-aos="fade-up">Konfirmasi</div>
-            <h2 class="section-title" data-aos="fade-up" data-aos-delay="100">RSVP</h2>
-            <div class="section-divider" data-aos="fade-up" data-aos-delay="150"></div>
-            <div class="form-card" data-aos="fade-up" data-aos-delay="200">
-                <form method="POST" action="{{ route('invitation.rsvp', $invitation->slug) }}">
-                    @csrf
-                    @if(isset($guest))
-                        <input type="hidden" name="guest_id" value="{{ $guest->id }}"><input type="hidden" name="name" value="{{ $guest->name }}">
-                        <p class="text-sm mb-3" style="color: var(--text-muted);">{{ $guest->name }}</p>
-                    @else
-                        <input type="text" name="name" class="inv-input" placeholder="Nama" required>
-                    @endif
-                    <input type="text" name="phone" class="inv-input" placeholder="No. HP">
-                    <select name="status" class="inv-select" required><option value="attending">Hadir</option><option value="maybe">Belum Pasti</option><option value="not_attending">Tidak Hadir</option></select>
-                    <input type="number" name="pax" class="inv-input" value="1" min="1" max="10" placeholder="Jumlah">
-                    <textarea name="message" class="inv-input" rows="2" placeholder="Ucapan" style="resize: none;"></textarea>
-                    <button type="submit" class="inv-btn">Kirim</button>
-                </form>
-            </div>
-            @if($invitation->rsvps->whereNotNull('message')->count())
-            <div style="max-width: 420px; margin: 24px auto 0;">
-                @foreach($invitation->rsvps as $rsvp)
-                @if($rsvp->message)
-                <div class="wish-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 50 }}">
-                    <div class="wish-name">{{ $rsvp->name }} - {{ $rsvp->status }}</div>
-                    <div class="wish-message">{{ $rsvp->message }}</div>
-                </div>
-                @endif
-                @endforeach
-            </div>
-            @endif
-        </section>
-
-        <section class="inv-section inv-section-alt" id="wishes">
-            <div class="section-label" data-aos="fade-up">Ucapan</div>
-            <h2 class="section-title" data-aos="fade-up" data-aos-delay="100">Doa & Harapan</h2>
-            <div class="section-divider" data-aos="fade-up" data-aos-delay="150"></div>
-            <div class="form-card mb-6" data-aos="fade-up" data-aos-delay="200">
-                <form method="POST" action="{{ route('invitation.wish', $invitation->slug) }}">
-                    @csrf
-                    <input type="text" name="name" class="inv-input" placeholder="Nama" value="{{ $guest->name ?? '' }}" required>
-                    <textarea name="message" class="inv-input" rows="2" placeholder="Tulis ucapan..." style="resize: none;" required></textarea>
-                    <button type="submit" class="inv-btn">Kirim Ucapan</button>
-                </form>
-            </div>
-            <div style="max-width: 420px; margin: 0 auto;">
-                @foreach($invitation->wishes as $wish)
-                <div class="wish-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 50 }}">
-                    <div class="wish-name">{{ $wish->name }}</div>
-                    <div class="wish-message">{{ $wish->message }}</div>
-                </div>
-                @endforeach
-            </div>
-        </section>
-
-        @if($invitation->closing_text)
-        <section class="inv-section">
-            <div class="section-divider" data-aos="fade-up"></div>
-            <p class="text-sm leading-relaxed max-w-sm mx-auto italic" style="color: var(--text-muted); font-family: 'Bodoni Moda', serif; font-size: 0.95rem;" data-aos="fade-up" data-aos-delay="100">{{ $invitation->closing_text }}</p>
-        </section>
-        @endif
-
-        <footer class="inv-footer"><p class="text-xs" style="color: var(--accent);">{{ config('app.name') }}</p></footer>
+    <div class="floating-control">
+        <button type="button" id="music-toggle" aria-label="Toggle music" title="Musik">♪</button>
+        <button type="button" id="scroll-toggle" aria-label="Toggle auto scroll" title="Auto scroll">↕</button>
     </div>
 
-    @if($invitation->music_url)
-    <div class="music-player" id="musicPlayer" onclick="toggleMusic()"><i class="fas fa-music text-xs" style="color: var(--bg);"></i></div>
-    <audio id="bgMusic" loop><source src="{{ $invitation->music_signed_url ?? asset('storage/' . $invitation->music_url) }}" type="audio/mpeg"></audio>
-    @endif
+    <main class="relative z-0 min-h-screen bg-white">
+        <section id="opening-section" class="relative min-h-screen w-full overflow-hidden bg-[#f8f5f2]">
+            <div class="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+                <div class="relative hidden items-start justify-start bg-[#f8f5f2] px-16 py-20 lg:flex">
+                    <div class="absolute left-12 top-16 opacity-[0.035]">
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->bride_name }} &</h2>
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->groom_name }}</h2>
+                    </div>
 
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+                    <a href="javascript:history.back()"
+                        class="relative z-10 inline-flex items-center gap-2 rounded-full bg-[#7b0f0f] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#5f0b0b]">
+                        <span class="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[#7b0f0f]">
+                            ‹
+                        </span>
+                        Demo
+                    </a>
+                </div>
+
+                <div class="relative flex min-h-screen items-center justify-center overflow-hidden">
+                    <img src="{{ asset('storage/' . $invitation->cover_photo) }}"
+                        alt="Opening Wedding {{ $brideFirstNames }}" class="absolute inset-0 h-full w-full object-cover">
+                    <div class="absolute inset-0 bg-black/50"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/60"></div>
+
+                    <div class="relative z-10 w-full px-8 text-center text-white">
+                        <div class="mx-auto max-w-sm">
+                            <p class="font-wedding text-sm font-semibold uppercase tracking-wide">We Invite You</p>
+                            <p class="font-wedding mt-4 text-sm font-semibold uppercase tracking-wide">
+                                To Celebrate Our Wedding
+                            </p>
+
+                            <h1 class="font-wedding mt-10 text-4xl leading-tight">{{ $brideFirstNames }}</h1>
+
+                            <div
+                                class="mt-10 flex items-center justify-center gap-4 font-wedding text-sm font-semibold uppercase">
+                                <span>{{ $eventDate?->translatedFormat('l') ?? '-' }}</span>
+                                <span class="h-5 w-[1px] bg-[#8b1111]"></span>
+                                <span>{{ $eventDate?->translatedFormat('d F Y') ?? '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="quote-section" class="relative min-h-screen w-full overflow-hidden bg-[#f8f5f2]">
+            <div class="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+                <div class="relative hidden items-center justify-center bg-[#f8f5f2] px-16 lg:flex">
+                    <div class="absolute left-12 top-16 opacity-[0.035]">
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->bride_name }} &</h2>
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->groom_name }}</h2>
+                    </div>
+                </div>
+
+                <div class="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
+                    <img src="{{ asset('storage/' . $invitation->cover_photo) }}" alt="Quote Wedding"
+                        class="absolute inset-0 h-full w-full object-cover">
+                    <div class="absolute inset-0 bg-black/45"></div>
+
+                    <div
+                        class="relative z-10 w-full max-w-xl rounded-2xl bg-black/45 px-7 py-10 text-center text-white shadow-2xl backdrop-blur-md">
+                        <div
+                            class="mx-auto mb-7 flex h-20 w-20 items-center justify-center rounded-full border-4 border-white">
+                            <div class="flex h-16 w-16 items-center justify-center rounded-full border border-white/70">
+                                <span class="font-wedding text-2xl">
+                                    {{ strtoupper(substr((string) $invitation->bride_name, 0, 1)) }}{{ strtoupper(substr((string) $invitation->groom_name, 0, 1)) }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <p class="text-sm font-semibold italic leading-8 md:text-base md:leading-9">
+                            “Dan diantara tanda-tanda kebesaran-Nya ialah diciptakan-Nya untukmu pasangan hidup dari
+                            jenismu sendiri supaya kamu mendapatkan ketenangan hati dan dijadikan-Nya kasih sayang
+                            diantara kamu sesungguhnya yang demikian menjadi tanda-tanda kebesaran-Nya bagi orang-orang
+                            yang berpikir”
+                        </p>
+
+                        <p class="mt-6 text-sm font-bold italic md:text-base">Surah Ar - Ruum : 21</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="couple-section" class="relative min-h-screen w-full overflow-hidden bg-[#f8f5f2]">
+            <div class="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+                <div class="relative hidden items-center justify-center bg-[#f8f5f2] px-16 lg:flex">
+                    <div class="absolute left-12 top-16 opacity-[0.035]">
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->bride_name }} &</h2>
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->groom_name }}</h2>
+                    </div>
+                </div>
+
+                <div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fbf8f6] px-6 py-16">
+                    <div class="absolute inset-0 opacity-[0.08]">
+                        <img src="{{ asset('storage/' . $invitation->cover_photo) }}" alt="Background Couple"
+                            class="h-full w-full object-cover blur-sm">
+                    </div>
+                    <div class="absolute inset-0 bg-white/85"></div>
+
+                    <div class="relative z-10 w-full max-w-md text-center text-[#2e1b1b]">
+                        <p class="mb-12 text-sm leading-7 text-[#4d3c3c]">
+                            Kami mohon doa & restunya atas pernikahan kami
+                        </p>
+
+                        <div class="flex flex-col items-center">
+                            <div class="h-32 w-32 rounded-full border-[7px] border-[#7b0f0f] p-1 shadow-2xl">
+                                <img src="{{ asset('storage/' . $invitation->bride_photo) }}"
+                                    alt="{{ $invitation->bride_name }}" class="h-full w-full rounded-full object-cover">
+                            </div>
+
+                            <h2 class="font-wedding mt-8 text-4xl leading-tight text-[#2e1b1b]">
+                                {{ $invitation->bride_name }}
+                            </h2>
+
+                            <p class="mt-3 text-sm leading-6 text-[#4d3c3c]">{{ $invitation->bride_parent_name }}</p>
+
+                            @if ($invitation->bride_instagram)
+                                <a href="{{ $invitation->bride_instagram }}" target="_blank"
+                                    class="mt-4 inline-flex items-center gap-2 rounded-md bg-[#7b0f0f] px-4 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-[#5f0b0b]">
+                                    Instagram
+                                </a>
+                            @endif
+                        </div>
+
+                        <div class="my-12">
+                            <span class="font-wedding text-6xl text-[#2e1b1b]">&</span>
+                        </div>
+
+                        <div class="flex flex-col items-center">
+                            <div class="h-32 w-32 rounded-full border-[7px] border-[#7b0f0f] p-1 shadow-2xl">
+                                <img src="{{ asset('storage/' . $invitation->groom_photo) }}"
+                                    alt="{{ $invitation->groom_name }}" class="h-full w-full rounded-full object-cover">
+                            </div>
+
+                            <h2 class="font-wedding mt-8 text-4xl leading-tight text-[#2e1b1b]">
+                                {{ $invitation->groom_name }}
+                            </h2>
+
+                            <p class="mt-3 text-sm leading-6 text-[#4d3c3c]">{{ $invitation->groom_parent_name }}</p>
+
+                            @if ($invitation->groom_instagram)
+                                <a href="{{ $invitation->groom_instagram }}" target="_blank"
+                                    class="mt-4 inline-flex items-center gap-2 rounded-md bg-[#7b0f0f] px-4 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-[#5f0b0b]">
+                                    Instagram
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
     <script>
-        function openInvitation() { document.getElementById('cover').style.display = 'none'; document.getElementById('invitationContent').classList.add('visible'); AOS.init({ duration: 900, once: true, offset: 50 }); const a = document.getElementById('bgMusic'); if (a) a.play().then(() => document.getElementById('musicPlayer')?.classList.add('playing')).catch(() => {}); startCountdown(); }
-        function startCountdown() { const el = document.getElementById('countdown'); if (!el) return; const t = new Date(el.dataset.date).getTime(); setInterval(() => { const d = t - Date.now(); if (d > 0) { document.getElementById('cd-days').textContent = Math.floor(d / 864e5); document.getElementById('cd-hours').textContent = Math.floor((d % 864e5) / 36e5); document.getElementById('cd-minutes').textContent = Math.floor((d % 36e5) / 6e4); document.getElementById('cd-seconds').textContent = Math.floor((d % 6e4) / 1e3); } }, 1000); }
-        function toggleMusic() { const a = document.getElementById('bgMusic'), p = document.getElementById('musicPlayer'); a.paused ? (a.play(), p.classList.add('playing')) : (a.pause(), p.classList.remove('playing')); }
-        AOS.init({ duration: 900, once: true });
+        function openInvitation() {
+            const cover = document.getElementById('cover-section');
+
+            cover.classList.add('opacity-0');
+            cover.classList.add('pointer-events-none');
+
+            setTimeout(() => {
+                cover.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 800);
+        }
+
+        document.body.style.overflow = 'hidden';
+
+        const musicToggle = document.getElementById('music-toggle');
+        const scrollToggle = document.getElementById('scroll-toggle');
+        let autoScrollTimer = null;
+
+        if (musicToggle) {
+            musicToggle.addEventListener('click', function() {
+                this.classList.toggle('is-active');
+            });
+        }
+
+        if (scrollToggle) {
+            scrollToggle.addEventListener('click', function() {
+                const isActive = this.classList.toggle('is-active');
+
+                if (isActive) {
+                    autoScrollTimer = window.setInterval(() => {
+                        window.scrollBy({
+                            top: 1,
+                            behavior: 'smooth'
+                        });
+                    }, 60);
+                } else if (autoScrollTimer) {
+                    window.clearInterval(autoScrollTimer);
+                    autoScrollTimer = null;
+                }
+            });
+        }
     </script>
 </body>
+
 </html>

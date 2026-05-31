@@ -301,23 +301,12 @@ class InvitationPublicController extends Controller
                 ->first();
         }
 
-        $normalizedPhone = $this->phoneNormalizer->normalizeIndonesia($validated['phone'] ?? null);
-        if (!$guest && empty($normalizedPhone)) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Nomor WhatsApp wajib diisi jika tidak menggunakan link tamu personal.',
-                    'errors' => ['phone' => ['Nomor WhatsApp wajib diisi.']]
-                ], 422);
-            }
-            return back()->withErrors([
-                'phone' => 'Nomor HP wajib diisi jika tidak menggunakan link tamu personal.',
-            ])->withInput();
-        }
+        $resolvedPhone = $guest?->phone ?: ($validated['phone'] ?? null);
+        $normalizedPhone = $this->phoneNormalizer->normalizeIndonesia($resolvedPhone);
 
         $payload = [
             'name' => $validated['name'],
-            'phone' => $validated['phone'] ?? null,
+            'phone' => $resolvedPhone,
             'normalized_phone' => $normalizedPhone,
             'status' => $validated['status'],
             'pax' => $validated['pax'],
@@ -335,13 +324,20 @@ class InvitationPublicController extends Controller
                 $payload
             );
         } else {
-            Rsvp::updateOrCreate(
-                [
+            if (!empty($normalizedPhone)) {
+                Rsvp::updateOrCreate(
+                    [
+                        'invitation_id' => $invitation->id,
+                        'normalized_phone' => $normalizedPhone,
+                    ],
+                    $payload
+                );
+            } else {
+                Rsvp::create([
                     'invitation_id' => $invitation->id,
-                    'normalized_phone' => $normalizedPhone,
-                ],
-                $payload
-            );
+                    ...$payload,
+                ]);
+            }
         }
 
         $this->funnelService->track((int) $invitation->id, 'rsvp_submitted', [

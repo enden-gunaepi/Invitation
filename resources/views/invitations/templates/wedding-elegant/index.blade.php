@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     @php
+        $guest = $guest ?? null;
         $coverPhoto = $invitation->cover_photo
             ? asset('storage/' . $invitation->cover_photo)
             : 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80';
@@ -2590,41 +2591,42 @@
 
                 <section class="right-section rsvp-section" id="wishes-section">
                     <div class="rsvp-stage">
-                        <h2 class="wishes-title reveal">Wishes</h2>
+                        <h2 class="wishes-title reveal">RSVP & Ucapan</h2>
+
+                        <form id="elegantRsvpForm" method="POST" action="{{ route('invitation.rsvp', $invitation->slug) }}"
+                            class="wishes-form reveal reveal-delay-2">
+                            @csrf
+                            <input type="hidden" name="redirect_anchor" value="wishes-section">
+                            @if (!empty($guest?->id))
+                                <input type="hidden" name="guest_id" value="{{ $guest->id }}">
+                            @endif
+                            <input type="hidden" name="phone" value="{{ old('phone', $guest?->phone) }}">
+                            <input type="hidden" name="status" id="rsvp_status_input" value="{{ old('status', 'attending') }}">
+
+                            <input type="text" name="name" class="wishes-input" placeholder="Nama Anda"
+                                value="{{ old('name', $guestName) }}" required>
+                            <textarea name="message" class="wishes-textarea" placeholder="Tuliskan ucapan & doa Anda" required>{{ old('message') }}</textarea>
+                        </form>
 
                         <button type="button" class="rsvp-action-card reveal reveal-delay-1"
                             data-open-modal="rsvpModal">
                             <i class="fa-solid fa-user-check"></i>
-                            <span>Konfirmasi Kehadiran</span>
+                            <span>Lanjut Konfirmasi Kehadiran</span>
                         </button>
 
-                        <form method="POST" action="{{ route('invitation.wish', $invitation->slug) }}"
-                            class="wishes-form reveal reveal-delay-2">
-                            @csrf
-                            <input type="hidden" name="redirect_anchor" value="wishes-section">
-                            <input type="text" name="name" class="wishes-input" placeholder="Nama Anda"
-                                value="{{ old('name', $guestName) }}" required>
-                            <textarea name="message" class="wishes-textarea" placeholder="Write your wishes" required>{{ old('message') }}</textarea>
-                            <button type="submit" class="wishes-submit">
-                                <i class="fa-regular fa-comment-dots"></i>
-                                <span>Send</span>
-                            </button>
-                        </form>
-
                         <div class="wishes-list reveal reveal-delay-3">
-                            @forelse ($invitation->wishes as $wish)
+                            @forelse ($invitation->rsvps->whereNotNull('message') as $rsvp)
                                 <div class="wish-item">
-                                    <div class="wish-name">{{ $wish->name }}</div>
+                                    <div class="wish-name">{{ $rsvp->name }} - {{ $rsvp->status === 'attending' ? 'Hadir' : ($rsvp->status === 'maybe' ? 'Ragu' : 'Tidak Hadir') }}</div>
                                     <div class="wish-date">
                                         <i class="fa-regular fa-clock"></i>
-                                        {{ optional($wish->created_at)->translatedFormat('l, d F Y H:i') }}
+                                        {{ optional($rsvp->created_at)->translatedFormat('l, d F Y H:i') }}
                                     </div>
-                                    <div class="wish-message">{{ $wish->message }}</div>
+                                    <div class="wish-message">{{ $rsvp->message }}</div>
                                 </div>
                             @empty
                                 <div class="wish-item">
-                                    <div class="wish-message">Belum ada ucapan. Jadilah yang pertama mengirimkan doa
-                                        terbaik untuk kedua mempelai.</div>
+                                    <div class="wish-message">Belum ada RSVP & ucapan. Jadilah yang pertama mengirimkan konfirmasi kehadiran dan doa terbaik untuk kedua mempelai.</div>
                                 </div>
                             @endforelse
                         </div>
@@ -2725,15 +2727,7 @@
                 </button>
             </div>
 
-            <form method="POST" action="{{ route('invitation.rsvp', $invitation->slug) }}" class="modal-form">
-                @csrf
-                @if (!empty($guest?->id))
-                    <input type="hidden" name="guest_id" value="{{ $guest->id }}">
-                @endif
-                <input type="hidden" name="name" value="{{ old('name', $guestName ?: 'Tamu Undangan') }}">
-                <input type="hidden" name="status" id="rsvp_status_input"
-                    value="{{ old('status', 'attending') }}">
-
+            <div class="modal-form">
                 <div class="rsvp-note-card">
                     <div class="rsvp-note-icon">
                         <i class="fa-solid fa-bookmark"></i>
@@ -2748,7 +2742,7 @@
                     <label for="rsvp_pax">Jumlah Pax</label>
                     <div class="rsvp-pax-control">
                         <input id="rsvp_pax" type="number" name="pax" min="1" max="10"
-                            step="1" value="{{ (int) old('pax', 1) }}" class="rsvp-pax-input" required>
+                            step="1" value="{{ (int) old('pax', 1) }}" class="rsvp-pax-input" required form="elegantRsvpForm">
                         <div class="rsvp-pax-buttons">
                             <button type="button" class="rsvp-pax-step" onclick="adjustRsvpPax(1)"
                                 aria-label="Tambah Pax">
@@ -2763,13 +2757,15 @@
                 </div>
 
                 <div class="rsvp-status-actions">
-                    <button type="submit" class="rsvp-status-btn attend"
+                    <button type="submit" class="rsvp-status-btn attend" form="elegantRsvpForm"
                         onclick="setRsvpStatus('attending')">Hadir</button>
-                    <button type="submit" class="rsvp-status-btn decline"
+                    <button type="submit" class="rsvp-status-btn decline" form="elegantRsvpForm"
                         onclick="setRsvpStatus('not_attending')">Tidak Hadir</button>
+                    <button type="submit" class="rsvp-status-btn" form="elegantRsvpForm"
+                        onclick="setRsvpStatus('maybe')">Masih Ragu</button>
                     <button type="button" class="rsvp-close-btn" data-close-modal="rsvpModal">Tutup</button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -2825,6 +2821,7 @@
     <script>
         const targetDate = new Date(@json($targetDate)).getTime();
         let invitationOpened = false;
+        const shouldAutoUnlockInvitation = @json(session()->has('success')) || window.location.hash.length > 1;
         const musicUrl = @json($invitation->music_signed_url ?? null);
         const musicFallbackUrl = @json($musicDirectUrl);
         let galleryInterval = null;
@@ -3272,6 +3269,25 @@
                 nextSection.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start',
+                });
+            }
+        }
+
+        if (shouldAutoUnlockInvitation) {
+            invitationOpened = true;
+            document.body.classList.remove('is-locked');
+            document.body.style.overflow = '';
+
+            const hashTargetId = window.location.hash ? window.location.hash.replace('#', '') : '';
+            if (hashTargetId) {
+                requestAnimationFrame(() => {
+                    const hashTarget = document.getElementById(hashTargetId);
+                    if (hashTarget) {
+                        hashTarget.scrollIntoView({
+                            behavior: 'auto',
+                            block: 'start',
+                        });
+                    }
                 });
             }
         }

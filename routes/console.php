@@ -16,7 +16,7 @@ Artisan::command('packages:backfill-subscriptions', function (ClientPackageServi
     $created = 0;
 
     foreach ($clients as $client) {
-        if ($clientPackageService->getActiveSubscription((int) $client->id)) {
+        if ($clientPackageService->getUsableSubscriptions((int) $client->id)->isNotEmpty()) {
             continue;
         }
 
@@ -44,6 +44,13 @@ Artisan::command('packages:backfill-subscriptions', function (ClientPackageServi
 
     $this->info("Backfill selesai. Subscription aktif dibuat: {$created}");
 })->purpose('Backfill active client package subscriptions from latest paid payments');
+
+Artisan::command('invitations:backfill-subscription-bindings {user_id?}', function (ClientPackageService $clientPackageService) {
+    $userId = $this->argument('user_id');
+    $updated = $clientPackageService->backfillInvitationSubscriptionBindings($userId ? (int) $userId : null);
+
+    $this->info("Backfill binding invitation selesai. Invitation terhubung: {$updated}");
+})->purpose('Backfill client package subscription bindings for legacy invitations');
 
 Schedule::command('payments:dunning')->everyThirtyMinutes();
 Schedule::command('reminders:generate-auto')->hourly();

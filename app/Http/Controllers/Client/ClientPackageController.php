@@ -25,9 +25,15 @@ class ClientPackageController extends Controller
     {
         $user = auth()->user();
         $packages = Package::query()->where('is_active', true)->orderBy('price')->get();
-        $activeSubscription = $this->clientPackageService->getActiveSubscription((int) $user->id);
+        $activeSubscriptions = $this->clientPackageService->getUsableSubscriptions((int) $user->id);
+        $subscriptionCards = $activeSubscriptions->map(function (ClientPackageSubscription $subscription) {
+            return [
+                'subscription' => $subscription,
+                'usage' => $this->clientPackageService->getSubscriptionUsage($subscription),
+            ];
+        });
 
-        return view('client.packages.select', compact('packages', 'activeSubscription'));
+        return view('client.packages.select', compact('packages', 'subscriptionCards'));
     }
 
     public function store(Request $request)
@@ -50,7 +56,7 @@ class ClientPackageController extends Controller
         $this->authorizeSubscription($subscription);
         $subscription->load('package');
 
-        $activeSubscription = $this->clientPackageService->getActiveSubscription((int) auth()->id());
+        $activeSubscription = $this->clientPackageService->findAuthorizedUsableSubscription((int) auth()->id(), (int) $subscription->id);
         if ($activeSubscription && $activeSubscription->id === $subscription->id) {
             return redirect()->route('client.invitations.index')
                 ->with('success', 'Paket ini sudah aktif.');
@@ -260,4 +266,3 @@ class ClientPackageController extends Controller
         }
     }
 }
-

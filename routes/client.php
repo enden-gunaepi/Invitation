@@ -39,6 +39,7 @@ Route::middleware('active.package')->group(function () {
 });
 Route::resource('invitations', InvitationController::class)->except(['create', 'store']);
 Route::patch('/invitations/{invitation}/submit', [InvitationController::class, 'submit'])->name('invitations.submit');
+Route::patch('/invitations/{invitation}/toggle-status', [InvitationController::class, 'toggleStatus'])->name('invitations.toggle-status');
 Route::post('/invitations/{invitation}/upgrade-suggested', [InvitationController::class, 'upgradeSuggested'])->name('invitations.upgrade-suggested');
 Route::get('/invitations/{invitation}/analytics', [InvitationController::class, 'analytics'])->name('invitations.analytics');
 
