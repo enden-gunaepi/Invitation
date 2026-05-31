@@ -68,8 +68,21 @@
                                 . "{$signature}\n"
                                 . "________";
                             $shareText = urlencode($waMessage);
+                            $whatsappPhone = preg_replace('/\D+/', '', (string) $guest->phone);
+
+                            if ($whatsappPhone && str_starts_with($whatsappPhone, '0')) {
+                                $whatsappPhone = '62' . substr($whatsappPhone, 1);
+                            }
+
+                            if ($whatsappPhone && str_starts_with($whatsappPhone, '8')) {
+                                $whatsappPhone = '62' . $whatsappPhone;
+                            }
+
+                            $whatsappUrl = $whatsappPhone
+                                ? "https://wa.me/{$whatsappPhone}?text={$shareText}"
+                                : "https://wa.me/?text={$shareText}";
                         @endphp
-                        <a href="https://wa.me/?text={{ $shareText }}" target="_blank"
+                        <a href="{{ $whatsappUrl }}" target="_blank"
                            class="topbar-btn" style="width:32px;height:32px;color:#25D366;" title="Share WhatsApp">
                             <i class="fab fa-whatsapp"></i>
                         </a>
@@ -154,7 +167,7 @@
         <div class="card p-6 mt-4">
             <h3 class="font-bold text-base mb-2">Import Tamu dari Excel</h3>
             <p class="text-xs mb-4" style="color: var(--text-secondary);">
-                Upload file <strong>.xlsx/.xls/.csv</strong>. Kolom yang didukung: <code>name</code>, <code>phone</code>, <code>email</code>, <code>category</code>, <code>pax</code>, <code>notes</code>.
+                Upload file <strong>.xlsx/.xls/.csv</strong>. Format yang didukung: data per kolom Excel dengan header <code>name</code>, <code>phone</code>, <code>email</code>, <code>category</code>, <code>pax</code>, <code>notes</code>. Template CSV download memakai pemisah yang cocok untuk Excel lokal agar kolom langsung terpisah. Kolom yang kosong tetap boleh diimpor.
             </p>
             <form method="POST" action="{{ route('client.invitations.guests.import', $invitation) }}" enctype="multipart/form-data">
                 @csrf

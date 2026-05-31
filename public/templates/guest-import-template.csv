@@ -1,3 +1,5 @@
-﻿name,phone,email,category,pax,notes
-Budi Santoso,081234567890,budi@mail.com,Keluarga,2,Meja depan
-Siti Aminah,089876543210,siti@mail.com,Teman,1,
+name;phone;email;category;pax;notes
+Budi Santoso;081234567890;budi@mail.com;Keluarga;2;Meja depan
+Siti Aminah;089876543210;;Teman;1;
+Enden Gunawan;083119904114;enden.gnv@gmail.com;;1;
+Deden;083119904114;;;;

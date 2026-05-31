@@ -180,7 +180,7 @@ class GuestController extends Controller
 
         try {
             $sheet = IOFactory::load($request->file('guest_file')->getRealPath())->getActiveSheet();
-            $rows = $sheet->toArray('', true, true, false);
+            $rows = $this->normalizeImportedRows($sheet->toArray('', true, true, false));
         } catch (Throwable $e) {
             return redirect()->route('client.invitations.guests.index', $invitation)
                 ->with('error', 'File tidak bisa dibaca. Pastikan format Excel/CSV valid.');
@@ -278,6 +278,31 @@ class GuestController extends Controller
         }
 
         return $map;
+    }
+
+    private function normalizeImportedRows(array $rows): array
+    {
+        return array_map(function ($row) {
+            if (!is_array($row)) {
+                return [];
+            }
+
+            $trimmed = array_map(fn ($value) => is_string($value) ? trim($value) : $value, $row);
+            $nonEmpty = array_values(array_filter($trimmed, fn ($value) => trim((string) $value) !== ''));
+
+            if (count($nonEmpty) === 1) {
+                $single = (string) $nonEmpty[0];
+                $delimiters = [',', ';', "\t"];
+
+                foreach ($delimiters as $delimiter) {
+                    if (str_contains($single, $delimiter)) {
+                        return array_map('trim', str_getcsv($single, $delimiter));
+                    }
+                }
+            }
+
+            return $trimmed;
+        }, $rows);
     }
 
     private function normalizeHeader(string $text): string
