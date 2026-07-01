@@ -868,10 +868,12 @@
         @if ($invitation->ig_story_photo)
             @php
                 $igStoryDate = $invitation->event_date ? $invitation->event_date->format('d · m · Y') : '-';
+                $igBrideName = trim($invitation->bride_name ?? 'Mempelai Wanita');
+                $igGroomName = trim($invitation->groom_name ?? 'Mempelai Pria');
                 $igCoupleName = trim(
-                    ($invitation->bride_name ?? 'Mempelai Wanita') .
+                    $igBrideName .
                         ' & ' .
-                        ($invitation->groom_name ?? 'Mempelai Pria'),
+                        $igGroomName,
                 );
             @endphp
             <section
@@ -906,6 +908,8 @@
                     const CANVAS_W = 1080;
                     const CANVAS_H = 1920;
                     const coupleNameText = @json($igCoupleName);
+                    const brideNameText = @json($igBrideName);
+                    const groomNameText = @json($igGroomName);
                     const dateText = @json($igStoryDate);
                     const websiteUrl = 'janjisucikita.com';
                     const igHandle = '-';
@@ -925,6 +929,18 @@
                     }).catch(function() {
                         renderIgStory();
                     });
+
+                    function fitScriptFont(ctx, text, maxWidth, initialSize, minSize) {
+                        let fontSize = initialSize;
+                        while (fontSize > minSize) {
+                            ctx.font = `700 ${fontSize}px GreatVibes, cursive`;
+                            if (ctx.measureText(text).width <= maxWidth) {
+                                return fontSize;
+                            }
+                            fontSize -= 2;
+                        }
+                        return minSize;
+                    }
 
                     function renderIgStory() {
                         const canvas = document.getElementById('igStoryCanvas');
@@ -962,18 +978,28 @@
                             ctx.fillStyle = grad;
                             ctx.fillRect(0, gradStart, CANVAS_W, CANVAS_H - gradStart);
 
-                            // -- Couple name (script font) --
-                            const nameY = CANVAS_H * 0.66;
+                            // -- Couple name (script font, forced two lines) --
+                            const nameCenterY = CANVAS_H * 0.655;
+                            const lineGap = 84;
+                            const nameMaxWidth = CANVAS_W - 140;
+                            const brideFontSize = fitScriptFont(ctx, brideNameText, nameMaxWidth, 76, 48);
+                            const groomLineText = `& ${groomNameText}`;
+                            const groomFontSize = fitScriptFont(ctx, groomLineText, nameMaxWidth, 76, 48);
+
                             ctx.textAlign = 'center';
                             ctx.fillStyle = '#ffffff';
-                            ctx.font = '700 72px GreatVibes, cursive';
                             ctx.shadowColor = 'rgba(0,0,0,0.4)';
                             ctx.shadowBlur = 8;
-                            ctx.fillText(coupleNameText, CANVAS_W / 2, nameY);
+
+                            ctx.font = `700 ${brideFontSize}px GreatVibes, cursive`;
+                            ctx.fillText(brideNameText, CANVAS_W / 2, nameCenterY - (lineGap / 2));
+
+                            ctx.font = `700 ${groomFontSize}px GreatVibes, cursive`;
+                            ctx.fillText(groomLineText, CANVAS_W / 2, nameCenterY + (lineGap / 2));
                             ctx.shadowBlur = 0;
 
                             // -- Date --
-                            const dateY = nameY + 60;
+                            const dateY = nameCenterY + (lineGap / 2) + 76;
                             ctx.font = '300 36px Inter, sans-serif';
                             ctx.letterSpacing = '4px';
                             ctx.fillStyle = 'rgba(255,255,255,0.9)';

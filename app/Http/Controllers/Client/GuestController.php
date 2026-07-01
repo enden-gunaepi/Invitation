@@ -8,6 +8,7 @@ use App\Models\Invitation;
 use App\Services\InvitationAccessService;
 use App\Services\InvitationFunnelService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Throwable;
 
@@ -17,15 +18,46 @@ class GuestController extends Controller
     {
     }
 
-    public function index(Invitation $invitation)
+    public function index(Request $request, Invitation $invitation)
     {
         $this->authorize($invitation);
 
+        $search = trim((string) $request->query('q', ''));
+
         $guests = $invitation->guests()
-            ->orderByRaw('CASE WHEN table_number IS NULL THEN 1 ELSE 0 END')
-            ->orderBy('table_number')
-            ->orderBy('seat_label')
-            ->paginate(20);
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($guestQuery) use ($search) {
+                    $guestQuery
+                        ->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('phone', 'like', '%' . $search . '%')
+                        ->orWhere('email', 'like', '%' . $search . '%')
+                        ->orWhere('category', 'like', '%' . $search . '%')
+                        ->orWhere('seat_label', 'like', '%' . $search . '%');
+                });
+            })->when($search !== '', function ($query) use ($search) {
+                $query->orderByRaw(
+                    "CASE
+                        WHEN name LIKE ? THEN 0
+                        WHEN name LIKE ? THEN 1
+                        WHEN phone LIKE ? THEN 2
+                        WHEN email LIKE ? THEN 3
+                        WHEN category LIKE ? THEN 4
+                        WHEN seat_label LIKE ? THEN 5
+                        ELSE 6
+                    END",
+                    [
+                        $search,
+                        $search . '%',
+                        $search . '%',
+                        $search . '%',
+                        $search . '%',
+                        $search . '%',
+                    ]
+                );
+            })
+            ->latest('id')
+            ->paginate(20)
+            ->withQueryString();
         $invitation->load('package');
 
         $maxGuests = $invitation->package->max_guests ?? 100;
@@ -33,7 +65,14 @@ class GuestController extends Controller
         $checkedInGuests = $invitation->guests()->whereNotNull('checked_in_at')->count();
         $seatAssignedGuests = $invitation->guests()->whereNotNull('table_number')->count();
 
-        return view('client.guests.index', compact('invitation', 'guests', 'maxGuests', 'currentGuests', 'checkedInGuests', 'seatAssignedGuests'));
+        if ($request->ajax()) {
+            return response()->json([
+                'list_html' => View::make('client.guests.partials.list', compact('guests', 'invitation', 'search'))->render(),
+                'pagination_html' => $guests->links()->toHtml(),
+            ]);
+        }
+
+        return view('client.guests.index', compact('invitation', 'guests', 'maxGuests', 'currentGuests', 'checkedInGuests', 'seatAssignedGuests', 'search'));
     }
 
     public function store(Request $request, Invitation $invitation)

@@ -107,6 +107,20 @@ class TemplateSeeder extends Seeder
             'is_active' => true,
         ]);
 
+        Template::updateOrCreate(['slug' => 'wedding-flowers'], [
+            'name' => 'Wedding Flowers',
+            'category' => 'wedding',
+            'thumbnail' => null,
+            'html_path' => 'invitations.templates.wedding-folwers.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
+            'color_schemes' => [
+                ['primary' => '#577477', 'secondary' => '#F8FAF5', 'accent' => '#257046'],
+                ['primary' => '#287047', 'secondary' => '#EEF1EB', 'accent' => '#D9E4D8'],
+            ],
+            'is_premium' => true,
+            'is_active' => true,
+        ]);
+
         Template::updateOrCreate(['slug' => 'wedding-builder-atelier'], [
             'name' => 'Wedding Builder Atelier',
             'category' => 'wedding',
