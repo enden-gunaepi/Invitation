@@ -51,6 +51,31 @@
                     <i class="fas fa-wallet mr-2"></i> Lihat Dompet & Saldo
                 </a>
 
+            @elseif($payment->isPendingVerification())
+                <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background: rgba(245,158,11,0.12);">
+                    <i class="fas fa-clock text-3xl" style="color: #f59e0b;"></i>
+                </div>
+                <h2 class="font-bold text-xl mb-2">Menunggu Konfirmasi Admin</h2>
+                <p class="text-sm text-gray-500">Bukti transfer Anda telah diterima dan sedang menunggu verifikasi oleh admin (1x24 jam).</p>
+                
+                <div class="mt-6 p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-[var(--outline-variant)]">
+                    <div class="flex items-center justify-between text-sm mb-2">
+                        <span class="text-gray-500">Jumlah Top Up</span>
+                        <span class="font-bold text-[var(--accent)]">Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mb-2">
+                        <span class="text-gray-500">Invoice</span>
+                        <span class="font-semibold text-gray-700 dark:text-gray-300">{{ $payment->invoice_number }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <p class="text-xs text-gray-500 mb-2">Salah upload foto bukti transfer?</p>
+                    <a href="{{ route('client.balance.topup.manual-transfer.instructions', ['payment_id' => $payment->id]) }}" class="btn btn-secondary w-full py-3 font-bold rounded-xl justify-center">
+                        <i class="fas fa-upload mr-2"></i> Upload Ulang Bukti Transfer
+                    </a>
+                </div>
+
             @elseif($payment->isPending())
                 <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background: rgba(255,149,0,0.12);">
                     <i class="fas fa-clock text-3xl" style="color: var(--warning);"></i>

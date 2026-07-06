@@ -51,42 +51,59 @@
         @endif
     </div>
 
-    <!-- Balance Status Card -->
-    <div class="card p-6">
-        <h3 class="font-bold text-base mb-4"><i class="fas fa-wallet mr-2" style="color: var(--accent);"></i> Pembayaran Saldo</h3>
-        
-        <div class="flex justify-between items-center p-4 rounded-xl border mb-6" 
-             style="background: var(--surface-container-low); border-color: var(--outline-variant);">
-            <div>
-                <span class="text-xs text-gray-500 block uppercase tracking-wider font-semibold">Saldo Dompet Anda</span>
-                <span class="text-lg font-bold text-gray-800 dark:text-gray-200">Rp {{ number_format($user->balance, 0, ',', '.') }}</span>
-            </div>
-            <div>
-                @if($user->hasSufficientBalance($billing['total']))
-                    <span class="badge badge-success px-3 py-1 flex items-center gap-1">
-                        <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
-                        Saldo Cukup
-                    </span>
-                @else
-                    <span class="badge badge-danger px-3 py-1 flex items-center gap-1 bg-red-100 text-red-700">
-                        <span class="material-symbols-outlined" style="font-size: 14px;">cancel</span>
-                        Saldo Kurang
-                    </span>
+    <!-- Pilihan Metode Pembayaran -->
+    <div x-data="{ method: 'balance' }" class="space-y-6">
+        <div class="card p-6">
+            <h3 class="font-bold text-base mb-4"><i class="fas fa-credit-card mr-2" style="color: var(--accent);"></i> Pilih Metode Pembayaran</h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <!-- Option: Saldo -->
+                <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all"
+                       :class="method === 'balance' ? 'ring-2 ring-[var(--accent)] bg-[var(--accent-bg)] border-transparent' : 'border-[var(--border-color)] hover:bg-gray-50 dark:hover:bg-slate-800/50'"
+                       @click="method = 'balance'">
+                    <input type="radio" name="payment_method_selector" value="balance" x-model="method" class="hidden">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                         :style="method === 'balance' ? 'background: var(--accent); color: white;' : 'background: var(--surface-container); color: var(--text-secondary);'">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm">Potong Saldo</div>
+                        <div class="text-xs mt-1" style="color: var(--text-secondary);">Instan, langsung aktif</div>
+                        <div class="text-xs font-semibold mt-1" style="color: var(--accent);">
+                            Saldo Anda: Rp {{ number_format($user->balance, 0, ',', '.') }}
+                        </div>
+                    </div>
+                </label>
+
+                <!-- Option: Transfer Manual -->
+                @if($manualTransferActive)
+                <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all"
+                       :class="method === 'manual' ? 'ring-2 ring-[var(--accent)] bg-[var(--accent-bg)] border-transparent' : 'border-[var(--border-color)] hover:bg-gray-50 dark:hover:bg-slate-800/50'"
+                       @click="method = 'manual'">
+                    <input type="radio" name="payment_method_selector" value="manual" x-model="method" class="hidden">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                         :style="method === 'manual' ? 'background: var(--accent); color: white;' : 'background: var(--surface-container); color: var(--text-secondary);'">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm">Transfer Manual</div>
+                        <div class="text-xs mt-1" style="color: var(--text-secondary);">Verifikasi admin 1x24 jam</div>
+                    </div>
+                </label>
                 @endif
             </div>
-        </div>
 
-        <form method="POST" action="{{ route('client.checkout.process', $invitation) }}" id="checkoutForm">
-            @csrf
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+            <!-- Formulir Kupon & Referral (Berlaku untuk semua metode) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 p-4 rounded-xl" style="background: var(--surface-container-low);">
                 <div>
                     <label class="form-label">Kupon (opsional)</label>
-                    <input type="text" name="coupon_code" class="form-input" value="{{ old('coupon_code') }}" placeholder="PROMO10">
+                    <input type="text" form="checkoutForm" id="global_coupon_code" class="form-input" value="{{ old('coupon_code') }}" placeholder="PROMO10"
+                           x-on:input="document.getElementById('manual_coupon_code').value = $event.target.value">
                 </div>
                 <div>
                     <label class="form-label">Referral (opsional)</label>
-                    <input type="text" name="referral_code" class="form-input" value="{{ old('referral_code', $lockedReferralCode ?? '') }}" placeholder="REF12345" {{ !empty($lockedReferralCode) ? 'readonly' : '' }}>
+                    <input type="text" form="checkoutForm" id="global_referral_code" class="form-input" value="{{ old('referral_code', $lockedReferralCode ?? '') }}" placeholder="REF12345" {{ !empty($lockedReferralCode) ? 'readonly' : '' }}
+                           x-on:input="document.getElementById('manual_referral_code').value = $event.target.value">
                     @if(!empty($currentReferrer))
                     <p class="text-xs mt-1" style="color: var(--text-secondary);">
                         Dirujuk oleh <strong>{{ $currentReferrer->name }}</strong>
@@ -95,21 +112,46 @@
                 </div>
             </div>
 
-            @if($user->hasSufficientBalance($billing['total']))
-                <button type="submit" class="btn btn-primary w-full py-3.5 text-center font-bold text-base rounded-xl">
-                    <i class="fas fa-lock mr-2"></i> Bayar Sekarang (Potong Saldo)
-                </button>
-            @else
-                <div class="p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200/50 text-center mb-4">
-                    <p class="text-sm font-semibold text-red-800 dark:text-red-300">Saldo Anda kurang sebesar Rp {{ number_format($billing['total'] - $user->balance, 0, ',', '.') }}</p>
-                    <p class="text-xs text-red-600 dark:text-red-400 mt-1">Silakan isi ulang saldo Anda terlebih dahulu untuk melanjutkan pembelian ini.</p>
-                </div>
-                <a href="{{ route('client.balance.topup', ['amount' => $billing['total'] - $user->balance]) }}" 
-                   class="btn btn-primary w-full py-3.5 text-center font-bold text-base rounded-xl justify-center">
-                    <i class="fas fa-plus-circle mr-2"></i> Top Up Saldo Sekarang
-                </a>
+            <!-- Content: Saldo -->
+            <div x-show="method === 'balance'" x-transition>
+                <form method="POST" action="{{ route('client.checkout.process', $invitation) }}" id="checkoutForm">
+                    @csrf
+                    <!-- inputs form are bound to inputs above via id and script/alpine -->
+                    <input type="hidden" name="coupon_code" id="balance_coupon_code" :value="document.getElementById('global_coupon_code').value">
+                    <input type="hidden" name="referral_code" id="balance_referral_code" :value="document.getElementById('global_referral_code').value">
+
+                    @if($user->hasSufficientBalance($billing['total']))
+                        <button type="submit" class="btn btn-primary w-full py-3.5 text-center font-bold text-base rounded-xl">
+                            <i class="fas fa-lock mr-2"></i> Bayar Sekarang (Potong Saldo)
+                        </button>
+                    @else
+                        <div class="p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200/50 text-center mb-4">
+                            <p class="text-sm font-semibold text-red-800 dark:text-red-300">Saldo Anda kurang sebesar Rp {{ number_format($billing['total'] - $user->balance, 0, ',', '.') }}</p>
+                            <p class="text-xs text-red-600 dark:text-red-400 mt-1">Silakan isi ulang saldo Anda terlebih dahulu untuk melanjutkan pembelian ini.</p>
+                        </div>
+                        <a href="{{ route('client.balance.topup', ['amount' => $billing['total'] - $user->balance]) }}"
+                           class="btn btn-primary w-full py-3.5 text-center font-bold text-base rounded-xl justify-center">
+                            <i class="fas fa-plus-circle mr-2"></i> Top Up Saldo Sekarang
+                        </a>
+                    @endif
+                </form>
+            </div>
+
+            <!-- Content: Manual Transfer -->
+            @if($manualTransferActive)
+            <div x-show="method === 'manual'" x-transition style="display: none;">
+                <form method="POST" action="{{ route('client.checkout.manual-transfer.process', $invitation) }}" id="manualTransferForm">
+                    @csrf
+                    <input type="hidden" name="coupon_code" id="manual_coupon_code" :value="document.getElementById('global_coupon_code').value">
+                    <input type="hidden" name="referral_code" id="manual_referral_code" :value="document.getElementById('global_referral_code').value">
+
+                    <button type="submit" class="btn btn-primary w-full py-3.5 text-center font-bold text-base rounded-xl">
+                        Lanjut ke Instruksi Transfer <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </form>
+            </div>
             @endif
-        </form>
+        </div>
     </div>
 </div>
 

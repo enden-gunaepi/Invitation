@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#735a31",
+                        "tertiary-fixed-dim": "#e3c290",
+                        "on-tertiary-fixed-variant": "#59431c",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary": "#605e5a",
+                        "surface": "#fbf9f8",
+                        "on-secondary-fixed-variant": "#484743",
+                        "secondary-container": "#e6e2dc",
+                        "primary-container": "#b68d40",
+                        "surface-container-high": "#eae7e7",
+                        "on-tertiary-fixed": "#281900",
+                        "on-primary-fixed": "#271900",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#eebf6d",
+                        "on-background": "#1b1c1c",
+                        "on-surface-variant": "#4e4538",
+                        "on-primary-container": "#3c2900",
+                        "inverse-surface": "#303030",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#666460",
+                        "surface-container": "#f0eded",
+                        "tertiary-fixed": "#ffdeac",
+                        "secondary-fixed-dim": "#c9c6c0",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#e6e2dc",
+                        "primary": "#7b580d",
+                        "outline-variant": "#d2c5b3",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#eebf6d",
+                        "on-secondary-fixed": "#1c1c18",
+                        "surface-tint": "#7b580d",
+                        "on-tertiary-container": "#3c2904",
+                        "on-primary-fixed-variant": "#5e4200",
+                        "inverse-on-surface": "#f3f0f0",
+                        "tertiary-container": "#ac8f61",
+                        "outline": "#807666",
+                        "on-surface": "#1b1c1c",
+                        "primary-fixed": "#ffdea8",
+                        "surface-container-highest": "#e4e2e1",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "background": "#fbf9f8",
+                        "surface-bright": "#fbf9f8",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e4e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "32px",
+                        "stack-xl": "64px",
+                        "gutter-grid": "16px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "margin-page": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(247, 243, 237, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(182, 141, 64, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fbf9f8;
+            color: #1b1c1c;
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="antialiased overflow-x-hidden">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 w-full z-50 bg-surface/70 dark:bg-surface-dim/70 backdrop-blur-xl flex justify-between items-center px-margin-page h-16 shadow-[0px_8px_24px_rgba(47,47,47,0.08)]">
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-primary italic">E &amp; J</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary hover:opacity-80 transition-opacity">favorite</button>
+<button class="material-symbols-outlined text-primary hover:opacity-80 transition-opacity">menu</button>
+</div>
+</header>
+<main class="pt-32 pb-40 px-margin-page flex flex-col items-center">
+<!-- Section 8: Resepsi -->
+<section class="w-full max-w-md animate-fade-in" id="resepsi">
+<!-- Contextual Image Header -->
+<div class="relative w-full aspect-[4/5] rounded-[24px] overflow-hidden mb-stack-lg shadow-[0px_8px_24px_rgba(47,47,47,0.08)]">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A luxurious wedding reception ballroom at The Ritz-Carlton Jakarta, featuring high ceilings, ornate gold leaf details, and massive crystal chandeliers. The scene is illuminated by soft, warm golden lighting that creates a romantic and exclusive atmosphere. Pristine white floral arrangements and elegant cream-toned table settings fill the foreground, reflecting a high-end minimalist digital aesthetic with sophisticated luxury." style="background-image: url('https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+<div class="absolute bottom-6 left-6 right-6">
+<span class="font-label-sm text-label-sm text-white/90 uppercase tracking-widest mb-2 block">The Celebration</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-white leading-tight">Resepsi Pernikahan</h2>
+</div>
+</div>
+<!-- Content Card -->
+<div class="glass-card rounded-[24px] p-8 flex flex-col items-center text-center space-y-stack-md shadow-[0px_8px_24px_rgba(47,47,47,0.08)]">
+<!-- Date & Time Row -->
+<div class="flex flex-col items-center space-y-2">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Minggu, 20 Desember 2026</span>
+</div>
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined">schedule</span>
+<p class="font-body-md text-body-md">13:00 - 17:00 WIB</p>
+</div>
+</div>
+<!-- Divider -->
+<div class="w-12 h-[1px] bg-primary/30 my-2"></div>
+<!-- Location Details -->
+<div class="flex flex-col items-center space-y-2">
+<span class="material-symbols-outlined text-primary scale-125 mb-1">location_on</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">The Ritz-Carlton Jakarta</h3>
+<p class="font-body-md text-body-md text-secondary max-w-[280px]">
+                        Mega Kuningan, Jl. DR. Ide Anak Agung Gde Agung No.1, Jakarta Selatan
+                    </p>
+</div>
+<!-- Map Placeholder -->
+<div class="w-full h-48 rounded-[20px] overflow-hidden mt-stack-md border border-outline-variant/30">
+<div class="w-full h-full bg-surface-container-high relative flex items-center justify-center">
+<!-- Simulated map view with minimalist markers -->
+<div class="absolute inset-0 opacity-20 bg-[radial-gradient(#b68d40_1px,transparent_1px)] [background-size:20px_20px]"></div>
+<div class="relative z-10 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary-container text-4xl animate-bounce">location_on</span>
+<span class="mt-2 font-label-sm text-label-sm text-primary uppercase">Mega Kuningan</span>
+</div>
+</div>
+</div>
+<!-- Primary Action Button -->
+<div class="pt-stack-md w-full">
+<a class="flex items-center justify-center w-full h-[56px] bg-primary-container hover:bg-primary transition-all duration-300 rounded-full text-white font-label-md text-label-md shadow-lg active:scale-95 group" href="https://maps.google.com?q=The+Ritz-Carlton+Jakarta" target="_blank">
+<span class="material-symbols-outlined mr-2 group-hover:translate-x-1 transition-transform">map</span>
+                        Lihat Lokasi
+                    </a>
+</div>
+</div>
+<!-- Contextual Decorative Element -->
+<div class="mt-stack-xl flex flex-col items-center opacity-40">
+<span class="material-symbols-outlined text-primary text-3xl">flare</span>
+<div class="h-16 w-[1px] bg-gradient-to-b from-primary to-transparent mt-2"></div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Shell -->
+<div class="fixed bottom-8 left-0 w-full z-50 flex justify-center px-4">
+<nav class="bg-secondary/70 dark:bg-secondary-container/70 backdrop-blur-xl border border-primary/20 rounded-full px-6 py-3 flex items-center gap-8 shadow-[0px_8px_24px_rgba(47,47,47,0.08)]">
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors">
+<span class="material-symbols-outlined">home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors">
+<span class="material-symbols-outlined">photo_library</span>
+</button>
+<button class="relative flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:absolute after:-bottom-1">
+<span class="material-symbols-outlined">event_available</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors">
+<span class="material-symbols-outlined">featured_seasonal_and_gifts</span>
+</button>
+</nav>
+</div>
+<script>
+        // Simple entrance animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('opacity-100', 'translate-y-0');
+                        entry.target.classList.remove('opacity-0', 'translate-y-10');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-10');
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<body></body>

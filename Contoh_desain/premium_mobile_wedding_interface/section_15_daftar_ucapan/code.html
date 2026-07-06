@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Playfair+Display:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(247, 243, 237, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(182, 141, 64, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #b68d4033;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#735a31",
+                    "tertiary-fixed-dim": "#e3c290",
+                    "on-tertiary-fixed-variant": "#59431c",
+                    "surface-container-low": "#f6f3f2",
+                    "secondary": "#605e5a",
+                    "surface": "#fbf9f8",
+                    "on-secondary-fixed-variant": "#484743",
+                    "secondary-container": "#e6e2dc",
+                    "primary-container": "#b68d40",
+                    "surface-container-high": "#eae7e7",
+                    "on-tertiary-fixed": "#281900",
+                    "on-primary-fixed": "#271900",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#eebf6d",
+                    "on-background": "#1b1c1c",
+                    "on-surface-variant": "#4e4538",
+                    "on-primary-container": "#3c2900",
+                    "inverse-surface": "#303030",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#666460",
+                    "surface-container": "#f0eded",
+                    "tertiary-fixed": "#ffdeac",
+                    "secondary-fixed-dim": "#c9c6c0",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#dcd9d9",
+                    "secondary-fixed": "#e6e2dc",
+                    "primary": "#7b580d",
+                    "outline-variant": "#d2c5b3",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#eebf6d",
+                    "on-secondary-fixed": "#1c1c18",
+                    "surface-tint": "#7b580d",
+                    "on-tertiary-container": "#3c2904",
+                    "on-primary-fixed-variant": "#5e4200",
+                    "inverse-on-surface": "#f3f0f0",
+                    "tertiary-container": "#ac8f61",
+                    "outline": "#807666",
+                    "on-surface": "#1b1c1c",
+                    "primary-fixed": "#ffdea8",
+                    "surface-container-highest": "#e4e2e1",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "background": "#fbf9f8",
+                    "surface-bright": "#fbf9f8",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e4e2e1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "32px",
+                    "stack-xl": "64px",
+                    "gutter-grid": "16px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "margin-page": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Playfair Display"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Playfair Display"],
+                    "headline-md": ["Playfair Display"],
+                    "label-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Playfair Display"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 w-full z-50 bg-surface/70 dark:bg-surface-dim/70 backdrop-blur-xl shadow-[0px_8px_24px_rgba(47,47,47,0.08)] flex justify-between items-center px-margin-page h-16">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary italic">E & J</h1>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-primary" data-icon="favorite">favorite</span>
+</div>
+</header>
+<main class="pt-24 pb-32 min-h-screen px-margin-page overflow-hidden relative">
+<!-- Minimalist Background Ornament -->
+<div class="absolute top-0 right-0 -z-10 w-64 h-64 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-[200px] text-primary" data-icon="featured_seasonal_and_gifts">featured_seasonal_and_gifts</span>
+</div>
+<!-- Section Header -->
+<section class="max-w-md mx-auto mb-stack-xl text-center">
+<span class="font-label-md text-label-md text-primary tracking-widest uppercase mb-2 block">Guestbook</span>
+<h2 class="font-display-lg text-headline-lg text-on-surface mb-stack-sm">Ucapan & Doa</h2>
+<div class="w-12 h-[2px] bg-primary mx-auto opacity-30"></div>
+</section>
+<!-- Message List Container -->
+<section class="max-w-md mx-auto space-y-stack-md relative" id="message-container">
+<!-- Card 1 -->
+<div class="glass-card p-6 rounded-[24px] shadow-[0px_8px_24px_rgba(47,47,47,0.08)] transition-all duration-500 hover:translate-y-[-4px]">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-secondary-container">
+<img class="w-full h-full object-cover" data-alt="A sophisticated editorial close-up portrait of a wedding guest, softly lit with golden hour natural light. The style is minimalist and clean, matching a luxurious cream and gold wedding theme. Professional photography, shallow depth of field, neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1E-Osbf2A3ipR_ax9oIkqJd_geErSbt3d4qrA9difLEgyIGBub-elc7Hau0fDq4xpC36YKY8LMEZoHqLBeG-nQhfKbjBk1MUB2TdsNk5rNl1wJKt9zC9lYIGao7dJRQs-XgIFVrvx_jXGLs-MBK5Otme6itfvOBOapzO9EGWDoqIP1UgTpK9uUdFx8NVuP3pjFzaMyjui66sH8bzj1lXfEPoeAOZVU1nWG7INaJ5AIE5HtJckiXOSBXiUUPI1UXIrm5UF9vKMY3gH"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface-variant">Arini & Faris</h3>
+<p class="font-label-sm text-label-sm text-outline">12 Oktober 2023</p>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed italic">
+                    "Selamat menempuh hidup baru untuk Elizabeth & James! Semoga cinta kalian berdua selalu mekar seperti bunga di musim semi. Doa terbaik untuk kebahagiaan kalian selamanya."
+                </p>
+</div>
+<!-- Card 2 -->
+<div class="glass-card p-6 rounded-[24px] shadow-[0px_8px_24px_rgba(47,47,47,0.08)] transition-all duration-500 hover:translate-y-[-4px]">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-secondary-container">
+<img class="w-full h-full object-cover" data-alt="A portrait of a male wedding guest in a beige linen suit, smiling warmly. The aesthetic is bright, high-key, and minimalist, set against a blurred floral wedding backdrop. Soft lighting, elegant composition, high-end editorial style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmitLBTOWoczqs8Pph0fE94NfweoQMe6SfDsrBbQjFr9vOXefFvv5Ss6344O0o9I1oKkSJbVWT1rPZ8OhUSJKsaiEiTmrnSErQ-kTN0NBityZwZKaeh29URuj25abj51LsyofTk2I8W38mpmBsedez_asQ3eqBxuyowS3B7F9aioMk5FWEPXay9lOZI-DAx8nz1CaUC3Y3BiiA30eh3fwDUWptFG2EygZ8PrbYZv46trupuuTwwpMtwPyGW_0KcOIdZKXzFEIhiaL1"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface-variant">Dimas Pratama</h3>
+<p class="font-label-sm text-label-sm text-outline">12 Oktober 2023</p>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed italic">
+                    "Truly a beautiful celebration for a beautiful couple. Selamat ya, Bro James! Semoga selalu dalam lindungan-Nya dan menjadi keluarga yang sakinah."
+                </p>
+</div>
+<!-- Card 3 -->
+<div class="glass-card p-6 rounded-[24px] shadow-[0px_8px_24px_rgba(47,47,47,0.08)] transition-all duration-500 hover:translate-y-[-4px]">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-secondary-container">
+<img class="w-full h-full object-cover" data-alt="A high-end editorial portrait of a young woman at a wedding, wearing elegant gold jewelry and a cream-colored silk dress. The background is a soft-focus minimalist architectural space. Bright, airy, luxury lifestyle aesthetic, warm lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOqwH_hFR1S4PwJszILL0lUZxo-fAWjZY27JHGs5HM2Wvz7O46gEWeDRz3J8af_sn-W7VLxlYIINwFwhB-VdzuoZsRmG3v2BjsrArUPUcIL5VVJi0syrkxCoIqXcNOnwzWv2pGBmrmqwd-FKEv6Ms8GMUwIHCG3J6BilR-qE_EdNf67cmmxtaJ-XHHK50pUpknnbVdO64bUlNURL7tmjcLCD_U1i78-tqicl4Kgh1UU1UXGyECOvUXXQITTfDe9-aBSjUbLbNXkUr0"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface-variant">Siti Nurhaliza</h3>
+<p class="font-label-sm text-label-sm text-outline">11 Oktober 2023</p>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed italic">
+                    "Ikut bahagia melihat kalian akhirnya bersatu. Perjalanan panjang yang berakhir indah. Selamat ya, Liz! Langgeng terus sampai kakek nenek."
+                </p>
+</div>
+<!-- Hidden Cards (Simulating Pagination/Load More) -->
+<div class="hidden space-y-stack-md" id="more-messages">
+<div class="glass-card p-6 rounded-[24px] shadow-[0px_8px_24px_rgba(47,47,47,0.08)]">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-secondary-container">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of an elderly couple at a formal event, looking joyful and elegant. Minimalist background with soft textures in cream and gold. Warm lighting, high-quality digital photography, serene mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBO3odWHe8eSeOwYu1sVr_vF57b6puzQTNrFLrf2oLBzI2dRGYpDzsSb2H3O1hvQOPzqxjj3nxiI0cmgssjw2xfroAw3tmGuN5HS9KjNLqcWKtpW19NNZqz6GL13hnlaAlsceAIJYe3L9uOLYc5Mq2dPv2OxcgF-FmKrA5Gemcz4Zrf6PdRh9lQfvKuLMhSuqw5HXbYX59VCyHeYh9OcU_KrjtRdUmz-FVWuSDOK4MEQ8oQ0R7h59aPkZIHx_sWLpbIQMeEsVHEuq53"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface-variant">Keluarga Wijaya</h3>
+<p class="font-label-sm text-label-sm text-outline">10 Oktober 2023</p>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed italic">
+                        "Semoga hari-hari kalian penuh dengan tawa dan pengertian. Salam hangat dari kami sekeluarga."
+                    </p>
+</div>
+</div>
+<!-- Action Button -->
+<div class="pt-stack-lg flex justify-center">
+<button class="min-h-[56px] px-10 bg-primary text-on-primary rounded-full font-label-md text-label-md hover:opacity-90 transition-all active:scale-95 shadow-[0px_8px_24px_rgba(182,141,64,0.2)] flex items-center gap-2 group" id="load-more-btn" onclick="loadMore()">
+<span>Lihat Ucapan Lainnya</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-y-1 transition-transform" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-8 left-0 w-full z-50 flex justify-center px-4 md:hidden">
+<div class="bg-secondary/70 backdrop-blur-xl border border-primary/20 shadow-[0px_8px_24px_rgba(47,47,47,0.08)] w-[90%] max-w-md rounded-full px-6 py-3 flex justify-between items-center">
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="photo_library">photo_library</span>
+</a>
+<a class="relative flex flex-col items-center justify-center text-primary after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:absolute after:-bottom-1 active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="featured_seasonal_and_gifts">featured_seasonal_and_gifts</span>
+</a>
+</div>
+</nav>
+<script>
+        function loadMore() {
+            const moreContent = document.getElementById('more-messages');
+            const btn = document.getElementById('load-more-btn');
+            
+            moreContent.classList.toggle('hidden');
+            
+            if (moreContent.classList.contains('hidden')) {
+                btn.innerHTML = '<span>Lihat Ucapan Lainnya</span><span class="material-symbols-outlined text-[18px]" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>';
+            } else {
+                btn.innerHTML = '<span>Sembunyikan</span><span class="material-symbols-outlined text-[18px] rotate-180" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>';
+                
+                // Smooth scroll to the new content
+                window.scrollBy({
+                    top: 200,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // Simple entrance animation for cards
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.glass-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {</script></body></html>

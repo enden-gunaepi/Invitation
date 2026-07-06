@@ -25,7 +25,9 @@
                     </div>
                     <div class="flex items-center justify-between text-sm mb-2">
                         <span class="text-gray-500">Metode</span>
-                        <span class="font-semibold text-gray-700 dark:text-gray-300">Potong Saldo (Instan)</span>
+                        <span class="font-semibold text-gray-700 dark:text-gray-300">
+                            {{ $payment->isManualTransfer() ? 'Transfer Manual' : 'Potong Saldo' }}
+                        </span>
                     </div>
                     <div class="flex items-center justify-between text-sm mb-2">
                         <span class="text-gray-500">Waktu Bayar</span>
@@ -40,6 +42,30 @@
                 <a href="{{ route('client.invitations.show', $invitation) }}" class="btn btn-primary w-full mt-6 py-3 font-bold rounded-xl justify-center">
                     <i class="fas fa-eye mr-2"></i> Lihat Undangan
                 </a>
+            @elseif($payment->isPendingVerification())
+                <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background: rgba(245,158,11,0.12);">
+                    <i class="fas fa-clock text-3xl" style="color: #f59e0b;"></i>
+                </div>
+                <h2 class="font-bold text-xl mb-2">Menunggu Konfirmasi Admin</h2>
+                <p class="text-sm text-gray-500">Bukti transfer Anda telah diterima dan sedang menunggu verifikasi oleh admin (1x24 jam).</p>
+                
+                <div class="mt-6 p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-[var(--outline-variant)]">
+                    <div class="flex items-center justify-between text-sm mb-2">
+                        <span class="text-gray-500">Total Tagihan</span>
+                        <span class="font-bold text-[var(--accent)]">Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mb-2">
+                        <span class="text-gray-500">Invoice</span>
+                        <span class="font-semibold text-gray-700 dark:text-gray-300">{{ $payment->invoice_number }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <p class="text-xs text-gray-500 mb-2">Salah upload foto bukti transfer?</p>
+                    <a href="{{ route('client.checkout.manual-transfer.instructions', $invitation) }}" class="btn btn-secondary w-full py-3 font-bold rounded-xl justify-center">
+                        <i class="fas fa-upload mr-2"></i> Upload Ulang Bukti Transfer
+                    </a>
+                </div>
             @else
                 <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background: rgba(255,59,48,0.12);">
                     <i class="fas fa-times-circle text-3xl" style="color: var(--danger);"></i>

@@ -183,6 +183,69 @@ class TelegramNotificationService
         );
     }
 
+    // ── Transfer Manual ───────────────────────────────────────────────────────
+
+    public function manualTransferProofSubmitted(Payment $payment): void
+    {
+        $user    = $payment->user;
+        $amount  = number_format($payment->amount, 0, ',', '.');
+        $invoice = $payment->invoice_number ?? '-';
+        $time    = now()->format('d M Y, H:i');
+
+        $adminUrl = url('/admin/manual-transfer/' . $payment->id);
+
+        $this->send(
+            "🔔 <b>Bukti Transfer Manual Diterima!</b>\n"
+            . "──────────────────\n"
+            . "👤 Client  : {$this->e($user?->name ?? '-')}\n"
+            . "📧 Email   : <code>{$this->e($user?->email ?? '-')}</code>\n"
+            . "💰 Nominal : Rp{$amount}\n"
+            . "📦 Invoice : <code>{$invoice}</code>\n"
+            . "🕐 Waktu   : {$time}\n\n"
+            . "➡️ Silakan konfirmasi di panel admin:\n"
+            . "<a href=\"{$adminUrl}\">Lihat Detail Pembayaran</a>"
+        );
+    }
+
+    public function manualTransferConfirmed(Payment $payment, User $admin): void
+    {
+        $user    = $payment->user;
+        $amount  = number_format($payment->amount, 0, ',', '.');
+        $invoice = $payment->invoice_number ?? '-';
+        $time    = now()->format('d M Y, H:i');
+
+        $this->send(
+            "✅ <b>Transfer Manual Dikonfirmasi!</b>\n"
+            . "──────────────────\n"
+            . "👤 Client  : {$this->e($user?->name ?? '-')}\n"
+            . "📧 Email   : <code>{$this->e($user?->email ?? '-')}</code>\n"
+            . "💰 Nominal : Rp{$amount}\n"
+            . "📦 Invoice : <code>{$invoice}</code>\n"
+            . "🛡️ Admin   : {$this->e($admin->name)}\n"
+            . "🕐 Waktu   : {$time}"
+        );
+    }
+
+    public function manualTransferRejected(Payment $payment, User $admin, string $reason): void
+    {
+        $user    = $payment->user;
+        $amount  = number_format($payment->amount, 0, ',', '.');
+        $invoice = $payment->invoice_number ?? '-';
+        $time    = now()->format('d M Y, H:i');
+
+        $this->send(
+            "❌ <b>Transfer Manual Ditolak</b>\n"
+            . "──────────────────\n"
+            . "👤 Client  : {$this->e($user?->name ?? '-')}\n"
+            . "📧 Email   : <code>{$this->e($user?->email ?? '-')}</code>\n"
+            . "💰 Nominal : Rp{$amount}\n"
+            . "📦 Invoice : <code>{$invoice}</code>\n"
+            . "📝 Alasan  : <i>{$this->e($reason)}</i>\n"
+            . "🛡️ Admin   : {$this->e($admin->name)}\n"
+            . "🕐 Waktu   : {$time}"
+        );
+    }
+
     // ── Helper ────────────────────────────────────────────────────────────────
 
     protected function e(string $text): string

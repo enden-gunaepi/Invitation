@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>E &amp; J - Wedding Gift</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        .glass-card {
+            background: rgba(247, 243, 237, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(182, 141, 64, 0.2);
+        }
+        .btn-inner-glow {
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+        }
+        body {
+            background-color: #fbf9f8;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#735a31",
+                        "tertiary-fixed-dim": "#e3c290",
+                        "on-tertiary-fixed-variant": "#59431c",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary": "#605e5a",
+                        "surface": "#fbf9f8",
+                        "on-secondary-fixed-variant": "#484743",
+                        "secondary-container": "#e6e2dc",
+                        "primary-container": "#b68d40",
+                        "surface-container-high": "#eae7e7",
+                        "on-tertiary-fixed": "#281900",
+                        "on-primary-fixed": "#271900",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#eebf6d",
+                        "on-background": "#1b1c1c",
+                        "on-surface-variant": "#4e4538",
+                        "on-primary-container": "#3c2900",
+                        "inverse-surface": "#303030",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#666460",
+                        "surface-container": "#f0eded",
+                        "tertiary-fixed": "#ffdeac",
+                        "secondary-fixed-dim": "#c9c6c0",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-fixed": "#e6e2dc",
+                        "primary": "#7b580d",
+                        "outline-variant": "#d2c5b3",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#eebf6d",
+                        "on-secondary-fixed": "#1c1c18",
+                        "surface-tint": "#7b580d",
+                        "on-tertiary-container": "#3c2904",
+                        "on-primary-fixed-variant": "#5e4200",
+                        "inverse-on-surface": "#f3f0f0",
+                        "tertiary-container": "#ac8f61",
+                        "outline": "#807666",
+                        "on-surface": "#1b1c1c",
+                        "primary-fixed": "#ffdea8",
+                        "surface-container-highest": "#e4e2e1",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "background": "#fbf9f8",
+                        "surface-bright": "#fbf9f8",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e4e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "32px",
+                        "stack-xl": "64px",
+                        "gutter-grid": "16px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "margin-page": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 w-full z-50 bg-surface/70 dark:bg-surface-dim/70 backdrop-blur-xl shadow-[0px_8px_24px_rgba(47,47,47,0.08)] flex justify-between items-center px-margin-page h-16">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary italic">E &amp; J</h1>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="favorite">favorite</span>
+</div>
+</header>
+<main class="pt-24 pb-32 px-margin-page max-w-md mx-auto min-h-screen">
+<!-- Header Section -->
+<section class="text-center mb-stack-xl">
+<span class="font-label-md text-label-md text-primary uppercase tracking-widest mb-stack-sm block">Wedding Gift</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-stack-md">Kado Pernikahan</h2>
+<p class="font-body-md text-body-md text-secondary leading-relaxed px-4">
+                Doa restu Anda adalah kado terindah bagi kami. Namun apabila Anda ingin memberikan tanda kasih, Anda dapat memberikannya melalui saluran berikut:
+            </p>
+</section>
+<!-- Cards Bento/Stack Layout -->
+<div class="space-y-stack-lg">
+<!-- Card 1: Bank Transfer -->
+<div class="glass-card rounded-[24px] p-8 shadow-[0px_8px_24px_rgba(47,47,47,0.08)] transition-transform active:scale-[0.98] duration-300">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance">account_balance</span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary bg-tertiary/10 px-3 py-1 rounded-full uppercase tracking-tighter">Bank BCA</span>
+</div>
+<div class="space-y-2 mb-8">
+<p class="font-label-sm text-label-sm text-secondary uppercase tracking-widest">Nomor Rekening</p>
+<h3 class="font-headline-md text-headline-md text-on-surface tracking-wider" id="account-number">123456789</h3>
+<p class="font-body-lg text-body-lg text-secondary italic">a/n Jonathan Alvano</p>
+</div>
+<button class="w-full h-[56px] bg-[#B68D40] text-on-secondary font-label-md text-label-md rounded-full flex items-center justify-center gap-2 btn-inner-glow hover:opacity-90 transition-all active:scale-95" onclick="copyToClipboard('123456789', this)">
+<span class="material-symbols-outlined text-[20px]" data-icon="content_copy">content_copy</span>
+<span>Salin Nomor Rekening</span>
+</button>
+</div>
+<!-- Card 2: E-Wallet / QRIS -->
+<div class="glass-card rounded-[24px] p-8 shadow-[0px_8px_24px_rgba(47,47,47,0.08)] relative overflow-hidden group">
+<!-- Subtle Aesthetic Background Pattern -->
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="qr_code_2">qr_code_2</span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary bg-tertiary/10 px-3 py-1 rounded-full uppercase tracking-tighter">QRIS Digital</span>
+</div>
+<div class="flex flex-col items-center justify-center space-y-6 relative z-10">
+<div class="p-4 bg-white rounded-[24px] shadow-sm border border-primary/10">
+<!-- QR Placeholder -->
+<div class="w-48 h-48 bg-surface-container-high rounded-xl flex items-center justify-center overflow-hidden relative">
+<div class="w-full h-full bg-cover bg-center" data-alt="A clean, minimalist QR code graphic centered on a soft cream background, styled with luxury gold accents at the corners. The aesthetic is modern and high-end, fitting for an exclusive wedding digital invitation. The lighting is bright and airy, emphasizing a light-mode user interface design." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBTT9rjrSiWh8qFtZcqyvk_0pmXx-S3HyJ2HURIs8v2JK0kv_nGtP-cIFk8O9ujohYnuuYXxbLx5gsXXKqusR0HEKzZUyZ70UgTa7o4NHjg_MrTWNw_myh3ULJA3BbjT0Dq4Khhe4g-rvD8Tw9_2uDP0eznFZ0i2ppVBhVRzZssXp7YiqWwEQsydvAGk7I6Zjeb1c1yjQ476tjeHjgiV28bFuIAOYKdUxmOitvmngD2BHeF-yiVtbcbWZ0Cn1jwWXgKCI06r5KEfMJR')"></div>
+</div>
+</div>
+<div class="text-center">
+<p class="font-label-md text-label-md text-on-surface">Scan untuk E-Wallet</p>
+<p class="font-label-sm text-label-sm text-secondary">OVO, GoPay, Dana, LinkAja</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Note -->
+<p class="mt-stack-xl text-center font-body-md text-body-md text-secondary italic opacity-70">
+            Terima kasih atas segala bentuk perhatian dan kasih sayang Anda.
+        </p>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-8 left-0 w-full z-50 flex justify-center px-4 md:hidden">
+<div class="bg-secondary/70 dark:bg-secondary-container/70 backdrop-blur-xl border border-primary/20 rounded-full px-6 py-3 flex justify-between items-center w-full max-w-md shadow-[0px_8px_24px_rgba(47,47,47,0.08)]">
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="photo_library">photo_library</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+</button>
+<button class="relative flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:absolute after:-bottom-1">
+<span class="material-symbols-outlined" data-icon="featured_seasonal_and_gifts">featured_seasonal_and_gifts</span>
+</button>
+</div>
+</nav>
+<script>
+        function copyToClipboard(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[20px]" data-icon="check_circle">check_circle</span>
+                    <span>Tersalin!</span>
+                `;
+                btn.classList.replace('bg-[#B68D40]', 'bg-tertiary');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.classList.replace('bg-tertiary', 'bg-[#B68D40]');
+                }, 2000);
+            });
+        }
+
+        // Simple Intersection Observer for scroll reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('section, .glass-card').forEach(el => {
+            el.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-10');
+            observer.observe(el);
+        });
+    </script>
+</body></html>

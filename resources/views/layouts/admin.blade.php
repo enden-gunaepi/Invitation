@@ -528,6 +528,25 @@ requestAnimationFrame(() => {
                     @endif
                 </a>
 
+                <a href="{{ route('admin.manual-transfer.index') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.manual-transfer.*') ? 'nav-item-active' : '' }}"
+                    style="{{ !request()->routeIs('admin.manual-transfer.*') ? 'color: var(--on-surface-variant);' : '' }}"
+                    onmouseover="{{ !request()->routeIs('admin.manual-transfer.*') ? 'this.style.background=\"var(--surface-container)\"' : '' }}"
+                    onmouseout="{{ !request()->routeIs('admin.manual-transfer.*') ? 'this.style.background=\"\"' : '' }}"
+                    title="Transfer Manual">
+                    <span class="material-symbols-outlined shrink-0" style="font-size: 20px;">account_balance</span>
+                    <span class="text-sm whitespace-nowrap overflow-hidden flex-1"
+                        style="transition: opacity 0.2s ease, max-width 0.3s cubic-bezier(0.4,0,0.2,1);"
+                        :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1', maxWidth: (!isMobile && !
+                                sidebarExpanded) ? '0' : '200px' }">Transfer Manual</span>
+                    @php $pendingManualTransfers = \App\Models\Payment::where('payment_method', 'transfer_manual')->where('payment_status', 'pending_verification')->count(); @endphp
+                    @if ($pendingManualTransfers > 0)
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto shrink-0"
+                            style="background: rgba(161,98,7,0.12); color: #a16207; transition: opacity 0.2s ease;"
+                            :style="{ opacity: (!isMobile && !sidebarExpanded) ? '0' : '1' }">{{ $pendingManualTransfers }}</span>
+                    @endif
+                </a>
+
                 {{-- <a href="{{ route('admin.integration.payment-gateway') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.integration.payment-gateway*') || request()->routeIs('admin.payment-gateway.*') ? 'nav-item-active' : '' }}"
                     style="{{ !(request()->routeIs('admin.integration.payment-gateway*') || request()->routeIs('admin.payment-gateway.*')) ? 'color: var(--on-surface-variant);' : '' }}"

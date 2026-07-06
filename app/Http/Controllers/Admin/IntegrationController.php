@@ -236,6 +236,9 @@ class IntegrationController extends Controller
             'payment_discount_value'   => Setting::get('payment_discount_value', '0'),
             'payment_ppn_enabled'      => Setting::get('payment_ppn_enabled', '0'),
             'payment_ppn_percent'      => Setting::get('payment_ppn_percent', '11'),
+            // Metode pembayaran aktif
+            'payment_method_gateway'          => Setting::get('payment_method_gateway', '1'),
+            'payment_method_transfer_manual'  => Setting::get('payment_method_transfer_manual', '0'),
         ];
 
         return view('admin.integration.payment-gateway', compact('config'));
@@ -252,19 +255,22 @@ class IntegrationController extends Controller
         ]);
 
         $vendor = $request->input('payment_primary_gateway');
+        $isGatewayEnabled = $request->input('payment_method_gateway') === '1';
 
-        if ($vendor === 'xendit') {
-            if (blank($request->input('xendit_secret_key'))) {
-                return back()->withInput()->with('error', 'Xendit tidak bisa diaktifkan tanpa Secret API Key.');
+        if ($isGatewayEnabled) {
+            if ($vendor === 'xendit') {
+                if (blank($request->input('xendit_secret_key'))) {
+                    return back()->withInput()->with('error', 'Xendit tidak bisa diaktifkan tanpa Secret API Key.');
+                }
+                if ($request->input('xendit_mode') === 'production' && blank($request->input('xendit_callback_token'))) {
+                    return back()->withInput()->with('error', 'Xendit production membutuhkan callback verification token.');
+                }
             }
-            if ($request->input('xendit_mode') === 'production' && blank($request->input('xendit_callback_token'))) {
-                return back()->withInput()->with('error', 'Xendit production membutuhkan callback verification token.');
-            }
-        }
 
-        if ($vendor === 'tripay') {
-            if (blank($request->input('tripay_api_key')) || blank($request->input('tripay_private_key')) || blank($request->input('tripay_merchant_code'))) {
-                return back()->withInput()->with('error', 'Tripay tidak bisa diaktifkan tanpa API Key, Private Key, dan Merchant Code.');
+            if ($vendor === 'tripay') {
+                if (blank($request->input('tripay_api_key')) || blank($request->input('tripay_private_key')) || blank($request->input('tripay_merchant_code'))) {
+                    return back()->withInput()->with('error', 'Tripay tidak bisa diaktifkan tanpa API Key, Private Key, dan Merchant Code.');
+                }
             }
         }
 
@@ -275,6 +281,7 @@ class IntegrationController extends Controller
             'payment_dev_mode', 'payment_allow_qris', 'payment_allow_ewallet',
             'payment_discount_enabled', 'payment_discount_type', 'payment_discount_value',
             'payment_ppn_enabled', 'payment_ppn_percent',
+            'payment_method_gateway', 'payment_method_transfer_manual',
         ];
 
         foreach ($keys as $key) {
@@ -292,6 +299,15 @@ class IntegrationController extends Controller
         if (!$request->has('payment_allow_ewallet'))    Setting::set('payment_allow_ewallet', '0', 'payment');
         if (!$request->has('payment_discount_enabled')) Setting::set('payment_discount_enabled', '0', 'payment');
         if (!$request->has('payment_ppn_enabled'))      Setting::set('payment_ppn_enabled', '0', 'payment');
+        if (!$request->has('payment_method_gateway'))         Setting::set('payment_method_gateway', '0', 'payment');
+        if (!$request->has('payment_method_transfer_manual')) Setting::set('payment_method_transfer_manual', '0', 'payment');
+
+        // Minimal satu metode harus aktif
+        $gwActive = Setting::get('payment_method_gateway', '0');
+        $tmActive = Setting::get('payment_method_transfer_manual', '0');
+        if ($gwActive !== '1' && $tmActive !== '1') {
+            Setting::set('payment_method_gateway', '1', 'payment');
+        }
 
         return redirect()->route('admin.integration.payment-gateway')
             ->with('success', 'Konfigurasi payment gateway berhasil disimpan!');

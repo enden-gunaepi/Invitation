@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<!-- Google Fonts: Playfair Display for Elegance, Inter for Clarity -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#735a31",
+                    "tertiary-fixed-dim": "#e3c290",
+                    "on-tertiary-fixed-variant": "#59431c",
+                    "surface-container-low": "#f6f3f2",
+                    "secondary": "#605e5a",
+                    "surface": "#fbf9f8",
+                    "on-secondary-fixed-variant": "#484743",
+                    "secondary-container": "#e6e2dc",
+                    "primary-container": "#b68d40",
+                    "surface-container-high": "#eae7e7",
+                    "on-tertiary-fixed": "#281900",
+                    "on-primary-fixed": "#271900",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#eebf6d",
+                    "on-background": "#1b1c1c",
+                    "on-surface-variant": "#4e4538",
+                    "on-primary-container": "#3c2900",
+                    "inverse-surface": "#303030",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#666460",
+                    "surface-container": "#f0eded",
+                    "tertiary-fixed": "#ffdeac",
+                    "secondary-fixed-dim": "#c9c6c0",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#dcd9d9",
+                    "secondary-fixed": "#e6e2dc",
+                    "primary": "#7b580d",
+                    "outline-variant": "#d2c5b3",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#eebf6d",
+                    "on-secondary-fixed": "#1c1c18",
+                    "surface-tint": "#7b580d",
+                    "on-tertiary-container": "#3c2904",
+                    "on-primary-fixed-variant": "#5e4200",
+                    "inverse-on-surface": "#f3f0f0",
+                    "tertiary-container": "#ac8f61",
+                    "outline": "#807666",
+                    "on-surface": "#1b1c1c",
+                    "primary-fixed": "#ffdea8",
+                    "surface-container-highest": "#e4e2e1",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "background": "#fbf9f8",
+                    "surface-bright": "#fbf9f8",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e4e2e1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "32px",
+                    "stack-xl": "64px",
+                    "gutter-grid": "16px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "margin-page": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Playfair Display"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Playfair Display"],
+                    "headline-md": ["Playfair Display"],
+                    "label-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Playfair Display"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(247, 243, 237, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(182, 141, 64, 0.15);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fbf9f8;
+            color: #1b1c1c;
+            overflow-x: hidden;
+        }
+        .active-dot::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: #7b580d;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -6px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/70 dark:bg-surface-dim/70 backdrop-blur-xl shadow-[0px_8px_24px_rgba(47,47,47,0.08)] flex justify-between items-center px-margin-page h-16">
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary italic">E &amp; J</h1>
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</header>
+<main class="pt-32 pb-40 px-margin-page max-w-md mx-auto">
+<!-- Section: Kirim Hadiah -->
+<section class="flex flex-col items-center text-center space-y-stack-xl" id="kirim-kado">
+<!-- Atmospheric Header -->
+<div class="space-y-stack-sm" data-aos="fade-up">
+<span class="font-label-md text-label-md text-primary uppercase tracking-widest block">The Wedding Gift</span>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Kirim Kado</h2>
+<div class="w-12 h-[1px] bg-primary mx-auto mt-4"></div>
+</div>
+<!-- Glass Card Content -->
+<div class="glass-card w-full rounded-[24px] p-8 shadow-[0px_8px_24px_rgba(47,47,47,0.08)] space-y-stack-lg relative overflow-hidden">
+<!-- Decorative Ornament -->
+<div class="absolute -top-10 -right-10 w-24 h-24 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="space-y-stack-md relative z-10">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'wght' 300;">location_on</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Alamat Mempelai</h3>
+<p class="font-body-md text-body-md text-secondary leading-relaxed px-4" id="wedding-address">
+                        Jl. Kemang Raya No. 10,<br/>Jakarta Selatan
+                    </p>
+</div>
+<!-- Action Button -->
+<div class="pt-4 relative z-10">
+<button class="w-full h-14 bg-primary text-on-primary rounded-full font-label-md text-label-md flex items-center justify-center space-x-2 transition-all duration-300 hover:bg-tertiary active:scale-95 shadow-lg shadow-primary/20" onclick="copyToClipboard()">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+<span>Salin Alamat</span>
+</button>
+<p class="text-label-sm font-label-sm text-primary mt-3 opacity-0 transition-opacity duration-300" id="copy-feedback">Alamat berhasil disalin</p>
+</div>
+</div>
+<!-- Contextual Image/Graphic -->
+<div class="w-full aspect-[4/5] rounded-[24px] overflow-hidden shadow-2xl relative group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A luxurious, high-end wedding stationery suite including an elegant envelope with a gold wax seal, placed on a soft cream linen textile. The lighting is warm and natural, casting soft shadows that highlight the paper texture. The scene conveys a sense of invitation and sophistication, with a minimalist aesthetic dominated by warm off-white and metallic gold accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFVB-bEMRwgmn01XDUFWsesC9jwSuVdoBMthTb9RSZcj2m6NezHPgYj37MWOaNSRPHYoYTKQBNiCIh5AvrbNopTqYSHqd_Nj9Db7RraKPkMMf0Bmmdo9pDloYDIJ7q_EBk4MsFErZkVW5tBPfvImiaZPd7-V1RnaVzAdl7EMFsNUZu53huUbDVCE429ihKvmTeiJkathl3ag9YAyv1GLFl1fJyFKlp6F037zL1KSp4vZVaiM7Epy6ut62kfYIy_hgGKll6hYbcjx-J"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+<div class="absolute bottom-6 left-6 right-6 text-left">
+<p class="text-white/90 font-label-sm text-label-sm italic">"Your presence is the greatest gift, but should you wish to send a token of love, it will be cherished."</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-8 left-0 w-full z-50 flex justify-center px-4 md:hidden">
+<div class="bg-secondary/70 backdrop-blur-xl border border-primary/20 rounded-full px-6 py-3 flex justify-between items-center w-full max-w-md shadow-[0px_8px_24px_rgba(47,47,47,0.08)]">
+<button class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300">
+<span class="material-symbols-outlined">home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300">
+<span class="material-symbols-outlined">photo_library</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300">
+<span class="material-symbols-outlined">event_available</span>
+</button>
+<button class="relative flex flex-col items-center justify-center text-primary active-dot active:scale-90 duration-300">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">featured_seasonal_and_gifts</span>
+</button>
+</div>
+</nav>
+<script>
+        function copyToClipboard() {
+            const addressText = document.getElementById('wedding-address').innerText.replace(/\n/g, ' ');
+            const feedback = document.getElementById('copy-feedback');
+            
+            navigator.clipboard.writeText(addressText).then(() => {
+                feedback.classList.remove('opacity-0');
+                feedback.classList.add('opacity-100');
+                
+                setTimeout(() => {
+                    feedback.classList.remove('opacity-100');
+                    feedback.classList.add('opacity-0');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Simple Fade-in animation observer
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-8');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('[data-aos="fade-up"]').forEach(el => {
+            el.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-8');
+            observer.observe(el);
+        });
+    </script>
+</body></html>

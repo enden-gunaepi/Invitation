@@ -305,6 +305,14 @@ class InvitationController extends Controller
 
         $activePackage = $effectivePackage;
 
+        // Load templates & music tracks for quick-edit modals
+        $templatesQuery = Template::where('is_active', true);
+        if (!empty($effectivePackage->allowed_template_ids)) {
+            $templatesQuery->whereIn('id', $effectivePackage->allowed_template_ids);
+        }
+        $templates = $templatesQuery->get();
+        $musicTracks = MusicTrack::where('is_public', true)->latest()->limit(100)->get();
+
         return view('client.invitations.show', compact(
             'invitation',
             'maxGuests',
@@ -316,20 +324,13 @@ class InvitationController extends Controller
             'nextPackage',
             'upsellReasons',
             'activePackage',
-            'effectivePackage'
+            'effectivePackage',
+            'templates',
+            'musicTracks'
         ));
     }
 
-    public function edit(Invitation $invitation)
-    {
-        $this->authorizeAnyEditor($invitation);
 
-        $invitation->load('photos', 'package', 'events', 'loveStories', 'bankAccounts');
-        $templates = Template::where('is_active', true)->get();
-        $musicTracks = MusicTrack::where('is_public', true)->latest()->limit(100)->get();
-
-        return view('client.invitations.edit', compact('invitation', 'templates', 'musicTracks'));
-    }
 
     public function update(Request $request, Invitation $invitation)
     {

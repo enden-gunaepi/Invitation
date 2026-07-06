@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\GuestOpsController;
 use App\Http\Controllers\Admin\ReliabilityController;
 use App\Http\Controllers\Admin\MediaMaintenanceController;
 use App\Http\Controllers\Admin\BalanceController;
+use App\Http\Controllers\Admin\ManualTransferController;
 use Illuminate\Support\Facades\Route;
 
 // Admin Dashboard
@@ -47,6 +48,18 @@ Route::get('/payments', [PaymentController::class, 'index'])->name('payments.ind
 Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
 Route::patch('/payments/{payment}/mark-paid', [PaymentController::class, 'markPaid'])->name('payments.mark-paid');
 Route::post('/payments/reconcile', [PaymentController::class, 'reconcile'])->name('payments.reconcile');
+
+// Manual Transfer Management
+Route::get('/manual-transfer', [ManualTransferController::class, 'index'])->name('manual-transfer.index');
+Route::patch('/manual-transfer/{payment}/confirm', [ManualTransferController::class, 'confirm'])->name('manual-transfer.confirm');
+Route::patch('/manual-transfer/{payment}/reject', [ManualTransferController::class, 'reject'])->name('manual-transfer.reject');
+Route::get('/manual-transfer/{payment}', [ManualTransferController::class, 'show'])->name('manual-transfer.show');
+
+// Bank Account Settings (Manual Transfer)
+Route::get('/manual-transfer-bank-accounts', [ManualTransferController::class, 'bankAccounts'])->name('manual-transfer.bank-accounts');
+Route::post('/manual-transfer-bank-accounts', [ManualTransferController::class, 'storeBankAccount'])->name('manual-transfer.bank-accounts.store');
+Route::put('/manual-transfer-bank-accounts/{account}', [ManualTransferController::class, 'updateBankAccount'])->name('manual-transfer.bank-accounts.update');
+Route::delete('/manual-transfer-bank-accounts/{account}', [ManualTransferController::class, 'destroyBankAccount'])->name('manual-transfer.bank-accounts.destroy');
 
 // Affiliate Management
 Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');

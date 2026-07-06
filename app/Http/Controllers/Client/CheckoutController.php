@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\Payment;
+use App\Services\ManualTransferService;
 use App\Services\Payments\PaymentOrchestratorService;
 use App\Services\BalanceService;
+use App\Services\TelegramNotificationService;
+use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class CheckoutController extends Controller
@@ -15,6 +19,7 @@ class CheckoutController extends Controller
     public function __construct(
         private readonly PaymentOrchestratorService $paymentOrchestrator,
         private readonly BalanceService $balanceService,
+        private readonly ManualTransferService $manualTransferService,
     ) {
     }
 
@@ -40,7 +45,15 @@ class CheckoutController extends Controller
         $currentReferrer = $user->referredBy;
         $lockedReferralCode = $currentReferrer?->referral_code;
 
-        return view('client.checkout.show', compact('invitation', 'billing', 'user', 'currentReferrer', 'lockedReferralCode'));
+        // Metode pembayaran yang aktif
+        $gatewayActive        = Setting::get('payment_method_gateway', '1') === '1';
+        $manualTransferActive = Setting::get('payment_method_transfer_manual', '0') === '1';
+        $bankAccounts         = $manualTransferActive ? $this->manualTransferService->getActiveBankAccounts() : collect();
+
+        return view('client.checkout.show', compact(
+            'invitation', 'billing', 'user', 'currentReferrer', 'lockedReferralCode',
+            'gatewayActive', 'manualTransferActive', 'bankAccounts'
+        ));
     }
 
     public function process(Request $request, Invitation $invitation)
@@ -217,6 +230,139 @@ class CheckoutController extends Controller
         $devMode = $this->paymentOrchestrator->isDevModeEnabled();
 
         return view('client.checkout.status', compact('invitation', 'payment', 'devMode'));
+    }
+
+    // ── Transfer Manual ───────────────────────────────────────────────────────
+
+    /**
+     * Buat payment record transfer manual & redirect ke halaman instruksi.
+     */
+    public function processManualTransfer(Request $request, Invitation $invitation)
+    {
+        if ($invitation->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        // Cek sudah ada payment paid
+        $paid = Payment::where('invitation_id', $invitation->id)
+            ->where('payment_status', Payment::STATUS_PAID)
+            ->exists();
+        if ($paid) {
+            return redirect()->route('client.invitations.show', $invitation)
+                ->with('success', 'Undangan ini sudah dibayar.');
+        }
+
+        // Cek sudah ada pending_verification (jangan dobel)
+        $existing = Payment::where('invitation_id', $invitation->id)
+            ->whereIn('payment_status', [
+                Payment::STATUS_PENDING,
+                Payment::STATUS_PENDING_VERIFICATION,
+            ])
+            ->first();
+        if ($existing) {
+            return redirect()->route('client.checkout.manual-transfer.instructions', $invitation);
+        }
+
+        $invitation->load('package');
+        $user    = auth()->user();
+        $billing = $this->paymentOrchestrator->calculateBilling((int) $invitation->package->price);
+
+        $couponCode    = strtoupper(trim((string) $request->input('coupon_code', '')));
+        $couponResult  = $this->paymentOrchestrator->resolveCoupon($couponCode, (int) $billing['subtotal_after_discount'], (int) $user->id);
+        if (!$couponResult['ok']) {
+            return back()->with('error', $couponResult['message']);
+        }
+
+        $couponDiscount = (int) $couponResult['discount'];
+        $subtotal       = max(0, (int) $billing['subtotal_after_discount'] - $couponDiscount);
+        $tax            = $billing['ppn_enabled'] && $billing['ppn_percent'] > 0
+            ? (int) round(($subtotal * (float) $billing['ppn_percent']) / 100) : 0;
+        $amount         = max(1, $subtotal + $tax);
+
+        $date          = now()->format('Ymd');
+        $seq           = str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        $invoiceNumber = "MANUAL-{$date}-{$invitation->id}-{$seq}";
+        $orderId       = 'MT-' . $invitation->id . '-' . time();
+
+        Payment::create([
+            'user_id'              => $user->id,
+            'invitation_id'        => $invitation->id,
+            'package_id'           => $invitation->package_id,
+            'amount'               => $amount,
+            'base_amount'          => $billing['base'],
+            'discount_amount'      => $billing['discount'],
+            'tax_amount'           => $tax,
+            'total_amount'         => $amount,
+            'invoice_number'       => $invoiceNumber,
+            'invoice_due_at'       => now()->addHours(24),
+            'coupon_code'          => $couponCode ?: null,
+            'coupon_discount_amount' => $couponDiscount,
+            'payment_gateway'      => 'manual',
+            'payment_method'       => Payment::METHOD_TRANSFER_MANUAL,
+            'payment_channel'      => 'bank_transfer',
+            'payment_purpose'      => Payment::PURPOSE_INVITATION,
+            'payment_status'       => Payment::STATUS_PENDING_VERIFICATION,
+            'transaction_id'       => $orderId,
+            'callback_token'       => Str::random(32),
+        ]);
+
+        return redirect()->route('client.checkout.manual-transfer.instructions', $invitation);
+    }
+
+    /**
+     * Tampilkan halaman instruksi transfer + form upload bukti.
+     */
+    public function manualTransferInstructions(Invitation $invitation)
+    {
+        if ($invitation->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $payment = Payment::where('invitation_id', $invitation->id)
+            ->where('payment_method', Payment::METHOD_TRANSFER_MANUAL)
+            ->whereIn('payment_status', [Payment::STATUS_PENDING_VERIFICATION])
+            ->latest()
+            ->firstOrFail();
+
+        $bankAccounts = $this->manualTransferService->getActiveBankAccounts();
+
+        return view('client.checkout.manual-transfer-instructions', compact('invitation', 'payment', 'bankAccounts'));
+    }
+
+    /**
+     * Terima upload foto bukti transfer dari client.
+     */
+    public function submitTransferProof(Request $request, Invitation $invitation)
+    {
+        if ($invitation->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'transfer_proof' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        $payment = Payment::where('invitation_id', $invitation->id)
+            ->where('payment_method', Payment::METHOD_TRANSFER_MANUAL)
+            ->where('payment_status', Payment::STATUS_PENDING_VERIFICATION)
+            ->latest()
+            ->firstOrFail();
+
+        $ok = $this->manualTransferService->processProofSubmission($payment, $request->file('transfer_proof'));
+
+        if (!$ok) {
+            return back()->with('error', 'Gagal mengunggah bukti transfer. Silakan coba lagi.');
+        }
+
+        // Notifikasi Telegram ke admin
+        try {
+            (new TelegramNotificationService())->manualTransferProofSubmitted($payment->fresh(['user']));
+        } catch (\Throwable $e) {
+            \Log::warning('submitTransferProof: telegram notif failed', ['error' => $e->getMessage()]);
+        }
+
+        return redirect()->route('client.checkout.status', $invitation)
+            ->with('success', 'Bukti transfer berhasil dikirim! Kami akan segera melakukan konfirmasi.');
     }
 }
 

@@ -10,10 +10,13 @@ class Payment extends Model
 {
     public const STATUS_DRAFT = 'draft';
     public const STATUS_PENDING = 'pending';
+    public const STATUS_PENDING_VERIFICATION = 'pending_verification';
     public const STATUS_PAID = 'paid';
     public const STATUS_EXPIRED = 'expired';
     public const STATUS_FAILED = 'failed';
     public const STATUS_CANCELLED = 'cancelled';
+
+    public const METHOD_TRANSFER_MANUAL = 'transfer_manual';
 
     public const PURPOSE_TOPUP = 'topup';
     public const PURPOSE_INVITATION = 'invitation';
@@ -27,6 +30,8 @@ class Payment extends Model
         'tax_amount', 'total_amount', 'invoice_number', 'invoice_due_at',
         'coupon_code', 'coupon_discount_amount', 'referral_code',
         'affiliate_commission_amount', 'retry_count', 'last_retry_at', 'next_retry_at',
+        // Transfer Manual
+        'transfer_proof_path', 'transfer_verified_at', 'transfer_verified_by', 'transfer_rejection_reason',
     ];
 
     protected function casts(): array
@@ -45,6 +50,7 @@ class Payment extends Model
             'last_retry_at' => 'datetime',
             'next_retry_at' => 'datetime',
             'gateway_response' => 'array',
+            'transfer_verified_at' => 'datetime',
         ];
     }
 
@@ -73,9 +79,24 @@ class Payment extends Model
         return $this->hasMany(PaymentCallbackReceipt::class);
     }
 
+    public function verifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'transfer_verified_by');
+    }
+
     public function isPending(): bool
     {
         return $this->payment_status === self::STATUS_PENDING;
+    }
+
+    public function isPendingVerification(): bool
+    {
+        return $this->payment_status === self::STATUS_PENDING_VERIFICATION;
+    }
+
+    public function isManualTransfer(): bool
+    {
+        return $this->payment_method === self::METHOD_TRANSFER_MANUAL;
     }
 
     public function isPaid(): bool
@@ -91,6 +112,32 @@ class Payment extends Model
             self::STATUS_FAILED,
             self::STATUS_CANCELLED,
         ], true);
+    }
+
+    public function markAsPendingVerification(): void
+    {
+        $this->update(['payment_status' => self::STATUS_PENDING_VERIFICATION]);
+    }
+
+    public function markAsVerified(int $adminId): void
+    {
+        $this->update([
+            'payment_status'       => self::STATUS_PAID,
+            'paid_at'              => now(),
+            'transfer_verified_at' => now(),
+            'transfer_verified_by' => $adminId,
+            'transaction_id'       => $this->transaction_id ?? ('MANUAL-VERIFIED-' . now()->timestamp),
+        ]);
+    }
+
+    public function markAsRejected(int $adminId, string $reason): void
+    {
+        $this->update([
+            'payment_status'            => self::STATUS_FAILED,
+            'transfer_verified_at'      => now(),
+            'transfer_verified_by'      => $adminId,
+            'transfer_rejection_reason' => $reason,
+        ]);
     }
 
     public function isExpired(): bool

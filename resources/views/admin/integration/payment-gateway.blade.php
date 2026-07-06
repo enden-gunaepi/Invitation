@@ -42,6 +42,59 @@
         <form method="POST" action="{{ route('admin.integration.payment-gateway.update') }}" id="pgForm">
             @csrf @method('PUT')
 
+            {{-- Metode Pembayaran Aktif --}}
+            <div class="card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-bold text-base flex items-center gap-2" style="color: var(--accent);">
+                            <i class="fas fa-toggle-on"></i> Metode Pembayaran Aktif
+                        </h3>
+                        <p class="text-xs mt-1" style="color: var(--text-secondary);">
+                            Pilih satu atau lebih metode pembayaran yang bisa digunakan oleh client. Minimal 1 metode harus aktif.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {{-- Payment Gateway Toggle --}}
+                    <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-slate-800/50"
+                           style="border-color: var(--border-color);">
+                        <input type="hidden" name="payment_method_gateway" value="0">
+                        <input type="checkbox" name="payment_method_gateway" value="1"
+                               {{ $config['payment_method_gateway'] === '1' ? 'checked' : '' }}
+                               style="width:20px;height:20px;accent-color:var(--accent);margin-top:2px;">
+                        <div>
+                            <div class="font-bold text-sm">Payment Gateway</div>
+                            <div class="text-xs mt-1" style="color: var(--text-secondary);">
+                                Xendit / Tripay (Otomatis)
+                            </div>
+                        </div>
+                    </label>
+
+                    {{-- Manual Transfer Toggle --}}
+                    <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-slate-800/50"
+                           style="border-color: var(--border-color);">
+                        <input type="hidden" name="payment_method_transfer_manual" value="0">
+                        <input type="checkbox" name="payment_method_transfer_manual" value="1"
+                               {{ $config['payment_method_transfer_manual'] === '1' ? 'checked' : '' }}
+                               style="width:20px;height:20px;accent-color:var(--accent);margin-top:2px;">
+                        <div class="flex-1">
+                            <div class="font-bold text-sm">Transfer Manual</div>
+                            <div class="text-xs mt-1" style="color: var(--text-secondary);">
+                                Client transfer ke rekening bank
+                            </div>
+                            <div class="mt-2">
+                                <a href="{{ route('admin.manual-transfer.bank-accounts') }}"
+                                   class="text-xs font-semibold hover:underline"
+                                   style="color: var(--accent);" @click.stop>
+                                    <i class="fas fa-university"></i> Kelola Rekening Bank
+                                </a>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             {{-- Pilih Vendor --}}
             <div class="card p-6">
                 <h3 class="font-bold text-base mb-1">Pilih Vendor Gateway</h3>

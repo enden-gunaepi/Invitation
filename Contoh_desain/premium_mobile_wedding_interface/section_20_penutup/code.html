@@ -1,0 +1,195 @@
+<!DOCTYPE html><html class="light" lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#735a31",
+                    "tertiary-fixed-dim": "#e3c290",
+                    "on-tertiary-fixed-variant": "#59431c",
+                    "surface-container-low": "#f6f3f2",
+                    "secondary": "#605e5a",
+                    "surface": "#fbf9f8",
+                    "on-secondary-fixed-variant": "#484743",
+                    "secondary-container": "#e6e2dc",
+                    "primary-container": "#b68d40",
+                    "surface-container-high": "#eae7e7",
+                    "on-tertiary-fixed": "#281900",
+                    "on-primary-fixed": "#271900",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#eebf6d",
+                    "on-background": "#1b1c1c",
+                    "on-surface-variant": "#4e4538",
+                    "on-primary-container": "#3c2900",
+                    "inverse-surface": "#303030",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#666460",
+                    "surface-container": "#f0eded",
+                    "tertiary-fixed": "#ffdeac",
+                    "secondary-fixed-dim": "#c9c6c0",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#dcd9d9",
+                    "secondary-fixed": "#e6e2dc",
+                    "primary": "#7b580d",
+                    "outline-variant": "#d2c5b3",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#eebf6d",
+                    "on-secondary-fixed": "#1c1c18",
+                    "surface-tint": "#7b580d",
+                    "on-tertiary-container": "#3c2904",
+                    "on-primary-fixed-variant": "#5e4200",
+                    "inverse-on-surface": "#f3f0f0",
+                    "tertiary-container": "#ac8f61",
+                    "outline": "#807666",
+                    "on-surface": "#1b1c1c",
+                    "primary-fixed": "#ffdea8",
+                    "surface-container-highest": "#e4e2e1",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "background": "#fbf9f8",
+                    "surface-bright": "#fbf9f8",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e4e2e1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "32px",
+                    "stack-xl": "64px",
+                    "gutter-grid": "16px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "margin-page": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Playfair Display"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Playfair Display"],
+                    "headline-md": ["Playfair Display"],
+                    "label-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Playfair Display"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "400", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(247, 243, 237, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(182, 141, 64, 0.15);
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface overflow-x-hidden">
+<!-- Top Navigation Shell (Suppressed as per "Task-Focused" exclusion logic for Closing Section) -->
+<main class="relative min-h-[812px] w-full flex flex-col items-center justify-between overflow-hidden">
+<!-- Atmospheric Background Layer -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center opacity-30" data-alt="A serene, high-end editorial wedding photography scene featuring soft focus cream roses and delicate white silk drapes. The lighting is ethereal and airy, dominated by warm natural sunlight streaming through a window. The overall aesthetic is minimalist luxury, using a palette of off-whites and muted golds to create a calm, aspirational atmosphere perfect for a formal wedding invitation closing." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBpowgNtKf6A9nijFGszyjAy8T5us3b6RDEghGO8HAd2dacE6AePEC70Y-GEhlVl5r47Qxl_WA-TlyxSC_NYjsRT-lRHpL3ugHJbAWeFLjyaJGsu7iIKHm5mF_M5tb-1JutCsTL1adtt6hZEp-Pdw2ZLBkCWtpXmRZQ3HiWs7mXnIb_xQvigDM0_PTGjHwbtbSPYL_03xT6b1dCs9JQnMXPuS4mfD7BaoG0JUKFtF3wAPXRNGB0qLrEreMqJeC_zKUXqfbo2GM-MoEF')"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-surface via-transparent to-surface"></div>
+</div>
+<!-- Section 20: Closing Content -->
+<section class="relative z-10 w-full px-margin-page py-stack-xl flex-1 flex flex-col items-center justify-center text-center">
+<!-- Elegant Flourish -->
+<div class="mb-stack-lg opacity-40 animate-float" style="animation-delay: 0s;">
+<span class="material-symbols-outlined text-[48px] text-primary">heart_plus</span>
+</div>
+<!-- Closing Message -->
+<div class="max-w-[320px] mb-stack-xl">
+<p class="font-headline-md text-headline-md italic text-primary mb-stack-md leading-relaxed">
+                    Terima Kasih
+                </p>
+<p class="font-body-md text-body-md text-secondary leading-loose">
+                    Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu kepada kedua mempelai.
+                </p>
+</div>
+<!-- Names Cluster -->
+<div class="mb-24">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2 tracking-tight">
+                    Jonathan &amp; Amelia
+                </h1>
+<div class="w-12 h-[1px] bg-primary mx-auto opacity-30"></div>
+</div>
+<!-- Back to Top Minimalist Action -->
+<button class="group flex flex-col items-center gap-2 transition-all duration-300 active:scale-95" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+<div class="w-12 h-12 rounded-full border border-primary/20 flex items-center justify-center group-hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-primary text-[20px]">keyboard_double_arrow_up</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary tracking-[0.2em] uppercase">Kembali ke Atas</span>
+</button>
+</section>
+<!-- Signature Footer Detail -->
+<footer class="relative z-10 w-full pb-32 pt-8 text-center px-margin-page">
+<p class="font-label-sm text-label-sm text-outline opacity-60">
+                Created by janjisucikita.com</p>
+</footer>
+</main>
+<!-- Bottom Navigation Shell (Consistent with Shared Components) -->
+<nav class="fixed bottom-8 left-0 w-full z-50 flex justify-center px-4 md:hidden">
+<div class="bg-secondary/70 backdrop-blur-xl border border-primary/20 shadow-[0px_8px_24px_rgba(47,47,47,0.08)] w-[90%] max-w-md rounded-full px-6 py-3 flex justify-between items-center">
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined">home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined">favorite</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined">photo_library</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined">event_available</span>
+</a>
+<!-- Active State: Closing is conceptually the "Seasonal/Gifts" or Final Destination tab -->
+<a class="relative flex flex-col items-center justify-center text-primary after:content-[''] after:w-1 after:h-1 after:bg-primary after:rounded-full after:absolute after:-bottom-1 active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined">featured_seasonal_and_gifts</span>
+</a>
+</div>
+</nav>
+<script>
+        // Micro-interaction for smooth transitions
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = document.querySelectorAll('.animate-float');
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.5}s`;
+            });
+        });
+    </script>
+
+
+</body></html>

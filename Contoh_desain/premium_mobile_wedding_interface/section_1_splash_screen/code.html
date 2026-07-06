@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#735a31",
+                    "tertiary-fixed-dim": "#e3c290",
+                    "on-tertiary-fixed-variant": "#59431c",
+                    "surface-container-low": "#f6f3f2",
+                    "secondary": "#605e5a",
+                    "surface": "#fbf9f8",
+                    "on-secondary-fixed-variant": "#484743",
+                    "secondary-container": "#e6e2dc",
+                    "primary-container": "#b68d40",
+                    "surface-container-high": "#eae7e7",
+                    "on-tertiary-fixed": "#281900",
+                    "on-primary-fixed": "#271900",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#eebf6d",
+                    "on-background": "#1b1c1c",
+                    "on-surface-variant": "#4e4538",
+                    "on-primary-container": "#3c2900",
+                    "inverse-surface": "#303030",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#666460",
+                    "surface-container": "#f0eded",
+                    "tertiary-fixed": "#ffdeac",
+                    "secondary-fixed-dim": "#c9c6c0",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#dcd9d9",
+                    "secondary-fixed": "#e6e2dc",
+                    "primary": "#7b580d",
+                    "outline-variant": "#d2c5b3",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#eebf6d",
+                    "on-secondary-fixed": "#1c1c18",
+                    "surface-tint": "#7b580d",
+                    "on-tertiary-container": "#3c2904",
+                    "on-primary-fixed-variant": "#5e4200",
+                    "inverse-on-surface": "#f3f0f0",
+                    "tertiary-container": "#ac8f61",
+                    "outline": "#807666",
+                    "on-surface": "#1b1c1c",
+                    "primary-fixed": "#ffdea8",
+                    "surface-container-highest": "#e4e2e1",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "background": "#fbf9f8",
+                    "surface-bright": "#fbf9f8",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e4e2e1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-lg": "32px",
+                    "stack-xl": "64px",
+                    "gutter-grid": "16px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "margin-page": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Playfair Display"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Playfair Display"],
+                    "headline-md": ["Playfair Display"],
+                    "label-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Playfair Display"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-overlay {
+            background: rgba(247, 243, 237, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        .fade-in-scale {
+            animation: fadeInScale 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .stagger-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: staggerUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes staggerUp {
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-glow {
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 8px 24px rgba(47, 47, 47, 0.08);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary-container selection:text-on-primary-container overflow-hidden">
+<!-- Splash Screen Container -->
+<main class="relative w-full h-[100svh] overflow-hidden flex flex-col items-center justify-between py-margin-page px-margin-page text-center" id="splash-screen">
+<!-- Background Image -->
+<div class="absolute inset-0 z-0 fade-in-scale">
+<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC-tWGg8P9saL1rDSgxv_6jLkmjS6CYf8R6t3OAPrFduzUoWDJ0k7Takcti1obnnzJZgZckAnfHJbEITxeFDQ3m1_x_KILcgPo1mjCosoR1-6GQ8NIZfYz8yIsE4hS6lqlyhSWNuxsLd_9p0F_4u_siTM46ghD47dYEQGc8uJJ1M0fBnd2j2p81zl_46n1knkXrrdHw3831hqRXaHhXGXrhZZ78IZqfgqECFb4mdOpGe0Vq0qORT9zXvTX4px3-o_F_mMsvGClOhaA1');"></div>
+<!-- Subtle Dark Gradient for Text Legibility -->
+<div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60"></div>
+</div>
+<!-- Top Branding -->
+<div class="relative z-10 stagger-up" style="animation-delay: 0.2s;">
+<p class="font-label-sm text-label-sm uppercase tracking-[0.2em] text-white/90 mb-2">The Wedding of</p>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile italic text-white drop-shadow-md">Jonathan &amp; Amelia</h1>
+</div>
+<!-- Content & Action -->
+<div class="relative z-10 w-full max-w-sm flex flex-col items-center gap-stack-lg stagger-up" style="animation-delay: 0.5s;">
+<!-- Glassmorphism Card for Quote -->
+<div class="glass-overlay rounded-[24px] p-6 border border-white/20 w-full">
+<p class="font-headline-md text-headline-md italic text-white mb-2">"Cinta adalah janji yang abadi."</p>
+<div class="w-12 h-[1px] bg-white/40 mx-auto my-4"></div>
+<p class="font-label-md text-label-md text-white/90 tracking-widest uppercase">20 Desember 2026</p>
+</div>
+<!-- Primary Luxury Action -->
+<button class="group relative w-full bg-primary-container text-on-primary text-[18px] font-semibold py-5 rounded-[24px] btn-glow transition-all duration-300 active:scale-95 hover:opacity-90 flex items-center justify-center gap-3">
+<span class="font-label-md text-label-md tracking-widest uppercase">Buka Undangan</span>
+<span class="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1">mail</span>
+</button>
+</div>
+<!-- Scroll Indicator / Hint -->
+<div class="relative z-10 stagger-up" style="animation-delay: 0.8s;">
+<div class="flex flex-col items-center gap-2 text-white/70">
+<span class="material-symbols-outlined animate-bounce">expand_more</span>
+</div>
+</div>
+</main>
+<!-- Hidden Navigation Shell (Predicted but suppressed for Transactional Splash) -->
+<!-- The TopAppBar and BottomNavBar are present in JSON but according to the "Destination" rule, they are suppressed on linear splash screens -->
+<script>
+        // Simple Interaction: Button Ripple and Page Transition simulation
+        document.querySelector('button').addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+                // Logic to transition to main content would go here
+                alert('Membuka undangan digital Jonathan & Amelia...');
+            }, 150);
+        });
+
+        // Atmospheric parallax effect on mouse/tilt
+        document.addEventListener('mousemove', (e) => {
+            const moveX = (e.clientX - window.innerWidth / 2) * 0.005;
+            const moveY = (e.clientY - window.innerHeight / 2) * 0.005;
+            document.querySelector('.fade-in-scale div').style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
+        });
+    </script>
+</body></html>

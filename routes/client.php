@@ -37,7 +37,7 @@ Route::middleware('active.package')->group(function () {
     Route::get('/invitations/create', [InvitationController::class, 'create'])->name('invitations.create');
     Route::post('/invitations', [InvitationController::class, 'store'])->name('invitations.store');
 });
-Route::resource('invitations', InvitationController::class)->except(['create', 'store']);
+Route::resource('invitations', InvitationController::class)->except(['create', 'store', 'edit']);
 Route::patch('/invitations/{invitation}/submit', [InvitationController::class, 'submit'])->name('invitations.submit');
 Route::patch('/invitations/{invitation}/toggle-status', [InvitationController::class, 'toggleStatus'])->name('invitations.toggle-status');
 Route::post('/invitations/{invitation}/upgrade-suggested', [InvitationController::class, 'upgradeSuggested'])->name('invitations.upgrade-suggested');
@@ -85,12 +85,22 @@ Route::post('/checkout/{invitation}/process', [CheckoutController::class, 'proce
 Route::get('/checkout/{invitation}/status', [CheckoutController::class, 'status'])->name('checkout.status');
 Route::post('/checkout/{invitation}/simulate-paid', [CheckoutController::class, 'simulatePaid'])->name('checkout.simulate-paid');
 
+// Manual Transfer Checkout
+Route::post('/checkout/{invitation}/manual-transfer', [CheckoutController::class, 'processManualTransfer'])->name('checkout.manual-transfer.process');
+Route::get('/checkout/{invitation}/manual-transfer/instructions', [CheckoutController::class, 'manualTransferInstructions'])->name('checkout.manual-transfer.instructions');
+Route::post('/checkout/{invitation}/manual-transfer/proof', [CheckoutController::class, 'submitTransferProof'])->name('checkout.manual-transfer.proof');
+
 // Balance & Top-up
 Route::get('/balance', [BalanceController::class, 'index'])->name('balance.index');
 Route::get('/balance/topup', [BalanceController::class, 'topupForm'])->name('balance.topup');
 Route::post('/balance/topup', [BalanceController::class, 'topupProcess'])->name('balance.topup.process');
 Route::get('/balance/topup/status', [BalanceController::class, 'topupStatus'])->name('balance.topup.status');
 Route::post('/balance/topup/{payment}/simulate-paid', [BalanceController::class, 'simulatePaid'])->name('balance.topup.simulate-paid');
+
+// Manual Transfer Topup
+Route::post('/balance/topup/manual-transfer', [BalanceController::class, 'processManualTransfer'])->name('balance.topup.manual-transfer.process');
+Route::get('/balance/topup/manual-transfer/instructions', [BalanceController::class, 'manualTransferInstructions'])->name('balance.topup.manual-transfer.instructions');
+Route::post('/balance/topup/manual-transfer/proof', [BalanceController::class, 'submitTransferProof'])->name('balance.topup.manual-transfer.proof');
 
 // Affiliate
 Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');

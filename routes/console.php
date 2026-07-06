@@ -53,6 +53,7 @@ Artisan::command('invitations:backfill-subscription-bindings {user_id?}', functi
 })->purpose('Backfill client package subscription bindings for legacy invitations');
 
 Schedule::command('payments:dunning')->everyThirtyMinutes();
+Schedule::command('payments:expire-manual')->hourly();
 Schedule::command('reminders:generate-auto')->hourly();
 Schedule::command('reminders:process-whatsapp')->everyTenMinutes();
 Schedule::command('system:heartbeat')->everyFiveMinutes();

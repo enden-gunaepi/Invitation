@@ -41,32 +41,71 @@
     </div>
     @endif
 
-    <div class="card p-6">
+    <div class="card p-6" x-data="{ method: '{{ count($gateways) > 0 ? 'gateway' : 'manual' }}' }">
         <h3 class="font-bold text-base mb-4"><i class="fas fa-wallet mr-2" style="color: var(--accent);"></i> Nominal Top Up</h3>
         
-        <form method="POST" action="{{ route('client.balance.topup.process') }}" id="topupForm">
-            @csrf
+        <!-- Preset Amounts -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+            <button type="button" class="preset-btn" data-amount="50000">Rp 50.000</button>
+            <button type="button" class="preset-btn" data-amount="100000">Rp 100.000</button>
+            <button type="button" class="preset-btn" data-amount="150000">Rp 150.000</button>
+            <button type="button" class="preset-btn" data-amount="200000">Rp 200.000</button>
+            <button type="button" class="preset-btn" data-amount="500000">Rp 500.000</button>
+            <button type="button" class="preset-btn" data-amount="1000000">Rp 1.000.000</button>
+        </div>
 
-            <!-- Preset Amounts -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-                <button type="button" class="preset-btn" data-amount="50000">Rp 50.000</button>
-                <button type="button" class="preset-btn" data-amount="100000">Rp 100.000</button>
-                <button type="button" class="preset-btn" data-amount="150000">Rp 150.000</button>
-                <button type="button" class="preset-btn" data-amount="200000">Rp 200.000</button>
-                <button type="button" class="preset-btn" data-amount="500000">Rp 500.000</button>
-                <button type="button" class="preset-btn" data-amount="1000000">Rp 1.000.000</button>
-            </div>
+        <!-- Custom Amount Input -->
+        <div class="mb-6">
+            <label class="form-label">Nominal Custom (Rp)</label>
+            <input type="number" id="globalAmount" class="form-input px-4 py-3 text-lg font-bold" 
+                   placeholder="Masukkan nominal lainnya" min="{{ $minTopup }}" required value="{{ old('amount', $prefillAmount ?? 50000) }}"
+                   x-on:input="document.getElementById('gatewayAmount').value = $event.target.value; document.getElementById('manualAmount').value = $event.target.value">
+            <p class="text-xs mt-1 text-gray-500">Minimum top up: Rp {{ number_format($minTopup, 0, ',', '.') }}</p>
+        </div>
 
-            <!-- Custom Amount Input -->
-            <div class="mb-6">
-                <label class="form-label">Nominal Custom (Rp)</label>
-                <input type="number" id="customAmount" name="amount" class="form-input px-4 py-3 text-lg font-bold" 
-                       placeholder="Masukkan nominal lainnya" min="{{ $minTopup }}" required value="{{ old('amount', $prefillAmount ?? 50000) }}">
-                <p class="text-xs mt-1 text-gray-500">Minimum top up: Rp {{ number_format($minTopup, 0, ',', '.') }}</p>
-            </div>
+        <h3 class="font-bold text-base mb-4"><i class="fas fa-credit-card mr-2" style="color: var(--accent);"></i> Pilih Metode Pembayaran</h3>
 
+        <!-- Pilihan Metode Utama -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             @if(count($gateways) > 0)
-                <h3 class="font-bold text-base mb-4"><i class="fas fa-credit-card mr-2" style="color: var(--accent);"></i> Pilih Metode Pembayaran</h3>
+            <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all"
+                   :class="method === 'gateway' ? 'ring-2 ring-[var(--accent)] bg-[var(--accent-bg)] border-transparent' : 'border-[var(--border-color)] hover:bg-gray-50 dark:hover:bg-slate-800/50'"
+                   @click="method = 'gateway'">
+                <input type="radio" name="main_method" value="gateway" x-model="method" class="hidden">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                     :style="method === 'gateway' ? 'background: var(--accent); color: white;' : 'background: var(--surface-container); color: var(--text-secondary);'">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-sm">Payment Gateway</div>
+                    <div class="text-xs mt-1" style="color: var(--text-secondary);">Otomatis (QRIS, E-Wallet, dll)</div>
+                </div>
+            </label>
+            @endif
+
+            @if($manualTransferActive)
+            <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all"
+                   :class="method === 'manual' ? 'ring-2 ring-[var(--accent)] bg-[var(--accent-bg)] border-transparent' : 'border-[var(--border-color)] hover:bg-gray-50 dark:hover:bg-slate-800/50'"
+                   @click="method = 'manual'">
+                <input type="radio" name="main_method" value="manual" x-model="method" class="hidden">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                     :style="method === 'manual' ? 'background: var(--accent); color: white;' : 'background: var(--surface-container); color: var(--text-secondary);'">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-sm">Transfer Manual</div>
+                    <div class="text-xs mt-1" style="color: var(--text-secondary);">Verifikasi admin 1x24 jam</div>
+                </div>
+            </label>
+            @endif
+        </div>
+
+        <!-- Form Payment Gateway -->
+        <div x-show="method === 'gateway'" x-transition style="display: none;">
+            @if(count($gateways) > 0)
+            <form method="POST" action="{{ route('client.balance.topup.process') }}" id="gatewayForm">
+                @csrf
+                <input type="hidden" name="amount" id="gatewayAmount" :value="document.getElementById('globalAmount').value">
 
                 <!-- Gateway Selection -->
                 <div class="space-y-3 mb-4">
@@ -108,14 +147,28 @@
                 <button type="submit" class="btn btn-primary w-full py-3.5 text-center font-bold text-base rounded-xl">
                     <i class="fas fa-lock mr-2"></i> Lanjutkan Pembayaran
                 </button>
+            </form>
             @else
                 <div class="text-center p-6 bg-yellow-50 dark:bg-yellow-900/10 rounded-xl border border-yellow-200/50">
                     <i class="fas fa-exclamation-triangle text-2xl mb-2 text-yellow-600"></i>
                     <p class="text-sm font-semibold text-yellow-700">Payment Gateway Belum Aktif</p>
-                    <p class="text-xs text-yellow-600 mt-1">Silakan hubungi administrator untuk mengaktifkan metode pembayaran.</p>
+                    <p class="text-xs text-yellow-600 mt-1">Silakan pilih metode Transfer Manual jika tersedia, atau hubungi administrator.</p>
                 </div>
             @endif
-        </form>
+        </div>
+
+        <!-- Form Manual Transfer -->
+        @if($manualTransferActive)
+        <div x-show="method === 'manual'" x-transition style="display: none;">
+            <form method="POST" action="{{ route('client.balance.topup.manual-transfer.process') }}" id="manualTransferForm">
+                @csrf
+                <input type="hidden" name="amount" id="manualAmount" :value="document.getElementById('globalAmount').value">
+                <button type="submit" class="btn btn-primary w-full py-3.5 text-center font-bold text-base rounded-xl">
+                    Lanjut ke Instruksi Transfer <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </form>
+        </div>
+        @endif
 
         <p class="text-xs text-center mt-4 text-gray-400">
             <i class="fas fa-shield-alt mr-1"></i> Pembayaran aman & terenkripsi
@@ -133,7 +186,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const presetBtns = document.querySelectorAll('.preset-btn');
-        const customInput = document.getElementById('customAmount');
+        const customInput = document.getElementById('globalAmount');
 
         function syncPresetState() {
             const normalizedValue = String(parseInt(customInput.value || '0', 10));
