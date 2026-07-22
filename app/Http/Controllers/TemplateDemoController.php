@@ -51,18 +51,25 @@ class TemplateDemoController extends Controller
             'status' => 'active',
             'published_at' => $now,
             'expires_at' => $eventDate->copy()->addDays(14),
-            'cover_photo' => $template->thumbnail,
-            'groom_photo' => $template->thumbnail,
-            'bride_photo' => $template->thumbnail,
+            'cover_photo' => 'model/fotomodel1.png',
+            'groom_photo' => 'model/fotomodel2.png',
+            'bride_photo' => 'model/fotomodel3.png',
             'venue_lat' => -6.917464,
             'venue_lng' => 107.619125,
+            'groom_instagram' => '@raka_pratama',
+            'bride_instagram' => '@alya_nirmala',
+            'livestream_enabled' => true,
+            'livestream_url' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'livestream_label' => 'Live Akad & Resepsi',
+            'music_url' => \App\Models\Invitation::whereNotNull('music_url')->first()?->music_url,
         ]);
 
         $invitation->setRelation('template', $template);
         $invitation->setRelation('photos', collect([
-            new InvitationPhoto(['file_path' => $template->thumbnail, 'caption' => 'Momen 1']),
-            new InvitationPhoto(['file_path' => $template->thumbnail, 'caption' => 'Momen 2']),
-            new InvitationPhoto(['file_path' => $template->thumbnail, 'caption' => 'Momen 3']),
+            new InvitationPhoto(['file_path' => 'model/fotomodel4.png', 'caption' => 'Momen 1']),
+            new InvitationPhoto(['file_path' => 'model/fotomodel5.png', 'caption' => 'Momen 2']),
+            new InvitationPhoto(['file_path' => 'model/fotomodel6.png', 'caption' => 'Momen 3']),
+            new InvitationPhoto(['file_path' => 'model/fotomodel7.png', 'caption' => 'Momen 4']),
         ]));
         $invitation->setRelation('events', collect([
             new InvitationEvent([
@@ -87,13 +94,13 @@ class TemplateDemoController extends Controller
                 'year' => '2020',
                 'title' => 'Pertemuan Pertama',
                 'description' => 'Awal perkenalan kami dimulai dari pertemuan sederhana.',
-                'photo_path' => $template->thumbnail,
+                'photo_path' => 'model/fotomodel7.png',
             ]),
             new LoveStory([
                 'year' => '2024',
                 'title' => 'Lamaran',
                 'description' => 'Dengan izin Allah, kami melangkah ke jenjang yang lebih serius.',
-                'photo_path' => $template->thumbnail,
+                'photo_path' => 'model/fotomodel1.png',
             ]),
         ]));
         $invitation->setRelation('bankAccounts', collect([

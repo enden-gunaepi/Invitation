@@ -11,7 +11,7 @@ use App\Http\Controllers\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [MarketingController::class, 'home'])->name('marketing.home');
-Route::view('/coming-soon', 'marketing.coming-soon')->name('marketing.comingsoon');
+Route::get('/koleksi-template', [MarketingController::class, 'templates'])->name('marketing.templates');
 Route::get('/landing/{niche}', [MarketingController::class, 'niche'])->name('marketing.niche');
 Route::get('/trial', [MarketingController::class, 'trial'])->name('marketing.trial');
 Route::post('/trial/preview', [MarketingController::class, 'trialPreview'])->name('marketing.trial.preview');

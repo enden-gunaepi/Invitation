@@ -267,6 +267,7 @@
 
         .hero-visual {
             position: relative;
+            height: var(--screen-h);
             min-height: var(--screen-h);
             overflow: hidden;
         }
@@ -284,9 +285,12 @@
         }
 
         .hero-right img {
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
+            z-index: 0;
         }
 
         .hero-overlay {

@@ -14,7 +14,6 @@ class MarketingController extends Controller
         $templates = Template::where('is_active', true)
             ->orderByDesc('is_premium')
             ->orderBy('name')
-            ->limit(6)
             ->get();
         $packages = Package::where('is_active', true)
             ->orderBy('price')
@@ -59,6 +58,16 @@ class MarketingController extends Controller
         ]);
 
         return view('marketing.trial-preview', compact('data', 'item'));
+    }
+
+    public function templates()
+    {
+        $templates = Template::where('is_active', true)
+            ->orderByDesc('is_premium')
+            ->orderBy('name')
+            ->get();
+            
+        return view('marketing.templates', compact('templates'));
     }
 
     private function niches(): array

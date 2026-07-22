@@ -147,6 +147,14 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
 
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
         .text-balanced {
             text-wrap: balance;
         }
@@ -253,7 +261,7 @@
                         class="bg-primary hover:bg-pink-600 text-on-primary font-button text-button px-8 py-3 rounded-full active:scale-95 transition-all inline-block shadow-md hover:shadow-pink-500/10">
                         Mulai Buat Undangan
                     </a>
-                    <a href="{{ route('marketing.comingsoon') }}"
+                    <a href="{{ route('marketing.templates') }}"
                         class="border border-pink-500 text-pink-600 font-button text-button px-8 py-3 rounded-full hover:bg-pink-500 hover:text-white transition-all duration-300 inline-block shadow-sm shadow-pink-500/10">
                         Lihat Demo
                     </a>
@@ -589,39 +597,7 @@
             </div>
         </section>
 
-        <!-- Design Library / Templates Showcase -->
-        @if ($templates->count() > 0)
-            <section class="py-section-gap px-gutter max-w-container-max mx-auto" id="templates">
-                <div class="text-center mb-16">
-                    <h2 class="font-headline-md text-headline-md text-primary mb-4">Koleksi Template</h2>
-                    <p class="font-body-md text-on-surface-variant max-w-xl mx-auto">Template minimalis, elegan, dan
-                        sepenuhnya responsif yang dirancang untuk pengalaman membaca terbaik.</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    @foreach ($templates->take(6) as $template)
-                        <div
-                            class="bg-white border border-outline-variant rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                            <div class="aspect-[16/10] bg-surface-container overflow-hidden">
-                                @if ($template->thumbnail)
-                                    <img src="{{ asset('storage/' . $template->thumbnail) }}"
-                                        alt="{{ $template->name }}"
-                                        class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
-                                @else
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <span class="material-symbols-outlined text-5xl text-outline/30">image</span>
-                                    </div>
-                                @endif
-                            </div>
-                            <div class="p-5 flex justify-between items-center">
-                                <h3 class="font-title-lg text-[18px] font-medium">{{ $template->name }}</h3>
-                                <span
-                                    class="text-xs px-3 py-1 bg-surface-container rounded-full text-on-surface-variant font-medium">{{ ucfirst($template->category) }}</span>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </section>
-        @endif
+
 
         <!-- Strong CTA Section -->
         <section class="py-32 px-gutter bg-primary text-center relative overflow-hidden">
@@ -699,9 +675,9 @@
                     <li><a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200"
                             href="#paket">Paket</a></li>
                     <li><a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200"
-                            href="#templates">Template</a></li>
+                            href="{{ route('marketing.templates') }}">Template</a></li>
                     <li><a class="font-body-md text-on-surface-variant hover:text-pink-600 transition-all duration-200"
-                            href="{{ route('marketing.comingsoon') }}">Demo Trial</a></li>
+                            href="{{ route('marketing.templates') }}">Demo Trial</a></li>
                 </ul>
             </div>
             <div>

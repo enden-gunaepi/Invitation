@@ -155,13 +155,21 @@
         <button type="button" id="scroll-toggle" aria-label="Toggle auto scroll" title="Auto scroll">↕</button>
     </div>
 
+    @if ($invitation->music_url)
+        <audio id="bgMusic" loop preload="auto" playsinline style="display:none">
+            <source src="{{ $invitation->music_signed_url ?? asset('storage/' . $invitation->music_url) }}" type="audio/mpeg">
+        </audio>
+    @endif
+
     <main class="relative z-0 min-h-screen bg-white">
         <section id="opening-section" class="relative min-h-screen w-full overflow-hidden bg-[#f8f5f2]">
             <div class="grid min-h-screen grid-cols-1 lg:grid-cols-2">
                 <div class="relative hidden items-start justify-start bg-[#f8f5f2] px-16 py-20 lg:flex">
                     <div class="absolute left-12 top-16 opacity-[0.035]">
-                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->bride_name }} &</h2>
-                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->groom_name }}</h2>
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->bride_name }} &
+                        </h2>
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->groom_name }}
+                        </h2>
                     </div>
 
                     <a href="javascript:history.back()"
@@ -173,66 +181,31 @@
                     </a>
                 </div>
 
-                <div class="relative flex min-h-screen items-center justify-center overflow-hidden">
+                <div class="relative flex min-h-screen items-end justify-center overflow-hidden px-6 pb-28 pt-32">
                     <img src="{{ asset('storage/' . $invitation->cover_photo) }}"
-                        alt="Opening Wedding {{ $brideFirstNames }}" class="absolute inset-0 h-full w-full object-cover">
-                    <div class="absolute inset-0 bg-black/50"></div>
-                    <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/60"></div>
-
-                    <div class="relative z-10 w-full px-8 text-center text-white">
-                        <div class="mx-auto max-w-sm">
-                            <p class="font-wedding text-sm font-semibold uppercase tracking-wide">We Invite You</p>
-                            <p class="font-wedding mt-4 text-sm font-semibold uppercase tracking-wide">
-                                To Celebrate Our Wedding
-                            </p>
-
-                            <h1 class="font-wedding mt-10 text-4xl leading-tight">{{ $brideFirstNames }}</h1>
-
-                            <div
-                                class="mt-10 flex items-center justify-center gap-4 font-wedding text-sm font-semibold uppercase">
-                                <span>{{ $eventDate?->translatedFormat('l') ?? '-' }}</span>
-                                <span class="h-5 w-[1px] bg-[#8b1111]"></span>
-                                <span>{{ $eventDate?->translatedFormat('d F Y') ?? '-' }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="quote-section" class="relative min-h-screen w-full overflow-hidden bg-[#f8f5f2]">
-            <div class="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-                <div class="relative hidden items-center justify-center bg-[#f8f5f2] px-16 lg:flex">
-                    <div class="absolute left-12 top-16 opacity-[0.035]">
-                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->bride_name }} &</h2>
-                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->groom_name }}</h2>
-                    </div>
-                </div>
-
-                <div class="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
-                    <img src="{{ asset('storage/' . $invitation->cover_photo) }}" alt="Quote Wedding"
+                        alt="Opening Wedding {{ $brideFirstNames }}"
                         class="absolute inset-0 h-full w-full object-cover">
-                    <div class="absolute inset-0 bg-black/45"></div>
 
-                    <div
-                        class="relative z-10 w-full max-w-xl rounded-2xl bg-black/45 px-7 py-10 text-center text-white shadow-2xl backdrop-blur-md">
-                        <div
-                            class="mx-auto mb-7 flex h-20 w-20 items-center justify-center rounded-full border-4 border-white">
-                            <div class="flex h-16 w-16 items-center justify-center rounded-full border border-white/70">
-                                <span class="font-wedding text-2xl">
-                                    {{ strtoupper(substr((string) $invitation->bride_name, 0, 1)) }}{{ strtoupper(substr((string) $invitation->groom_name, 0, 1)) }}
-                                </span>
-                            </div>
-                        </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#ffffff] via-[#ffffff]/60 to-transparent"></div>
 
-                        <p class="text-sm font-semibold italic leading-8 md:text-base md:leading-9">
-                            “Dan diantara tanda-tanda kebesaran-Nya ialah diciptakan-Nya untukmu pasangan hidup dari
-                            jenismu sendiri supaya kamu mendapatkan ketenangan hati dan dijadikan-Nya kasih sayang
-                            diantara kamu sesungguhnya yang demikian menjadi tanda-tanda kebesaran-Nya bagi orang-orang
-                            yang berpikir”
+                    <div class="relative z-10 w-full max-w-xl text-center text-[#2e1b1b]">
+                        <p class="mb-10 text-xs font-semibold uppercase tracking-[0.3em] text-[#8a7a7a]">
+                            Surat Ar-Rum Ayat 21
                         </p>
 
-                        <p class="mt-6 text-sm font-bold italic md:text-base">Surah Ar - Ruum : 21</p>
+                        <p class="font-serif text-2xl leading-[2.2] md:text-3xl md:leading-[2.4]" dir="rtl">
+                            وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُمْ مِنْ أَنْفُسِكُمْ أَزْوَاجًا لِتَسْكُنُوا إِلَيْهَا
+                            وَجَعَلَ بَيْنَكُمْ مَوَدَّةً وَرَحْمَةً ۚ إِنَّ فِي ذَٰلِكَ لَآيَاتٍ لِقَوْمٍ
+                            يَتَفَكَّرُونَ
+                        </p>
+
+                        <p class="mt-10 px-2 text-sm italic leading-relaxed text-[#5e4d4d] md:text-base md:leading-8">
+                            "Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan pasangan-pasangan untukmu
+                            dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan
+                            di antaramu rasa kasih dan sayang."
+                        </p>
+
+                        <p class="mt-8 text-sm font-bold md:text-base">QS. Ar-Rum: 21</p>
                     </div>
                 </div>
             </div>
@@ -242,12 +215,15 @@
             <div class="grid min-h-screen grid-cols-1 lg:grid-cols-2">
                 <div class="relative hidden items-center justify-center bg-[#f8f5f2] px-16 lg:flex">
                     <div class="absolute left-12 top-16 opacity-[0.035]">
-                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->bride_name }} &</h2>
-                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->groom_name }}</h2>
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->bride_name }} &
+                        </h2>
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">{{ $invitation->groom_name }}
+                        </h2>
                     </div>
                 </div>
 
-                <div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fbf8f6] px-6 py-16">
+                <div
+                    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fbf8f6] px-6 py-16">
                     <div class="absolute inset-0 opacity-[0.08]">
                         <img src="{{ asset('storage/' . $invitation->cover_photo) }}" alt="Background Couple"
                             class="h-full w-full object-cover blur-sm">
@@ -262,7 +238,8 @@
                         <div class="flex flex-col items-center">
                             <div class="h-32 w-32 rounded-full border-[7px] border-[#7b0f0f] p-1 shadow-2xl">
                                 <img src="{{ asset('storage/' . $invitation->bride_photo) }}"
-                                    alt="{{ $invitation->bride_name }}" class="h-full w-full rounded-full object-cover">
+                                    alt="{{ $invitation->bride_name }}"
+                                    class="h-full w-full rounded-full object-cover">
                             </div>
 
                             <h2 class="font-wedding mt-8 text-4xl leading-tight text-[#2e1b1b]">
@@ -286,7 +263,8 @@
                         <div class="flex flex-col items-center">
                             <div class="h-32 w-32 rounded-full border-[7px] border-[#7b0f0f] p-1 shadow-2xl">
                                 <img src="{{ asset('storage/' . $invitation->groom_photo) }}"
-                                    alt="{{ $invitation->groom_name }}" class="h-full w-full rounded-full object-cover">
+                                    alt="{{ $invitation->groom_name }}"
+                                    class="h-full w-full rounded-full object-cover">
                             </div>
 
                             <h2 class="font-wedding mt-8 text-4xl leading-tight text-[#2e1b1b]">
@@ -306,6 +284,126 @@
                 </div>
             </div>
         </section>
+
+        <section id="event-section" class="relative min-h-screen w-full overflow-hidden bg-[#f8f5f2]">
+            <div class="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+                {{-- Left side (desktop only) --}}
+                <div class="relative hidden items-start justify-start bg-[#f8f5f2] px-16 py-20 lg:flex">
+                    <div class="absolute left-12 top-16 opacity-[0.035]">
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">Our</h2>
+                        <h2 class="font-wedding text-4xl leading-[2.5] text-[#2e1b1b]">Events</h2>
+                    </div>
+                </div>
+
+                {{-- Right side (main content) --}}
+                <div
+                    class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fbf8f6] px-6 py-16">
+                    <div class="absolute inset-0 opacity-[0.08]">
+                        {{-- Use a subtle background image or pattern, or the cover photo blurred --}}
+                        <img src="{{ asset('storage/' . $invitation->cover_photo) }}" alt="Background Events"
+                            class="h-full w-full object-cover blur-sm">
+                    </div>
+                    <div class="absolute inset-0 bg-white/85"></div>
+
+                    <div class="relative z-10 w-full max-w-xl text-center text-[#2e1b1b]">
+                        <p class="mb-12 text-sm leading-7 text-[#4d3c3c]">
+                            Dengan hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam rangkaian acara kami.
+                        </p>
+
+                        {{-- Countdown Timer --}}
+                        @if ($eventDate)
+                            <div class="mb-12">
+                                <h3 class="font-wedding text-3xl text-[#2e1b1b] mb-6">Menuju Hari Bahagia</h3>
+                                <div id="countdown" class="flex justify-center gap-4 text-center">
+                                    <div>
+                                        <span id="days"
+                                            class="block font-wedding text-4xl text-[#7b0f0f]">00</span>
+                                        <span class="text-sm text-[#5e4d4d]">Hari</span>
+                                    </div>
+                                    <div>
+                                        <span id="hours"
+                                            class="block font-wedding text-4xl text-[#7b0f0f]">00</span>
+                                        <span class="text-sm text-[#5e4d4d]">Jam</span>
+                                    </div>
+                                    <div>
+                                        <span id="minutes"
+                                            class="block font-wedding text-4xl text-[#7b0f0f]">00</span>
+                                        <span class="text-sm text-[#5e4d4d]">Menit</span>
+                                    </div>
+                                    <div>
+                                        <span id="seconds"
+                                            class="block font-wedding text-4xl text-[#7b0f0f]">00</span>
+                                        <span class="text-sm text-[#5e4d4d]">Detik</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Event List --}}
+                        @forelse ($invitation->invitationEvents ?? [] as $event)
+                            <div class="mb-10 last:mb-0 p-6 border border-[#c8baba] rounded-lg shadow-sm bg-white">
+                                <h3 class="font-wedding text-3xl text-[#2e1b1b] mb-4">{{ $event->name }}</h3>
+                                <p class="text-lg font-semibold text-[#7b0f0f] mb-2">
+                                    {{ \Carbon\Carbon::parse($event->date)->isoFormat('dddd, D MMMM YYYY') }}
+                                </p>
+                                <p class="text-base text-[#5e4d4d] mb-4">Pukul {{ $event->time }} WIB</p>
+                                <p class="text-sm leading-6 text-[#4d3c3c]">{{ $event->venue_name }}</p>
+                                <p class="text-sm leading-6 text-[#4d3c3c]">{{ $event->venue_address }}</p>
+
+                                @if ($event->google_maps_url)
+                                    <a href="{{ $event->google_maps_url }}" target="_blank"
+                                        class="mt-6 inline-flex items-center gap-2 rounded-md bg-[#7b0f0f] px-4 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-[#5f0b0b]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Lihat di Google Maps
+                                    </a>
+                                @endif
+                            </div>
+                        @empty
+                            <p class="text-sm text-[#5e4d4d]">Detail acara akan segera diumumkan.</p>
+                        @endforelse
+
+                        {{-- Google Maps button for main event --}}
+                        @if ($invitation->google_maps_url)
+                            <div class="mt-12">
+                                <a href="{{ $invitation->google_maps_url }}" target="_blank"
+                                    class="inline-flex items-center gap-2 rounded-full bg-[#7b0f0f] px-6 py-3 text-sm font-medium text-white shadow-lg transition duration-300 hover:scale-105 hover:bg-[#5f0b0b]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    Lihat Lokasi Utama
+                                </a>
+                            </div>
+                        @endif
+
+                        {{-- Save to Calendar (for main event date) --}}
+                        @if ($eventDate && $invitation->event_time)
+                            <div class="{{ $invitation->google_maps_url ? 'mt-6' : 'mt-12' }}">
+                                <a href="#"
+                                    onclick="addToCalendar('{{ $invitation->title }}', '{{ $invitation->venue_name }}', '{{ $eventDate->format('Ymd') }}T{{ \Carbon\Carbon::parse($invitation->event_time)->format('His') }}', '{{ $eventDate->addHours(2)->format('Ymd') }}T{{ \Carbon\Carbon::parse($invitation->event_time)->addHours(2)->format('His') }}')"
+                                    class="inline-flex items-center gap-2 rounded-full bg-[#2e1b1b] px-6 py-3 text-sm font-medium text-white shadow-lg transition duration-300 hover:scale-105 hover:bg-[#1b1010]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Simpan ke Kalender
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -319,6 +417,14 @@
                 cover.style.display = 'none';
                 document.body.style.overflow = 'auto';
             }, 800);
+
+            const bgMusic = document.getElementById('bgMusic');
+            if (bgMusic) {
+                bgMusic.play().catch(console.error);
+                if (musicToggle) {
+                    musicToggle.classList.add('is-active');
+                }
+            }
         }
 
         document.body.style.overflow = 'hidden';
@@ -329,7 +435,15 @@
 
         if (musicToggle) {
             musicToggle.addEventListener('click', function() {
-                this.classList.toggle('is-active');
+                const isActive = this.classList.toggle('is-active');
+                const bgMusic = document.getElementById('bgMusic');
+                if (bgMusic) {
+                    if (isActive) {
+                        bgMusic.play().catch(console.error);
+                    } else {
+                        bgMusic.pause();
+                    }
+                }
             });
         }
 
@@ -349,6 +463,46 @@
                     autoScrollTimer = null;
                 }
             });
+        }
+
+        // Countdown Logic
+        const eventDateStr = "{{ $invitation->event_date }}";
+        const eventTimeStr = "{{ $invitation->event_time }}";
+
+        if (eventDateStr && eventTimeStr) {
+            // Combine date and time, assuming local timezone for simplicity
+            const targetDate = new Date(eventDateStr + 'T' + eventTimeStr + ':00');
+            const countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Update the elements
+                document.getElementById("days").innerText = String(days).padStart(2, '0');
+                document.getElementById("hours").innerText = String(hours).padStart(2, '0');
+                document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
+                document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+
+                // If the countdown is over, write some text
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById("countdown").innerHTML =
+                        "<span class='text-xl text-[#7b0f0f]'>Acara Telah Dimulai!</span>";
+                }
+            }, 1000);
+        }
+
+        // Add to Calendar Logic
+        function addToCalendar(title, location, startDateTime, endDateTime) {
+            // Google Calendar URL format: https://calendar.google.com/calendar/render?action=TEMPLATE&text=EventTitle&details=EventDetails&location=EventLocation&dates=YYYYMMDDTHHMMSS/YYYYMMDDTHHMMSS
+            const googleCalendarUrl =
+                `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&details=${encodeURIComponent('Pernikahan ' + title)}&location=${encodeURIComponent(location)}&dates=${startDateTime}/${endDateTime}`;
+            window.open(googleCalendarUrl, '_blank');
+            return false; // Prevent default link behavior
         }
     </script>
 </body>
