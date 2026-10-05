@@ -1,11 +1,11 @@
-﻿@extends('layouts.client')
+@extends('layouts.client')
 @section('title', 'Kelola Tamu')
 @section('page-title', 'Kelola Tamu')
 @section('page-subtitle', $invitation->title)
 
 @section('content')
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2">
+    <div class="lg:col-span-2 order-2 lg:order-1">
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b" style="border-color: var(--border);">
                 <div class="flex items-center justify-between mb-2">
@@ -64,7 +64,7 @@
         <div class="mt-4" data-guest-pagination>{{ $guests->links() }}</div>
     </div>
 
-    <div>
+    <div class="order-1 lg:order-2">
         <div class="card p-4 mb-4">
             <div class="flex items-center gap-3">
                 <div class="stat-icon" style="background: var(--accent-bg); color: var(--accent); width:32px; height:32px; font-size:13px;">
@@ -135,26 +135,7 @@
             </a>
         </div>
 
-        <div class="card p-6 mt-4">
-            <h3 class="font-bold text-base mb-2">Auto Seating Plan</h3>
-            <p class="text-xs mb-4" style="color: var(--text-secondary);">Buat pembagian meja dan kursi otomatis untuk seluruh tamu.</p>
-            <form method="POST" action="{{ route('client.invitations.guests.auto-seat', $invitation) }}">
-                @csrf
-                <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div>
-                        <label class="form-label">Kursi per Meja</label>
-                        <input type="number" name="seats_per_table" class="form-input" value="8" min="2" max="20" required>
-                    </div>
-                    <div>
-                        <label class="form-label">Meja Awal</label>
-                        <input type="number" name="start_table" class="form-input" value="1" min="1" max="999">
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary w-full text-sm">
-                    <i class="fas fa-chair mr-2"></i> Generate Seating Plan
-                </button>
-            </form>
-        </div>
+
         @else
         <div class="card p-6 text-center">
             <i class="fas fa-lock text-2xl mb-3" style="color: var(--text-tertiary);"></i>

@@ -59,6 +59,46 @@
         background: var(--accent-bg);
         color: var(--accent);
     }
+    .pending-topup-card {
+        background: var(--surface-lowest);
+        border-radius: 16px;
+        border: 1px solid var(--outline-variant);
+        overflow: hidden;
+    }
+    .topup-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--outline-variant);
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .topup-item:last-child {
+        border-bottom: none;
+    }
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 99px;
+        white-space: nowrap;
+    }
+    .status-pending-verification {
+        background: rgba(245,158,11,0.12);
+        color: #b45309;
+    }
+    .status-pending {
+        background: rgba(249,115,22,0.12);
+        color: #c2410c;
+    }
+    .status-failed {
+        background: rgba(239,68,68,0.12);
+        color: #b91c1c;
+    }
 </style>
 
 <div class="space-y-6">
@@ -97,6 +137,105 @@
             </div>
         </div>
     </div>
+
+    {{-- ── Pengajuan Top Up Transfer Manual (Pending / Menunggu Verifikasi / Ditolak) ── --}}
+    @if($pendingTopups->isNotEmpty())
+    <div class="pending-topup-card">
+        <div class="px-6 py-4 border-b border-[var(--outline-variant)] flex items-center justify-between">
+            <h3 class="font-bold text-base text-[var(--on-surface)] flex items-center gap-2">
+                <span class="material-symbols-outlined" style="font-size: 20px; color: #f59e0b;">pending_actions</span>
+                Pengajuan Top Up Transfer Manual
+            </h3>
+            <span class="text-xs text-gray-400">{{ $pendingTopups->count() }} pengajuan aktif</span>
+        </div>
+
+        <div class="divide-y divide-[var(--outline-variant)]">
+            @foreach($pendingTopups as $topup)
+            <div class="topup-item">
+                {{-- Kiri: info nominal & tanggal --}}
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0
+                        @if($topup->isPendingVerification()) bg-yellow-100 dark:bg-yellow-900/30
+                        @elseif($topup->payment_status === 'failed') bg-red-100 dark:bg-red-900/30
+                        @else bg-orange-100 dark:bg-orange-900/30 @endif">
+                        @if($topup->isPendingVerification())
+                            <span class="material-symbols-outlined text-yellow-600" style="font-size:18px;">schedule</span>
+                        @elseif($topup->payment_status === 'failed')
+                            <span class="material-symbols-outlined text-red-600" style="font-size:18px;">cancel</span>
+                        @else
+                            <span class="material-symbols-outlined text-orange-600" style="font-size:18px;">hourglass_empty</span>
+                        @endif
+                    </div>
+                    <div class="min-w-0">
+                        <div class="font-semibold text-sm truncate">Rp {{ number_format($topup->amount, 0, ',', '.') }}</div>
+                        <div class="text-xs text-gray-400 truncate">{{ $topup->invoice_number }}</div>
+                        <div class="text-xs text-gray-400">{{ $topup->created_at->format('d M Y, H:i') }}</div>
+                    </div>
+                </div>
+
+                {{-- Tengah: status pill --}}
+                <div class="flex flex-col gap-1 items-end sm:items-center">
+                    @if($topup->isPendingVerification())
+                        <span class="status-pill status-pending-verification">
+                            <span class="material-symbols-outlined" style="font-size:14px;">schedule</span>
+                            Menunggu Konfirmasi Admin
+                        </span>
+                        @if($topup->transfer_proof_path)
+                            <span class="text-xs text-gray-400 mt-0.5">
+                                <span class="material-symbols-outlined" style="font-size:12px; vertical-align:middle;">check_circle</span>
+                                Bukti transfer telah dikirim
+                            </span>
+                        @else
+                            <span class="text-xs text-orange-500 mt-0.5 font-medium">
+                                <span class="material-symbols-outlined" style="font-size:12px; vertical-align:middle;">warning</span>
+                                Bukti belum di-upload
+                            </span>
+                        @endif
+                    @elseif($topup->payment_status === 'failed')
+                        <span class="status-pill status-failed">
+                            <span class="material-symbols-outlined" style="font-size:14px;">cancel</span>
+                            Ditolak Admin
+                        </span>
+                        @if($topup->transfer_rejection_reason)
+                            <span class="text-xs text-red-500 mt-0.5 max-w-[200px] text-right">
+                                Alasan: {{ $topup->transfer_rejection_reason }}
+                            </span>
+                        @endif
+                    @else
+                        <span class="status-pill status-pending">
+                            <span class="material-symbols-outlined" style="font-size:14px;">hourglass_empty</span>
+                            Menunggu Pembayaran
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Kanan: tombol aksi --}}
+                <div class="flex items-center gap-2 shrink-0">
+                    @if($topup->isPendingVerification())
+                        <a href="{{ route('client.balance.topup.manual-transfer.instructions', ['payment_id' => $topup->id]) }}"
+                           class="btn btn-secondary btn-sm text-xs px-3 py-1.5 rounded-lg">
+                            <span class="material-symbols-outlined" style="font-size:14px;">upload</span>
+                            {{ $topup->transfer_proof_path ? 'Upload Ulang' : 'Upload Bukti' }}
+                        </a>
+                    @elseif($topup->payment_status === 'failed')
+                        <a href="{{ route('client.balance.topup') }}"
+                           class="btn btn-primary btn-sm text-xs px-3 py-1.5 rounded-lg">
+                            <span class="material-symbols-outlined" style="font-size:14px;">refresh</span>
+                            Top Up Baru
+                        </a>
+                    @else
+                        <a href="{{ route('client.balance.topup.status', ['payment_id' => $topup->id]) }}"
+                           class="btn btn-secondary btn-sm text-xs px-3 py-1.5 rounded-lg">
+                            <span class="material-symbols-outlined" style="font-size:14px;">info</span>
+                            Lihat Detail
+                        </a>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 
     <!-- Transaction History -->
     <div class="transaction-card overflow-hidden">

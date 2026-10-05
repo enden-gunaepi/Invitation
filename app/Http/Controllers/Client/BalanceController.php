@@ -29,7 +29,20 @@ class BalanceController extends Controller
         $user = auth()->user();
         $transactions = $this->balanceService->getTransactionHistory($user->id, 15);
 
-        return view('client.balance.index', compact('user', 'transactions'));
+        // Pengajuan top up transfer manual yang masih pending (belum diverifikasi / masih pending)
+        $pendingTopups = Payment::where('user_id', $user->id)
+            ->where('payment_purpose', Payment::PURPOSE_TOPUP)
+            ->where('payment_method', Payment::METHOD_TRANSFER_MANUAL)
+            ->whereIn('payment_status', [
+                Payment::STATUS_PENDING,
+                Payment::STATUS_PENDING_VERIFICATION,
+                Payment::STATUS_FAILED,
+            ])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('client.balance.index', compact('user', 'transactions', 'pendingTopups'));
     }
 
     public function topupForm()
