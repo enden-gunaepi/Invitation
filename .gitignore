@@ -6,6 +6,8 @@
 /storage/*.key
 /storage/pail
 /vendor
+.DS_Store
+server.md
 .env
 .env.backup
 .env.production

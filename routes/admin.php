@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ReliabilityController;
 use App\Http\Controllers\Admin\MediaMaintenanceController;
 use App\Http\Controllers\Admin\BalanceController;
 use App\Http\Controllers\Admin\ManualTransferController;
+use App\Http\Controllers\Admin\SystemUpdateController;
 use Illuminate\Support\Facades\Route;
 
 // Admin Dashboard
@@ -104,3 +105,7 @@ Route::post('/integration/payment-gateway/test', [IntegrationController::class, 
 Route::get('/system/reliability', [ReliabilityController::class, 'index'])->name('system.reliability');
 Route::get('/system/media-maintenance', [MediaMaintenanceController::class, 'index'])->name('system.media-maintenance');
 Route::post('/system/media-maintenance/cleanup', [MediaMaintenanceController::class, 'cleanup'])->name('system.media-maintenance.cleanup');
+Route::get('/system/update', [SystemUpdateController::class, 'index'])->name('system.update');
+Route::post('/system/update/check', [SystemUpdateController::class, 'check'])->name('system.update.check');
+Route::post('/system/update/pull', [SystemUpdateController::class, 'pull'])->name('system.update.pull');
+Route::put('/system/update/settings', [SystemUpdateController::class, 'settings'])->name('system.update.settings');

@@ -35,6 +35,11 @@ class ProcessDunningReminders extends Command
                     'status' => 'skipped',
                     'message' => 'User email not available.',
                 ]);
+                $payment->update([
+                    'retry_count' => (int) $payment->retry_count + 1,
+                    'last_retry_at' => $now,
+                    'next_retry_at' => $now->copy()->addHours(12),
+                ]);
                 continue;
             }
 

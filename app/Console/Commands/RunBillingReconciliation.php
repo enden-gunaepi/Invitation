@@ -16,13 +16,13 @@ class RunBillingReconciliation extends Command
     {
         $today = now()->toDateString();
 
-        Payment::query()
+        $locallyMarkedExpired = Payment::query()
             ->where('payment_status', 'pending')
             ->whereNotNull('expired_at')
             ->where('expired_at', '<', now())
-            ->get()
-            ->each
-            ->markAsExpired();
+            ->get();
+
+        $locallyMarkedExpired->each->markAsExpired();
 
         $syncResult = $paymentStatusSyncService->syncPendingPayments(
             Payment::query()
@@ -36,8 +36,10 @@ class RunBillingReconciliation extends Command
                 ->get()
         );
 
-        $pendingExpired = Payment::query()
-            ->where('payment_status', 'expired')
+        $pendingPastExpiry = Payment::query()
+            ->where('payment_status', 'pending')
+            ->whereNotNull('expired_at')
+            ->where('expired_at', '<', now())
             ->count();
 
         $paidWithoutPaidAt = Payment::query()
@@ -52,11 +54,11 @@ class RunBillingReconciliation extends Command
             })
             ->count();
 
-        $issues = $pendingExpired + $paidWithoutPaidAt + $paidWithZeroAmount;
+        $issues = $pendingPastExpiry + $paidWithoutPaidAt + $paidWithZeroAmount + (int) $syncResult['errors'];
         $status = $issues > 0 ? 'warning' : 'ok';
 
         $summary = [
-            'pending_expired_count' => $pendingExpired,
+            'pending_past_expiry_count' => $pendingPastExpiry,
             'paid_without_paid_at_count' => $paidWithoutPaidAt,
             'paid_with_zero_amount_count' => $paidWithZeroAmount,
             'payments_paid_today_count' => Payment::query()
@@ -67,7 +69,7 @@ class RunBillingReconciliation extends Command
                 ->whereDate('created_at', $today)
                 ->count(),
             'synced_paid_count' => $syncResult['synced_paid'],
-            'marked_expired_count' => $syncResult['marked_expired'],
+            'marked_expired_count' => $locallyMarkedExpired->count() + (int) $syncResult['marked_expired'],
             'sync_errors_count' => $syncResult['errors'],
         ];
 

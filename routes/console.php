@@ -52,11 +52,23 @@ Artisan::command('invitations:backfill-subscription-bindings {user_id?}', functi
     $this->info("Backfill binding invitation selesai. Invitation terhubung: {$updated}");
 })->purpose('Backfill client package subscription bindings for legacy invitations');
 
-Schedule::command('payments:dunning')->everyThirtyMinutes();
-Schedule::command('payments:expire-manual')->hourly();
-Schedule::command('reminders:generate-auto')->hourly();
-Schedule::command('reminders:process-whatsapp')->everyTenMinutes();
-Schedule::command('system:heartbeat')->everyFiveMinutes();
-Schedule::command('billing:reconcile-daily')->dailyAt('00:30');
-Schedule::command('invitations:purge-expired')->dailyAt('01:00');
-Schedule::command('invitations:cleanup-media')->dailyAt('01:30');
+$scheduleTimezone = (string) config('system_update.schedule_timezone', 'Asia/Jakarta');
+
+Schedule::command('payments:dunning')
+    ->everyThirtyMinutes()->timezone($scheduleTimezone)->withoutOverlapping(25);
+Schedule::command('payments:expire-manual')
+    ->hourly()->timezone($scheduleTimezone)->withoutOverlapping(55);
+Schedule::command('reminders:generate-auto')
+    ->hourly()->timezone($scheduleTimezone)->withoutOverlapping(55);
+Schedule::command('reminders:process-whatsapp')
+    ->everyTenMinutes()->timezone($scheduleTimezone)->withoutOverlapping(30);
+Schedule::command('system:heartbeat')
+    ->everyFiveMinutes()->timezone($scheduleTimezone)->withoutOverlapping(10);
+Schedule::command('system:update')
+    ->everyFiveMinutes()->timezone($scheduleTimezone)->withoutOverlapping(10);
+Schedule::command('billing:reconcile-daily')
+    ->dailyAt('00:30')->timezone($scheduleTimezone)->withoutOverlapping(120);
+Schedule::command('invitations:purge-expired')
+    ->dailyAt('01:00')->timezone($scheduleTimezone)->withoutOverlapping(120);
+Schedule::command('invitations:cleanup-media')
+    ->dailyAt('01:30')->timezone($scheduleTimezone)->withoutOverlapping(120);
