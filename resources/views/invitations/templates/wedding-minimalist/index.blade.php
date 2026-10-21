@@ -108,16 +108,44 @@
             ]
         ]);
     
-    $guestsList = isset($invitation->guests) && $invitation->guests->whereNotNull('message')->count() > 0 
-        ? $invitation->guests()->whereNotNull('message')->latest()->get() 
-        : collect([
-            (object)[
-                'name' => 'Tamu Contoh',
-                'status' => 'Hadir',
-                'created_at' => now(),
-                'message' => 'Selamat menempuh hidup baru!'
-            ]
-        ]);
+    // Prepare RSVP & wishes list from database
+    $rawRsvps = (isset($invitation->rsvps) && $invitation->rsvps->count() > 0)
+        ? $invitation->rsvps
+        : collect();
+    $rawWishes = (isset($invitation->wishes) && $invitation->wishes->count() > 0)
+        ? $invitation->wishes
+        : collect();
+
+    $mergedWishes = $rawRsvps
+        ->filter(fn($r) => !empty($r->message) || !empty($r->name))
+        ->map(fn($r) => (object)[
+            'name' => $r->name ?? 'Tamu',
+            'status' => $r->status, // attending, not_attending, maybe
+            'pax' => $r->pax ?? 1,
+            'message' => $r->message,
+            'created_at' => $r->created_at ? \Illuminate\Support\Carbon::parse($r->created_at) : now(),
+        ])
+        ->concat(
+            $rawWishes->map(fn($w) => (object)[
+                'name' => $w->name ?? 'Tamu',
+                'status' => null,
+                'pax' => 1,
+                'message' => $w->message,
+                'created_at' => $w->created_at ? \Illuminate\Support\Carbon::parse($w->created_at) : now(),
+            ])
+        )
+        ->sortByDesc('created_at')
+        ->values();
+
+    $guestsList = $mergedWishes->isNotEmpty() ? $mergedWishes : collect([
+        (object)[
+            'name' => 'Budi & Keluarga',
+            'status' => 'attending',
+            'pax' => 2,
+            'created_at' => now()->subHours(2),
+            'message' => 'Selamat menempuh hidup baru, semoga menjadi keluarga sakinah mawaddah warahmah!'
+        ]
+    ]);
     
     $invitationTitle = $invitation->title ?? 'Pernikahan Mempelai';
 
@@ -827,45 +855,92 @@
                         </p>
                         
                         <div class="bg-white p-6 md:p-8 border border-[#c8baba] rounded-lg shadow-sm text-left">
-                            <form action="{{ isset($invitation->slug) ? route('invitation.rsvp', $invitation->slug) : '#' }}" method="POST" class="space-y-4">
+                            {{-- Success Alert jika redirect biasa dari backend --}}
+                            @if (session('success'))
+                                <div id="rsvp-session-alert" class="mb-5 p-4 rounded-md bg-green-50 border border-green-200 text-green-800 text-sm flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>{{ session('success') }}</span>
+                                </div>
+                            @endif
+
+                            {{-- Alert Sukses Pengiriman AJAX --}}
+                            <div id="rsvp-ajax-alert" class="hidden mb-5 p-4 rounded-md bg-green-50 border border-green-200 text-green-800 text-sm flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span id="rsvp-ajax-message">Terima kasih, konfirmasi kehadiran dan doa restu Anda telah tersimpan!</span>
+                            </div>
+
+                            <form id="rsvp-form" action="{{ isset($invitation->slug) ? route('invitation.rsvp', $invitation->slug) : '#' }}" method="POST" class="space-y-4">
                                 @csrf
+                                <input type="hidden" name="redirect_anchor" value="rsvp-section">
+                                @if (!empty($guest?->id))
+                                    <input type="hidden" name="guest_id" value="{{ $guest->id }}">
+                                @endif
+                                @if (!empty($guest?->phone))
+                                    <input type="hidden" name="phone" value="{{ $guest->phone }}">
+                                @endif
+
                                 <div>
                                     <label class="block text-sm font-medium text-[#2e1b1b] mb-1">Nama</label>
-                                    <input type="text" name="name" required class="w-full px-4 py-2 border border-[#c8baba] rounded-md focus:outline-none focus:ring-2 focus:ring-[#7b0f0f] bg-transparent text-[#2e1b1b]" placeholder="Nama Anda">
+                                    <input type="text" name="name" id="rsvp_name" value="{{ $guest?->name ?? old('name') }}" required class="w-full px-4 py-2.5 border border-[#c8baba] rounded-md focus:outline-none focus:ring-2 focus:ring-[#7b0f0f] bg-white text-[#2e1b1b]" placeholder="Nama Anda">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-[#2e1b1b] mb-1">Kehadiran</label>
-                                    <select name="status" required class="w-full px-4 py-2 border border-[#c8baba] rounded-md focus:outline-none focus:ring-2 focus:ring-[#7b0f0f] bg-transparent text-[#2e1b1b]">
-                                        <option value="Hadir">Hadir</option>
-                                        <option value="Tidak Hadir">Tidak Hadir</option>
-                                    </select>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-[#2e1b1b] mb-1">Konfirmasi Kehadiran</label>
+                                        <select name="status" id="rsvp_status" required class="w-full px-4 py-2.5 border border-[#c8baba] rounded-md focus:outline-none focus:ring-2 focus:ring-[#7b0f0f] bg-white text-[#2e1b1b]">
+                                            <option value="attending" {{ old('status') === 'attending' ? 'selected' : '' }}>Hadir</option>
+                                            <option value="not_attending" {{ old('status') === 'not_attending' ? 'selected' : '' }}>Tidak Hadir</option>
+                                            <option value="maybe" {{ old('status') === 'maybe' ? 'selected' : '' }}>Masih Ragu</option>
+                                        </select>
+                                    </div>
+
+                                    <div id="rsvp_pax_container">
+                                        <label class="block text-sm font-medium text-[#2e1b1b] mb-1">Jumlah Tamu</label>
+                                        <select name="pax" id="rsvp_pax" required class="w-full px-4 py-2.5 border border-[#c8baba] rounded-md focus:outline-none focus:ring-2 focus:ring-[#7b0f0f] bg-white text-[#2e1b1b]">
+                                            <option value="1">1 Orang</option>
+                                            <option value="2">2 Orang</option>
+                                            <option value="3">3 Orang</option>
+                                            <option value="4">4 Orang</option>
+                                            <option value="5">5 Orang</option>
+                                        </select>
+                                    </div>
                                 </div>
+
                                 <div>
                                     <label class="block text-sm font-medium text-[#2e1b1b] mb-1">Ucapan & Doa</label>
-                                    <textarea name="message" rows="3" required class="w-full px-4 py-2 border border-[#c8baba] rounded-md focus:outline-none focus:ring-2 focus:ring-[#7b0f0f] bg-transparent text-[#2e1b1b]" placeholder="Tuliskan ucapan & doa"></textarea>
+                                    <textarea name="message" id="rsvp_message" rows="3" required class="w-full px-4 py-2.5 border border-[#c8baba] rounded-md focus:outline-none focus:ring-2 focus:ring-[#7b0f0f] bg-white text-[#2e1b1b]" placeholder="Tuliskan ucapan & doa restu untuk kedua mempelai"></textarea>
                                 </div>
-                                <button type="submit" class="w-full rounded-md bg-[#7b0f0f] px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#5f0b0b]">
-                                    Kirim Ucapan
+
+                                <button type="submit" id="rsvp_submit_btn" class="w-full rounded-md bg-[#7b0f0f] px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[#5f0b0b] flex items-center justify-center gap-2">
+                                    <span id="rsvp_btn_text">Kirim Ucapan & Konfirmasi</span>
                                 </button>
                             </form>
                         </div>
                         
-                        <div class="mt-10 max-h-80 overflow-y-auto bg-white p-6 border border-[#c8baba] rounded-lg shadow-sm text-left space-y-4">
+                        <div id="rsvp-list-container" class="mt-10 max-h-80 overflow-y-auto bg-white p-6 border border-[#c8baba] rounded-lg shadow-sm text-left space-y-4">
                             @forelse ($guestsList as $guestMsg)
-                                <div class="border-b border-[#e8e8e8] pb-4 last:border-0 last:pb-0">
-                                    <div class="flex items-center gap-2 mb-1">
+                                <div class="rsvp-item border-b border-[#e8e8e8] pb-4 last:border-0 last:pb-0">
+                                    <div class="flex items-center gap-2 mb-1 flex-wrap">
                                         <span class="font-bold text-[#2e1b1b] text-sm">{{ $guestMsg->name }}</span>
-                                        @if ($guestMsg->status == 'Hadir')
-                                            <span class="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-full">Hadir</span>
-                                        @else
-                                            <span class="bg-red-100 text-red-800 text-[10px] px-2 py-0.5 rounded-full">Tidak Hadir</span>
+                                        @if (in_array(strtolower($guestMsg->status ?? ''), ['attending', 'hadir']))
+                                            <span class="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-full font-medium">Hadir</span>
+                                        @elseif (in_array(strtolower($guestMsg->status ?? ''), ['not_attending', 'tidak hadir']))
+                                            <span class="bg-red-100 text-red-800 text-[10px] px-2 py-0.5 rounded-full font-medium">Tidak Hadir</span>
+                                        @elseif (in_array(strtolower($guestMsg->status ?? ''), ['maybe', 'masih ragu', 'ragu-ragu']))
+                                            <span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-medium">Masih Ragu</span>
                                         @endif
                                     </div>
-                                    <p class="text-xs text-[#5e4d4d]">{{ $guestMsg->created_at->diffForHumans() }}</p>
-                                    <p class="mt-2 text-sm text-[#4d3c3c]">{{ $guestMsg->message }}</p>
+                                    <p class="text-xs text-[#5e4d4d]">{{ $guestMsg->created_at ? \Carbon\Carbon::parse($guestMsg->created_at)->diffForHumans() : 'Baru saja' }}</p>
+                                    @if (!empty($guestMsg->message))
+                                        <p class="mt-2 text-sm text-[#4d3c3c] leading-relaxed">{{ $guestMsg->message }}</p>
+                                    @endif
                                 </div>
                             @empty
-                                <p class="text-sm text-center text-[#5e4d4d]">Belum ada ucapan.</p>
+                                <p id="rsvp-empty-state" class="text-sm text-center text-[#5e4d4d]">Belum ada ucapan. Jadilah yang pertama memberikan ucapan!</p>
                             @endforelse
                         </div>
                     </div>
@@ -941,27 +1016,216 @@
     </main>
 
     <script>
-        function openInvitation() {
+        const invitationSlug = "{{ $invitation->slug ?? 'default' }}";
+        const sessionKey = 'invitation_opened_' + invitationSlug;
+        const hasSessionSuccess = @json(session()->has('success'));
+        const hasHash = window.location.hash.length > 1;
+        const wasOpenedInSession = sessionStorage.getItem(sessionKey) === 'true';
+
+        // Check if invitation should be open already (e.g. after RSVP reload, anchor, or session memory)
+        const shouldBypassCover = hasSessionSuccess || hasHash || wasOpenedInSession;
+
+        function openInvitation(silent = false) {
             const cover = document.getElementById('cover-section');
+            if (!cover) return;
 
-            cover.classList.add('opacity-0');
-            cover.classList.add('pointer-events-none');
+            sessionStorage.setItem(sessionKey, 'true');
 
-            setTimeout(() => {
+            if (silent) {
                 cover.style.display = 'none';
+                cover.classList.add('opacity-0', 'pointer-events-none');
                 document.body.style.overflow = 'auto';
-            }, 800);
+            } else {
+                cover.classList.add('opacity-0');
+                cover.classList.add('pointer-events-none');
+                setTimeout(() => {
+                    cover.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }, 800);
 
-            const bgMusic = document.getElementById('bgMusic');
-            if (bgMusic) {
-                bgMusic.play().catch(console.error);
-                if (musicToggle) {
-                    musicToggle.classList.add('is-active');
+                const bgMusic = document.getElementById('bgMusic');
+                if (bgMusic) {
+                    bgMusic.play().catch(console.error);
+                    if (musicToggle) {
+                        musicToggle.classList.add('is-active');
+                    }
                 }
             }
         }
 
-        document.body.style.overflow = 'hidden';
+        if (shouldBypassCover) {
+            openInvitation(true);
+            if (hasHash) {
+                setTimeout(() => {
+                    const el = document.querySelector(window.location.hash);
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }, 150);
+            } else if (hasSessionSuccess) {
+                setTimeout(() => {
+                    const el = document.getElementById('rsvp-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }, 150);
+            }
+        } else {
+            document.body.style.overflow = 'hidden';
+        }
+
+        // AJAX RSVP Submission Handler
+        (function() {
+            const form = document.getElementById('rsvp-form');
+            if (!form) return;
+
+            const submitBtn = document.getElementById('rsvp_submit_btn');
+            const btnText = document.getElementById('rsvp_btn_text');
+            const ajaxAlert = document.getElementById('rsvp-ajax-alert');
+            const ajaxMessage = document.getElementById('rsvp-ajax-message');
+            const listContainer = document.getElementById('rsvp-list-container');
+            const emptyState = document.getElementById('rsvp-empty-state');
+            const statusSelect = document.getElementById('rsvp_status');
+            const paxContainer = document.getElementById('rsvp_pax_container');
+            const paxSelect = document.getElementById('rsvp_pax');
+
+            if (statusSelect && paxContainer && paxSelect) {
+                statusSelect.addEventListener('change', function() {
+                    if (this.value === 'not_attending') {
+                        paxContainer.style.opacity = '0.4';
+                        paxContainer.style.pointerEvents = 'none';
+                        paxSelect.value = '1';
+                    } else {
+                        paxContainer.style.opacity = '1';
+                        paxContainer.style.pointerEvents = 'auto';
+                    }
+                });
+            }
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    if (btnText) btnText.textContent = 'Mengirim...';
+                }
+
+                const formData = new FormData(form);
+                const actionUrl = form.getAttribute('action');
+
+                // Mark session storage that invitation is opened
+                sessionStorage.setItem(sessionKey, 'true');
+
+                try {
+                    const response = await fetch(actionUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+
+                    const data = await response.json().catch(() => null);
+
+                    if (response.ok && data && data.success) {
+                        if (ajaxAlert) {
+                            if (ajaxMessage) ajaxMessage.textContent = data.message || 'Terima kasih, konfirmasi kehadiran dan doa restu Anda telah tersimpan!';
+                            ajaxAlert.classList.remove('hidden');
+                        }
+
+                        // Prepend new RSVP to the list
+                        const nameVal = formData.get('name') || 'Tamu';
+                        const statusVal = formData.get('status') || 'attending';
+                        const messageVal = formData.get('message') || '';
+
+                        let badgeHtml = '';
+                        if (statusVal === 'attending') {
+                            badgeHtml = '<span class="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-full font-medium">Hadir</span>';
+                        } else if (statusVal === 'not_attending') {
+                            badgeHtml = '<span class="bg-red-100 text-red-800 text-[10px] px-2 py-0.5 rounded-full font-medium">Tidak Hadir</span>';
+                        } else if (statusVal === 'maybe') {
+                            badgeHtml = '<span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-medium">Masih Ragu</span>';
+                        }
+
+                        const newItem = document.createElement('div');
+                        newItem.className = 'rsvp-item border-b border-[#e8e8e8] pb-4 last:border-0 last:pb-0 bg-[#fbf8f6]/70 p-3 rounded-lg transition-all duration-300';
+                        newItem.innerHTML = `
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="font-bold text-[#2e1b1b] text-sm">${escapeHtml(nameVal)}</span>
+                                ${badgeHtml}
+                            </div>
+                            <p class="text-xs text-[#5e4d4d]">Baru saja</p>
+                            ${messageVal ? `<p class="mt-2 text-sm text-[#4d3c3c] leading-relaxed">${escapeHtml(messageVal)}</p>` : ''}
+                        `;
+
+                        if (emptyState) emptyState.remove();
+                        if (listContainer) {
+                            listContainer.insertBefore(newItem, listContainer.firstChild);
+                        }
+
+                        // Reset message input
+                        const messageInput = document.getElementById('rsvp_message');
+                        if (messageInput) messageInput.value = '';
+
+                    } else if (!response.ok && response.status === 404 && actionUrl.includes('demo')) {
+                        // Demo mode simulation
+                        if (ajaxAlert) {
+                            if (ajaxMessage) ajaxMessage.textContent = 'Simulasi Demo: Ucapan & RSVP Anda berhasil disimpan!';
+                            ajaxAlert.classList.remove('hidden');
+                        }
+                        const nameVal = formData.get('name') || 'Tamu Demo';
+                        const statusVal = formData.get('status') || 'attending';
+                        const messageVal = formData.get('message') || '';
+
+                        let badgeHtml = '<span class="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-full font-medium">Hadir</span>';
+                        if (statusVal === 'not_attending') {
+                            badgeHtml = '<span class="bg-red-100 text-red-800 text-[10px] px-2 py-0.5 rounded-full font-medium">Tidak Hadir</span>';
+                        } else if (statusVal === 'maybe') {
+                            badgeHtml = '<span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-medium">Masih Ragu</span>';
+                        }
+
+                        const newItem = document.createElement('div');
+                        newItem.className = 'rsvp-item border-b border-[#e8e8e8] pb-4 last:border-0 last:pb-0 bg-[#fbf8f6]/70 p-3 rounded-lg';
+                        newItem.innerHTML = `
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="font-bold text-[#2e1b1b] text-sm">${escapeHtml(nameVal)}</span>
+                                ${badgeHtml}
+                            </div>
+                            <p class="text-xs text-[#5e4d4d]">Baru saja</p>
+                            ${messageVal ? `<p class="mt-2 text-sm text-[#4d3c3c] leading-relaxed">${escapeHtml(messageVal)}</p>` : ''}
+                        `;
+                        if (emptyState) emptyState.remove();
+                        if (listContainer) listContainer.insertBefore(newItem, listContainer.firstChild);
+
+                        const messageInput = document.getElementById('rsvp_message');
+                        if (messageInput) messageInput.value = '';
+
+                    } else {
+                        // If validation error or other error, fallback to normal submission
+                        form.submit();
+                        return;
+                    }
+                } catch (err) {
+                    console.error('RSVP submit error:', err);
+                    form.submit();
+                    return;
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        if (btnText) btnText.textContent = 'Kirim Ucapan & Konfirmasi';
+                    }
+                }
+            });
+
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+        })();
 
         const musicToggle = document.getElementById('music-toggle');
         const scrollToggle = document.getElementById('scroll-toggle');
