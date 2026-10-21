@@ -24,6 +24,16 @@
     
     $venueName = $invitation->venue_name ?? 'Gedung Pernikahan';
     $venueAddress = $invitation->venue_address ?? 'Jl. Contoh Alamat Pernikahan No. 123, Kota, Provinsi';
+    $googleMapsUrl = $invitation->google_maps_url ?? 'https://maps.google.com';
+
+    // Format event time safely to HH:mm string (e.g. "09:00")
+    $rawEventTime = $invitation->event_time;
+    $eventTime = '09:00';
+    if (!empty($rawEventTime)) {
+        $eventTime = $rawEventTime instanceof \Carbon\CarbonInterface
+            ? $rawEventTime->format('H:i')
+            : \Illuminate\Support\Carbon::parse($rawEventTime)->format('H:i');
+    }
     
     $brideParentName = $invitation->bride_parent_name ?? 'Putri dari Bpk. Fulan & Ibu Fulanah';
     $groomParentName = $invitation->groom_parent_name ?? 'Putra dari Bpk. Fulan & Ibu Fulanah';
@@ -33,18 +43,45 @@
     
     $musicUrl = $invitation->music_url ? ($invitation->music_signed_url ?? asset('storage/' . $invitation->music_url)) : null;
 
-    $invitationEvents = isset($invitation->invitationEvents) && $invitation->invitationEvents->count() > 0 
-        ? $invitation->invitationEvents 
+    $rawEvents = (isset($invitation->events) && $invitation->events->count() > 0)
+        ? $invitation->events
+        : ((isset($invitation->invitationEvents) && $invitation->invitationEvents->count() > 0)
+            ? $invitation->invitationEvents
+            : collect());
+
+    $invitationEvents = $rawEvents->isNotEmpty()
+        ? $rawEvents->map(function ($event) use ($venueName, $venueAddress, $eventTime) {
+            $eDate = $event->event_date ?? $event->date ?? null;
+            $eTime = $event->event_time ?? $event->time ?? null;
+            $formattedTime = $eTime
+                ? ($eTime instanceof \Carbon\CarbonInterface ? $eTime->format('H:i') : \Illuminate\Support\Carbon::parse($eTime)->format('H:i'))
+                : $eventTime;
+
+            return (object) [
+                'name' => $event->event_name ?? $event->name ?? 'Acara Pernikahan',
+                'date' => $eDate ? ($eDate instanceof \Carbon\CarbonInterface ? $eDate : \Illuminate\Support\Carbon::parse($eDate)) : null,
+                'time' => $formattedTime,
+                'venue_name' => $event->venue_name ?? $venueName,
+                'venue_address' => $event->venue_address ?? $venueAddress,
+                'google_maps_url' => $event->venue_maps_url ?? $event->google_maps_url ?? null,
+            ];
+        })
         : collect([
-            (object)[
+            (object) [
                 'name' => 'Resepsi Pernikahan',
-                'date' => $invitation->event_date ?? '2025-12-12',
-                'time' => $invitation->event_time ?? '09:00',
+                'date' => $eventDate,
+                'time' => $eventTime,
                 'venue_name' => $venueName,
                 'venue_address' => $venueAddress,
-                'google_maps_url' => 'https://maps.google.com'
-            ]
+                'google_maps_url' => $googleMapsUrl,
+            ],
         ]);
+
+    // Primary target date & time for countdown
+    $firstEvent = $invitationEvents->first();
+    $targetDateObj = $eventDate ?? ($firstEvent?->date ? \Illuminate\Support\Carbon::parse($firstEvent->date) : \Illuminate\Support\Carbon::parse('2026-12-12'));
+    $targetTimeStr = ($firstEvent?->time ?? $eventTime ?? '09:00') . ':00';
+    $targetCountdownIso = $targetDateObj->format('Y-m-d') . 'T' . $targetTimeStr;
 
     $photos = isset($invitation->photos) && $invitation->photos->count() > 0 
         ? $invitation->photos->map(fn($p) => asset('storage/' . $p->file_path)) 
@@ -54,6 +91,12 @@
             asset('assets_invitation/model/fotomodel6.png'),
             asset('assets_invitation/model/fotomodel7.png')
         ]);
+
+    // Background photos per section taken sequentially from gallery photos
+    $coupleBgPhoto  = $photos->get(0) ?? $coverPhoto;
+    $eventsBgPhoto  = $photos->get(1) ?? $coupleBgPhoto;
+    $giftBgPhoto    = $photos->get(2) ?? $photos->get(0) ?? $coverPhoto;
+    $closingBgPhoto = $photos->get(3) ?? $photos->get(1) ?? $photos->get(0) ?? $coverPhoto;
         
     $bankAccounts = isset($invitation->bankAccounts) && $invitation->bankAccounts->count() > 0 
         ? $invitation->bankAccounts 
@@ -76,8 +119,6 @@
             ]
         ]);
     
-    $googleMapsUrl = $invitation->google_maps_url ?? 'https://maps.google.com';
-    $eventTime = $invitation->event_time ?? '09:00';
     $invitationTitle = $invitation->title ?? 'Pernikahan Mempelai';
 
     $igStoryDate = $eventDate ? $eventDate->format('d . m . Y') : '12 . 12 . 2025';
@@ -439,7 +480,7 @@
                 <div
                     class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fbf8f6] px-6 py-16">
                     <div class="absolute inset-0 opacity-[0.08]">
-                        <img src="{{ $coverPhoto }}" alt="Background Couple"
+                        <img src="{{ $coupleBgPhoto }}" alt="Background Couple"
                             class="h-full w-full object-cover blur-sm">
                     </div>
                     <div class="absolute inset-0 bg-white/85"></div>
@@ -513,8 +554,8 @@
                 <div
                     class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fbf8f6] px-6 py-16">
                     <div class="absolute inset-0 opacity-[0.08]">
-                        {{-- Use a subtle background image or pattern, or the cover photo blurred --}}
-                        <img src="{{ $coverPhoto }}" alt="Background Events"
+                        {{-- Use a subtle background image or pattern from gallery --}}
+                        <img src="{{ $eventsBgPhoto }}" alt="Background Events"
                             class="h-full w-full object-cover blur-sm">
                     </div>
                     <div class="absolute inset-0 bg-white/85"></div>
@@ -525,29 +566,29 @@
                         </p>
 
                         {{-- Countdown Timer --}}
-                        @if ($eventDateStr)
+                        @if ($eventDateStr || $targetCountdownIso)
                             <div class="mb-12">
                                 <h3 class="font-wedding text-3xl text-[#2e1b1b] mb-6">Menuju Hari Bahagia</h3>
-                                <div id="countdown" class="flex justify-center gap-4 text-center">
-                                    <div>
+                                <div id="countdown" class="grid grid-cols-4 gap-3 sm:gap-4 max-w-md mx-auto text-center" data-target="{{ $targetCountdownIso }}">
+                                    <div class="bg-white/90 backdrop-blur-sm border border-[#e8dede] rounded-xl py-3 px-2 shadow-xs transition hover:border-[#7b0f0f]/30">
                                         <span id="days"
-                                            class="block font-wedding text-4xl text-[#7b0f0f]">00</span>
-                                        <span class="text-sm text-[#5e4d4d]">Hari</span>
+                                            class="block font-wedding text-3xl sm:text-4xl font-semibold text-[#7b0f0f]">00</span>
+                                        <span class="text-[11px] sm:text-xs uppercase tracking-wider text-[#5e4d4d] font-medium mt-1 block">Hari</span>
                                     </div>
-                                    <div>
+                                    <div class="bg-white/90 backdrop-blur-sm border border-[#e8dede] rounded-xl py-3 px-2 shadow-xs transition hover:border-[#7b0f0f]/30">
                                         <span id="hours"
-                                            class="block font-wedding text-4xl text-[#7b0f0f]">00</span>
-                                        <span class="text-sm text-[#5e4d4d]">Jam</span>
+                                            class="block font-wedding text-3xl sm:text-4xl font-semibold text-[#7b0f0f]">00</span>
+                                        <span class="text-[11px] sm:text-xs uppercase tracking-wider text-[#5e4d4d] font-medium mt-1 block">Jam</span>
                                     </div>
-                                    <div>
+                                    <div class="bg-white/90 backdrop-blur-sm border border-[#e8dede] rounded-xl py-3 px-2 shadow-xs transition hover:border-[#7b0f0f]/30">
                                         <span id="minutes"
-                                            class="block font-wedding text-4xl text-[#7b0f0f]">00</span>
-                                        <span class="text-sm text-[#5e4d4d]">Menit</span>
+                                            class="block font-wedding text-3xl sm:text-4xl font-semibold text-[#7b0f0f]">00</span>
+                                        <span class="text-[11px] sm:text-xs uppercase tracking-wider text-[#5e4d4d] font-medium mt-1 block">Menit</span>
                                     </div>
-                                    <div>
+                                    <div class="bg-white/90 backdrop-blur-sm border border-[#e8dede] rounded-xl py-3 px-2 shadow-xs transition hover:border-[#7b0f0f]/30">
                                         <span id="seconds"
-                                            class="block font-wedding text-4xl text-[#7b0f0f]">00</span>
-                                        <span class="text-sm text-[#5e4d4d]">Detik</span>
+                                            class="block font-wedding text-3xl sm:text-4xl font-semibold text-[#7b0f0f]">00</span>
+                                        <span class="text-[11px] sm:text-xs uppercase tracking-wider text-[#5e4d4d] font-medium mt-1 block">Detik</span>
                                     </div>
                                 </div>
                             </div>
@@ -557,10 +598,14 @@
                         @forelse ($invitationEvents as $event)
                             <div class="mb-10 last:mb-0 p-6 border border-[#c8baba] rounded-lg shadow-sm bg-white">
                                 <h3 class="font-wedding text-3xl text-[#2e1b1b] mb-4">{{ $event->name }}</h3>
-                                <p class="text-lg font-semibold text-[#7b0f0f] mb-2">
-                                    {{ \Carbon\Carbon::parse($event->date)->isoFormat('dddd, D MMMM YYYY') }}
-                                </p>
-                                <p class="text-base text-[#5e4d4d] mb-4">Pukul {{ $event->time }} WIB</p>
+                                @if ($event->date)
+                                    <p class="text-lg font-semibold text-[#7b0f0f] mb-2">
+                                        {{ \Carbon\Carbon::parse($event->date)->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
+                                    </p>
+                                @endif
+                                @if ($event->time)
+                                    <p class="text-base text-[#5e4d4d] mb-4">Pukul {{ $event->time }} WIB</p>
+                                @endif
                                 <p class="text-sm leading-6 text-[#4d3c3c]">{{ $event->venue_name }}</p>
                                 <p class="text-sm leading-6 text-[#4d3c3c]">{{ $event->venue_address }}</p>
 
@@ -603,12 +648,13 @@
                         @if ($eventDateStr && $eventTime)
                             <div class="{{ $googleMapsUrl ? 'mt-6' : 'mt-12' }}">
                                 @php
-                                    $calDate = $eventDate ? $eventDate->format('Ymd') : '20251212';
-                                    $calTimeStr = $invitation->event_time ? \Carbon\Carbon::parse($invitation->event_time)->format('His') : '090000';
-                                    $calTimeEndStr = $invitation->event_time ? \Carbon\Carbon::parse($invitation->event_time)->addHours(2)->format('His') : '110000';
+                                    $calDate = $targetDateObj->format('Ymd');
+                                    $calStartTime = \Carbon\Carbon::parse($targetTimeStr);
+                                    $calTimeStr = $calStartTime->format('His');
+                                    $calTimeEndStr = $calStartTime->copy()->addHours(2)->format('His');
                                 @endphp
                                 <a href="#"
-                                    onclick="addToCalendar('{{ $invitationTitle }}', '{{ $venueName }}', '{{ $calDate }}T{{ $calTimeStr }}', '{{ $calDate }}T{{ $calTimeEndStr }}')"
+                                    onclick="addToCalendar('{{ $invitationTitle }}', '{{ $venueName }}', '{{ $calDate }}T{{ $calTimeStr }}', '{{ $calDate }}T{{ $calTimeEndStr }}'); return false;"
                                     class="inline-flex items-center gap-2 rounded-full bg-[#2e1b1b] px-6 py-3 text-sm font-medium text-white shadow-lg transition duration-300 hover:scale-105 hover:bg-[#1b1010]">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -734,7 +780,7 @@
                 </div>
 
                 <div class="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16">
-                    <img src="{{ $coverPhoto }}" alt="Background Gift" class="absolute inset-0 h-full w-full object-cover">
+                    <img src="{{ $giftBgPhoto }}" alt="Background Gift" class="absolute inset-0 h-full w-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-[#ffffff] via-[#ffffff]/80 to-transparent"></div>
 
                     <div class="relative z-10 w-full max-w-xl text-center text-[#2e1b1b]">
@@ -868,7 +914,7 @@
                 </div>
 
                 <div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fbf8f6] px-6 py-16">
-                    <img src="{{ $coverPhoto }}" alt="Closing" class="absolute inset-0 h-full w-full object-cover opacity-[0.15]">
+                    <img src="{{ $closingBgPhoto }}" alt="Closing" class="absolute inset-0 h-full w-full object-cover opacity-[0.15]">
                     
                     <div class="relative z-10 w-full max-w-xl text-center text-[#2e1b1b]">
                         <p class="mb-8 text-sm leading-7 text-[#4d3c3c]">
@@ -878,12 +924,14 @@
                             Atas kehadiran dan doa restunya, kami ucapkan terima kasih.
                         </p>
                         
-                        <h3 class="font-wedding text-4xl text-[#2e1b1b] mb-4">Wassalamu'alaikum Wr. Wb.</h3>
+                        <h3 class="font-wedding text-2xl sm:text-3xl md:text-4xl text-[#2e1b1b] mb-4">Wassalamu'alaikum Wr. Wb.</h3>
                         
                         <div class="mt-12">
                             <p class="text-xs font-semibold uppercase tracking-[0.3em] text-[#8a7a7a] mb-4">Kami yang berbahagia</p>
-                            <h2 class="font-wedding text-5xl leading-tight text-[#7b0f0f]">
-                                {{ $brideName }} & {{ $groomName }}
+                            <h2 class="font-wedding text-3xl sm:text-4xl md:text-5xl leading-tight text-[#7b0f0f]">
+                                <span class="block">{{ $brideName }}</span>
+                                <span class="block text-xl sm:text-2xl py-1 text-[#5e4d4d]">&</span>
+                                <span class="block">{{ $groomName }}</span>
                             </h2>
                         </div>
                     </div>
@@ -952,35 +1000,80 @@
         }
 
         // Countdown Logic
-        const eventDateStr = "{{ $invitation->event_date ?? '2025-12-12' }}";
-        const eventTimeStr = "{{ $eventTime }}";
+        (function() {
+            const countdownEl = document.getElementById("countdown");
+            if (!countdownEl) return;
 
-        if (eventDateStr && eventTimeStr) {
-            // Combine date and time, assuming local timezone for simplicity
-            const targetDate = new Date(eventDateStr + 'T' + eventTimeStr + ':00');
-            const countdownInterval = setInterval(() => {
-                const now = new Date().getTime();
-                const distance = targetDate - now;
+            const targetIso = countdownEl.dataset.target || @json($targetCountdownIso);
+            if (!targetIso) return;
+
+            function parseCountdownDate(str) {
+                if (!str) return null;
+                const match = str.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);
+                if (match) {
+                    return new Date(
+                        parseInt(match[1], 10),
+                        parseInt(match[2], 10) - 1,
+                        parseInt(match[3], 10),
+                        parseInt(match[4], 10),
+                        parseInt(match[5], 10),
+                        match[6] ? parseInt(match[6], 10) : 0
+                    ).getTime();
+                }
+                const fallback = new Date(str).getTime();
+                return isNaN(fallback) ? null : fallback;
+            }
+
+            const targetTimestamp = parseCountdownDate(targetIso);
+            if (!targetTimestamp) return;
+
+            const daysEl = document.getElementById("days");
+            const hoursEl = document.getElementById("hours");
+            const minutesEl = document.getElementById("minutes");
+            const secondsEl = document.getElementById("seconds");
+
+            function updateCountdown() {
+                const now = Date.now();
+                const distance = targetTimestamp - now;
+
+                if (distance <= 0) {
+                    if (daysEl) daysEl.innerText = "00";
+                    if (hoursEl) hoursEl.innerText = "00";
+                    if (minutesEl) minutesEl.innerText = "00";
+                    if (secondsEl) secondsEl.innerText = "00";
+
+                    countdownEl.innerHTML = `
+                        <div class="col-span-4 py-4 px-6 bg-white/90 border border-[#e8dede] rounded-xl shadow-xs text-center w-full">
+                            <span class="font-wedding text-2xl text-[#7b0f0f] block mb-1">Acara Telah Dimulai!</span>
+                            <span class="text-xs text-[#5e4d4d]">Momen bahagia kami telah tiba.</span>
+                        </div>
+                    `;
+                    return true;
+                }
 
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-                // Update the elements
-                document.getElementById("days").innerText = String(days).padStart(2, '0');
-                document.getElementById("hours").innerText = String(hours).padStart(2, '0');
-                document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
-                document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+                if (daysEl) daysEl.innerText = String(days).padStart(2, '0');
+                if (hoursEl) hoursEl.innerText = String(hours).padStart(2, '0');
+                if (minutesEl) minutesEl.innerText = String(minutes).padStart(2, '0');
+                if (secondsEl) secondsEl.innerText = String(seconds).padStart(2, '0');
 
-                // If the countdown is over, write some text
-                if (distance < 0) {
-                    clearInterval(countdownInterval);
-                    document.getElementById("countdown").innerHTML =
-                        "<span class='text-xl text-[#7b0f0f]'>Acara Telah Dimulai!</span>";
-                }
-            }, 1000);
-        }
+                return false;
+            }
+
+            const isFinished = updateCountdown();
+            if (!isFinished) {
+                const timer = setInterval(() => {
+                    const finished = updateCountdown();
+                    if (finished) {
+                        clearInterval(timer);
+                    }
+                }, 1000);
+            }
+        })();
 
         // Add to Calendar Logic
         function addToCalendar(title, location, startDateTime, endDateTime) {
