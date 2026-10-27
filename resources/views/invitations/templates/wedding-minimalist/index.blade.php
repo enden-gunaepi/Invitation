@@ -786,8 +786,23 @@
                         
                         <div class="grid grid-cols-2 gap-4">
                             @forelse ($photos as $photo)
-                                <div class="overflow-hidden rounded-lg shadow-md aspect-square">
-                                    <img src="{{ $photo }}" alt="Gallery Photo" class="h-full w-full object-cover transition-transform duration-500 hover:scale-110">
+                                <div class="gallery-item-card group relative overflow-hidden rounded-xl shadow-md aspect-square cursor-pointer bg-[#e8e0d9] border border-[#e8ded5]"
+                                     onclick="window.openGalleryModal ? window.openGalleryModal({{ $loop->index }}) : null"
+                                     data-index="{{ $loop->index }}"
+                                     role="button"
+                                     tabindex="0"
+                                     title="Klik untuk memperbesar"
+                                     aria-label="Lihat foto {{ $loop->iteration }} ukuran penuh"
+                                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.openGalleryModal ? window.openGalleryModal({{ $loop->index }}) : null;}">
+                                    <img src="{{ $photo }}" alt="Gallery Photo {{ $loop->iteration }}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 pointer-events-none" loading="lazy">
+                                    {{-- Hover zoom indicator overlay --}}
+                                    <div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                                        <div class="w-10 h-10 rounded-full bg-white/30 backdrop-blur-md border border-white/40 flex items-center justify-center text-white transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                            </svg>
+                                        </div>
+                                    </div>
                                 </div>
                             @empty
                                 <p class="col-span-2 text-sm text-[#5e4d4d]">Belum ada foto galeri.</p>
@@ -1531,6 +1546,209 @@
                     link.href = dataUrl;
                     link.click();
                 });
+            }
+        })();
+    </script>
+
+    {{-- Fullscreen Gallery Lightbox Modal --}}
+    <div id="galleryModal" 
+         class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/95 backdrop-blur-md select-none p-4 md:p-8"
+         style="display:none;"
+         role="dialog" 
+         aria-modal="true" 
+         aria-label="Preview Foto Galeri">
+        
+        {{-- Header Bar: Counter & Close Button --}}
+        <div class="absolute top-4 left-4 right-4 md:top-6 md:left-8 md:right-8 flex items-center justify-between z-20 text-white pointer-events-auto">
+            <div id="galleryModalCounter" class="text-xs md:text-sm font-medium tracking-widest uppercase bg-black/60 px-3.5 py-1.5 rounded-full border border-white/20 backdrop-blur-sm shadow-lg">
+                1 / {{ count($photos) }}
+            </div>
+            
+            <button type="button" 
+                    onclick="window.closeGalleryModal ? window.closeGalleryModal() : null" 
+                    class="w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 text-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-sm shadow-lg focus:outline-none"
+                    aria-label="Tutup preview">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        {{-- Prev Button --}}
+        @if(count($photos) > 1)
+        <button type="button" 
+                id="galleryPrevBtn"
+                onclick="window.prevGalleryPhoto ? window.prevGalleryPhoto(event) : null" 
+                class="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 text-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-sm shadow-lg focus:outline-none"
+                aria-label="Foto Sebelumnya">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+        @endif
+
+        {{-- Image Display Container --}}
+        <div class="relative flex items-center justify-center max-w-full max-h-full z-10" onclick="event.stopPropagation()">
+            <img id="galleryModalImg" 
+                 src="" 
+                 alt="Preview Foto" 
+                 class="max-w-[94vw] max-h-[82vh] md:max-w-[85vw] md:max-h-[85vh] object-contain rounded-xl shadow-2xl transition-all duration-300 transform scale-95 opacity-0">
+            
+            {{-- Loading Spinner --}}
+            <div id="galleryModalSpinner" class="absolute inset-0 flex items-center justify-center pointer-events-none hidden">
+                <div class="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+            </div>
+        </div>
+
+        {{-- Next Button --}}
+        @if(count($photos) > 1)
+        <button type="button" 
+                id="galleryNextBtn"
+                onclick="window.nextGalleryPhoto ? window.nextGalleryPhoto(event) : null" 
+                class="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 md:w-13 md:h-13 rounded-full bg-black/60 hover:bg-black/90 border border-white/20 text-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-sm shadow-lg focus:outline-none"
+                aria-label="Foto Selanjutnya">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+        @endif
+    </div>
+
+    <script>
+        // Gallery Lightbox Fullscreen Preview Logic
+        (function() {
+            let currentGalleryIndex = 0;
+            const galleryModal = document.getElementById('galleryModal');
+            const galleryModalImg = document.getElementById('galleryModalImg');
+            const galleryModalCounter = document.getElementById('galleryModalCounter');
+            const spinner = document.getElementById('galleryModalSpinner');
+
+            function getGalleryList() {
+                const domImgs = Array.from(document.querySelectorAll('.gallery-item-card img'));
+                if (domImgs.length > 0) {
+                    return domImgs.map(img => img.currentSrc || img.getAttribute('src'));
+                }
+                const fallback = @json($photos->values()->all());
+                return Array.isArray(fallback) ? fallback : [];
+            }
+
+            window.openGalleryModal = function(index) {
+                const galleryPhotos = getGalleryList();
+                if (!galleryPhotos || !galleryPhotos.length) return;
+                currentGalleryIndex = (Number(index) + galleryPhotos.length) % galleryPhotos.length;
+                updateGalleryImage(galleryPhotos);
+                if (galleryModal) {
+                    galleryModal.classList.remove('hidden');
+                    galleryModal.style.display = 'flex';
+                }
+                document.body.style.overflow = 'hidden';
+            };
+
+            window.closeGalleryModal = function() {
+                if (!galleryModal) return;
+                galleryModal.classList.add('hidden');
+                galleryModal.style.display = 'none';
+                document.body.style.overflow = '';
+            };
+
+            window.prevGalleryPhoto = function(e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                const galleryPhotos = getGalleryList();
+                if (!galleryPhotos || !galleryPhotos.length) return;
+                currentGalleryIndex = (currentGalleryIndex - 1 + galleryPhotos.length) % galleryPhotos.length;
+                updateGalleryImage(galleryPhotos);
+            };
+
+            window.nextGalleryPhoto = function(e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                const galleryPhotos = getGalleryList();
+                if (!galleryPhotos || !galleryPhotos.length) return;
+                currentGalleryIndex = (currentGalleryIndex + 1) % galleryPhotos.length;
+                updateGalleryImage(galleryPhotos);
+            };
+
+            function updateGalleryImage(galleryPhotos) {
+                if (!galleryModalImg) return;
+                galleryModalImg.classList.remove('opacity-100', 'scale-100');
+                galleryModalImg.classList.add('opacity-0', 'scale-95');
+
+                if (spinner) spinner.classList.remove('hidden');
+
+                const targetSrc = galleryPhotos[currentGalleryIndex];
+                const preload = new Image();
+                preload.onload = function() {
+                    galleryModalImg.src = targetSrc;
+                    if (spinner) spinner.classList.add('hidden');
+                    galleryModalImg.classList.remove('opacity-0', 'scale-95');
+                    galleryModalImg.classList.add('opacity-100', 'scale-100');
+                };
+                preload.onerror = function() {
+                    galleryModalImg.src = targetSrc;
+                    if (spinner) spinner.classList.add('hidden');
+                    galleryModalImg.classList.remove('opacity-0', 'scale-95');
+                    galleryModalImg.classList.add('opacity-100', 'scale-100');
+                };
+                preload.src = targetSrc;
+
+                if (galleryModalCounter) {
+                    galleryModalCounter.textContent = `${currentGalleryIndex + 1} / ${galleryPhotos.length}`;
+                }
+            }
+
+            // Bind click directly to each card
+            document.querySelectorAll('.gallery-item-card').forEach((card, idx) => {
+                card.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.openGalleryModal(idx);
+                });
+            });
+
+            // Close when clicking backdrop outside content
+            if (galleryModal) {
+                galleryModal.addEventListener('click', function(e) {
+                    if (e.target === galleryModal) {
+                        window.closeGalleryModal();
+                    }
+                });
+            }
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (!galleryModal || galleryModal.style.display === 'none' || galleryModal.classList.contains('hidden')) return;
+                if (e.key === 'Escape') {
+                    window.closeGalleryModal();
+                } else if (e.key === 'ArrowLeft') {
+                    window.prevGalleryPhoto();
+                } else if (e.key === 'ArrowRight') {
+                    window.nextGalleryPhoto();
+                }
+            });
+
+            // Touch swipe support for mobile devices
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchEndX = 0;
+            let touchEndY = 0;
+
+            if (galleryModal) {
+                galleryModal.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                    touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+
+                galleryModal.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    touchEndY = e.changedTouches[0].screenY;
+                    const diffX = touchEndX - touchStartX;
+                    const diffY = touchEndY - touchStartY;
+                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
+                        if (diffX < 0) {
+                            window.nextGalleryPhoto();
+                        } else {
+                            window.prevGalleryPhoto();
+                        }
+                    }
+                }, { passive: true });
             }
         })();
     </script>
