@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Wedding of Vea & Raka</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Marcellus&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{serif:['Marcellus','serif'],body:['Cormorant Garamond','serif']},colors:{cream:'#FFF5F5',peach:'#F7D7D1',rose:'#E3B5BE',charcoal:'#494949',darkcharcoal:'#242223',brown:'#332E30'}}}}
+</script>
+<style>
+html{scroll-behavior:smooth}
+body{font-family:'Cormorant Garamond',serif;background:#242223;color:#FFF5F5}
+.ph{background:linear-gradient(135deg,#494949,#2B292A)}
+.reveal{opacity:0;transform:translateY(40px);transition:all 1s cubic-bezier(.2,.7,.2,1)}
+.reveal.show{opacity:1;transform:none}
+.reveal-l{opacity:0;transform:translateX(-50px);transition:all 1s}.reveal-l.show{opacity:1;transform:none}
+.reveal-r{opacity:0;transform:translateX(50px);transition:all 1s}.reveal-r.show{opacity:1;transform:none}
+.zoom{opacity:0;transform:scale(.85);transition:all 1s}.zoom.show{opacity:1;transform:none}
+@keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.12)}}
+.kb{animation:kenburns 18s ease-in-out infinite alternate}
+@keyframes fall{0%{transform:translate3d(0,-10vh,0) rotate(0);opacity:0}10%{opacity:.85}100%{transform:translate3d(60px,110vh,0) rotate(360deg);opacity:0}}
+.petal{position:fixed;top:0;width:8px;height:8px;border-radius:50% 0 50% 0;background:#E3B5BE;pointer-events:none;z-index:5;animation:fall linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.floaty{animation:floaty 3s ease-in-out infinite}
+#panel::-webkit-scrollbar{width:0}
+#cover{transition:transform 1.2s cubic-bezier(.7,0,.2,1)}
+#cover.hide{transform:translateY(-100%)}
+.glass{background:rgba(46,43,44,0.5);backdrop-filter:blur(10px);border:1px solid rgba(227,181,190,0.25)}
+iconify-icon{display:inline-flex;vertical-align:middle}
+</style>
+</head>
+<body class="overflow-hidden">
+
+<!-- LOADING -->
+<div id="loader" class="fixed inset-0 z-[100] bg-darkcharcoal flex items-center justify-center transition-opacity duration-700">
+  <div class="w-8 h-8 border-2 border-rose/30 border-t-rose rounded-full" style="animation:spin 1s linear infinite"></div>
+</div>
+
+<!-- LATAR DESKTOP (foto besar kiri, hanya tampil di layar lebar) -->
+<!-- 📷 FOTO #1: Foto landscape/portrait pasangan, ukuran ideal 1920x1080, file: img/bg-desktop.jpg -->
+<div class="hidden lg:block fixed inset-0 overflow-hidden ph">
+  <img src="img/bg-desktop.jpg" class="kb w-full h-full object-cover" alt="" onerror="this.style.display='none'">
+  <div class="absolute inset-0 bg-darkcharcoal/60"></div>
+  <div class="absolute left-16 bottom-16 max-w-md">
+    <p class="font-serif tracking-[.3em] text-sm text-peach">THE WEDDING OF</p>
+    <h1 class="font-serif text-6xl mt-3 text-cream">Vea & Raka</h1>
+  </div>
+</div>
+
+<!-- KOLOM UNDANGAN (di desktop = kolom kanan, di mobile = layar penuh) -->
+<main class="fixed inset-y-0 right-0 w-full lg:w-[450px] bg-brown shadow-2xl border-l border-rose/10">
+
+  <!-- ================= COVER ================= -->
+  <section id="cover" class="absolute inset-0 z-40 ph overflow-hidden">
+    <!-- 📷 FOTO #2: Foto cover pasangan (portrait 9:16, ideal 1080x1920), file: img/cover.jpg -->
+    <img src="img/cover.jpg" class="kb absolute inset-0 w-full h-full object-cover" alt="" onerror="this.style.display='none'">
+    <div class="absolute inset-0 bg-gradient-to-b from-darkcharcoal/40 via-transparent to-darkcharcoal/95"></div>
+    <p class="absolute top-8 w-full text-center font-serif text-sm tracking-widest zoom show text-peach uppercase">The Wedding of</p>
+    <div class="absolute bottom-0 w-full px-8 pb-10 text-center">
+      <h1 class="font-serif text-5xl leading-tight reveal show text-cream">Vea<br>&amp;<br>Raka</h1>
+      <p class="font-serif text-xs mt-4 tracking-wider text-peach flex items-center justify-center gap-1.5">
+        <iconify-icon icon="solar:calendar-linear" class="text-sm text-rose"></iconify-icon>
+        Rabu, 30 Desember 2026
+      </p>
+      <div id="cdCover" class="flex justify-center gap-3 mt-4"></div>
+      <div class="text-left mt-8 text-sm">
+        <p class="text-peach text-xs uppercase tracking-wider flex items-center gap-1">
+          <iconify-icon icon="solar:user-heart-linear"></iconify-icon>
+          Kepada:
+        </p>
+        <p id="guest" class="font-semibold text-lg text-cream">Nama Tamu</p>
+      </div>
+      <button id="openBtn" class="floaty mt-5 mx-auto flex items-center gap-2 bg-cream text-charcoal rounded-full px-7 py-3 font-serif text-sm hover:bg-peach transition shadow-lg border border-rose/30">
+        <iconify-icon icon="solar:letter-opened-linear" class="text-lg text-rose"></iconify-icon>
+        <span class="font-semibold">Buka Undangan</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= ISI UNDANGAN (scroll) ================= -->
+  <div id="panel" class="h-full overflow-y-auto relative">
+
+    <!-- HERO -->
+    <section id="home" class="relative h-screen ph overflow-hidden">
+      <!-- 📷 FOTO #3: Foto hero (portrait), file: img/hero.jpg -->
+      <img src="img/hero.jpg" class="kb absolute inset-0 w-full h-full object-cover" alt="" onerror="this.style.display='none'">
+      <div class="absolute inset-0 bg-gradient-to-b from-darkcharcoal/30 via-transparent to-darkcharcoal/95"></div>
+      <p class="absolute top-8 w-full text-center font-serif text-sm tracking-widest text-peach uppercase">The Wedding of</p>
+      <div class="absolute bottom-24 w-full text-center px-6">
+        <h2 class="font-serif text-5xl leading-tight zoom text-cream">Vea<br>&amp;<br>Raka</h2>
+        <p class="text-sm mt-3 font-serif text-peach flex items-center justify-center gap-1.5">
+          <iconify-icon icon="solar:calendar-date-linear" class="text-base text-rose"></iconify-icon>
+          Rabu, 30 Desember 2026
+        </p>
+        <div id="cdHero" class="flex justify-center gap-3 mt-4"></div>
+      </div>
+    </section>
+
+    <!-- QUOTE -->
+    <section class="bg-cream text-charcoal px-8 py-14 text-center relative shadow-inner border-y border-rose/20">
+      <div class="text-7xl font-serif leading-none opacity-40 text-rose reveal">“</div>
+      <p class="italic text-base md:text-lg leading-relaxed reveal text-charcoal/90">Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, supaya kamu merasa tenteram kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang.</p>
+      <p class="mt-4 text-xs font-semibold tracking-widest uppercase reveal text-rose flex items-center justify-center gap-1">
+        <iconify-icon icon="solar:book-bookmark-minimalistic-linear" class="text-sm"></iconify-icon>
+        — QS. Ar-Rum: 21
+      </p>
+    </section>
+
+    <!-- MEMPELAI -->
+    <section id="mempelai" class="relative px-6 py-14 text-center ph">
+      <!-- 📷 FOTO #4 (opsional): latar blur section mempelai, file: img/bg-mempelai.jpg -->
+      <img src="img/bg-mempelai.jpg" class="absolute inset-0 w-full h-full object-cover opacity-15" alt="" onerror="this.style.display='none'">
+      <div class="relative">
+        <p class="text-xs uppercase tracking-widest text-peach reveal">Kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara pernikahan kami</p>
+
+        <div class="mt-10 reveal-l">
+          <!-- 📷 FOTO #5: Foto mempelai wanita (portrait 3:4), file: img/wanita.jpg -->
+          <div class="w-60 h-80 mx-auto rounded-t-full overflow-hidden ph border-4 border-rose/30 shadow-2xl flex items-center justify-center">
+            <img src="img/wanita.jpg" class="w-full h-full object-cover" alt="" onerror="this.style.display='none'">
+          </div>
+          <h3 class="font-serif text-3xl mt-5 text-cream">Arina Febriana</h3>
+          <p class="text-sm mt-1 text-peach">Putri ke-2 dari Bapak Sunarno &amp; Ibu Mariatul</p>
+          <div class="flex justify-center gap-3 mt-3 text-lg">
+            <a href="#" class="glass w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose/20 transition border border-rose/30 text-cream"><iconify-icon icon="ri:instagram-line" class="text-sm text-rose"></iconify-icon></a>
+            <a href="#" class="glass w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose/20 transition border border-rose/30 text-cream"><iconify-icon icon="ri:tiktok-line" class="text-sm text-rose"></iconify-icon></a>
+            <a href="#" class="glass w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose/20 transition border border-rose/30 text-cream"><iconify-icon icon="ri:twitter-x-line" class="text-sm text-rose"></iconify-icon></a>
+            <a href="#" class="glass w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose/20 transition border border-rose/30 text-cream"><iconify-icon icon="ri:youtube-line" class="text-sm text-rose"></iconify-icon></a>
+          </div>
+        </div>
+
+        <p class="font-serif text-5xl my-8 zoom text-rose">&amp;</p>
+
+        <div class="reveal-r">
+          <!-- 📷 FOTO #6: Foto mempelai pria (portrait 3:4), file: img/pria.jpg -->
+          <div class="w-60 h-80 mx-auto rounded-t-full overflow-hidden ph border-4 border-rose/30 shadow-2xl flex items-center justify-center">
+            <img src="img/pria.jpg" class="w-full h-full object-cover" alt="" onerror="this.style.display='none'">
+          </div>
+          <h3 class="font-serif text-3xl mt-5 text-cream">Bagus Tarianto</h3>
+          <p class="text-sm mt-1 text-peach">Putra ke-1 dari Bapak Tarno &amp; Ibu Sulastri</p>
+          <div class="flex justify-center gap-3 mt-3 text-lg">
+            <a href="#" class="glass w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose/20 transition border border-rose/30 text-cream"><iconify-icon icon="ri:instagram-line" class="text-sm text-rose"></iconify-icon></a>
+            <a href="#" class="glass w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose/20 transition border border-rose/30 text-cream"><iconify-icon icon="ri:tiktok-line" class="text-sm text-rose"></iconify-icon></a>
+            <a href="#" class="glass w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose/20 transition border border-rose/30 text-cream"><iconify-icon icon="ri:twitter-x-line" class="text-sm text-rose"></iconify-icon></a>
+            <a href="#" class="glass w-8 h-8 rounded-full flex items-center justify-center hover:bg-rose/20 transition border border-rose/30 text-cream"><iconify-icon icon="ri:youtube-line" class="text-sm text-rose"></iconify-icon></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACARA -->
+    <section id="acara" class="relative px-6 py-14 text-center ph">
+      <!-- 📷 FOTO #7 (opsional): latar section acara, file: img/bg-acara.jpg -->
+      <img src="img/bg-acara.jpg" class="absolute inset-0 w-full h-full object-cover opacity-15" alt="" onerror="this.style.display='none'">
+      <div class="relative space-y-6">
+        <h2 class="font-serif text-3xl reveal text-cream">Acara</h2>
+        <p class="text-sm reveal text-peach">Dengan memohon rahmat dan ridho Allah SWT, acara akan dilaksanakan pada:</p>
+
+        <div class="glass rounded-2xl p-6 reveal shadow-xl border border-rose/25">
+          <h3 class="font-serif text-2xl text-cream">Akad Nikah</h3>
+          <p class="mt-2 text-sm text-peach">Rabu, 30 Desember 2026<br>Pukul 08.00 – 10.00 WIB</p>
+          <p class="mt-2 text-sm font-semibold flex items-center justify-center gap-1.5 text-cream">
+            <iconify-icon icon="solar:buildings-2-linear" class="text-sm text-rose"></iconify-icon>
+            The Yasa Luxury Hotel
+          </p>
+          <p class="text-xs text-cream/70">Jl. Contoh Alamat No. 25, Bandung</p>
+        </div>
+
+        <div class="glass rounded-2xl p-6 reveal shadow-xl border border-rose/25">
+          <h3 class="font-serif text-2xl text-cream">Resepsi</h3>
+          <p class="mt-2 text-sm text-peach">Rabu, 30 Desember 2026<br>Pukul 10.00 – 14.00 WIB</p>
+          <p class="mt-2 text-sm font-semibold flex items-center justify-center gap-1.5 text-cream">
+            <iconify-icon icon="solar:buildings-2-linear" class="text-sm text-rose"></iconify-icon>
+            The Yasa Luxury Hotel
+          </p>
+          <p class="text-xs text-cream/70">Jl. Contoh Alamat No. 25, Bandung</p>
+          <div class="flex gap-2 justify-center mt-4 text-xs">
+            <a href="https://maps.google.com" target="_blank" class="bg-charcoal hover:bg-darkcharcoal text-cream rounded-full px-4 py-2 flex items-center gap-1.5 transition border border-rose/30">
+              <iconify-icon icon="solar:map-point-wave-bold" class="text-sm text-rose"></iconify-icon>
+              <span>Navigasi Map</span>
+            </a>
+            <a href="#" class="bg-rose/20 hover:bg-rose/30 text-cream rounded-full px-4 py-2 flex items-center gap-1.5 transition border border-rose/40">
+              <iconify-icon icon="solar:calendar-add-bold" class="text-sm text-peach"></iconify-icon>
+              <span>Simpan Tanggal</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="reveal text-left glass rounded-2xl p-6 border border-rose/30">
+          <h3 class="font-serif text-2xl flex items-center gap-2 text-cream">
+            <iconify-icon icon="solar:videocamera-record-bold-duotone" class="text-rose"></iconify-icon>
+            <span>Live Streaming</span>
+          </h3>
+          <p class="text-sm mt-2 text-cream/80">Acara akan disiarkan langsung melalui internet. Silakan klik tombol di bawah untuk menonton.</p>
+          <a href="#" class="inline-flex items-center gap-2 mt-3 bg-cream text-charcoal rounded-full px-5 py-2 text-sm font-semibold hover:bg-peach transition shadow">
+            <iconify-icon icon="solar:play-circle-bold-duotone" class="text-base text-rose"></iconify-icon>
+            <span>Live Streaming</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALERI -->
+    <section id="galeri" class="px-4 py-14 bg-brown text-center">
+      <h2 class="font-serif text-3xl reveal text-cream">Galeri</h2>
+      <!-- 📷 FOTO #8: Video/foto utama galeri (landscape 16:9), file: img/galeri-utama.jpg -->
+      <div class="mt-6 aspect-video ph rounded-xl overflow-hidden relative zoom group cursor-pointer border border-rose/20">
+        <img src="img/galeri-utama.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt="" onerror="this.style.display='none'">
+        <span class="absolute inset-0 flex items-center justify-center text-4xl opacity-90 text-cream">
+          <iconify-icon icon="solar:play-circle-bold-duotone"></iconify-icon>
+        </span>
+      </div>
+      <!-- 📷 FOTO #9 – #14: 6 foto galeri (ukuran bebas, ideal 800x800), file: img/galeri-1.jpg … galeri-6.jpg -->
+      <div id="gallery" class="grid grid-cols-2 gap-2 mt-2"></div>
+    </section>
+
+    <!-- INSTAGRAM STORY + DRESSCODE -->
+    <section class="px-6 py-14 text-center bg-cream text-charcoal">
+      <div class="reveal">
+        <h2 class="font-serif text-2xl flex items-center justify-center gap-2 text-charcoal">
+          <iconify-icon icon="ri:instagram-line" class="text-2xl text-rose"></iconify-icon>
+          <span>Instagram Stories</span>
+        </h2>
+        <p class="text-sm mt-2 text-charcoal/80">Bagikan momen bahagia Anda dengan stories Instagram dan tag kami.</p>
+        <a href="#" class="mt-4 inline-flex items-center gap-3 bg-white rounded-xl p-3 text-left shadow text-sm hover:bg-peach/30 transition border border-rose/30 text-charcoal">
+          <span class="w-10 h-10 rounded-full bg-peach/40 flex items-center justify-center text-xl text-rose">
+            <iconify-icon icon="solar:camera-bold-duotone"></iconify-icon>
+          </span>
+          <span>Download<br><b>Template IG Story</b></span>
+        </a>
+      </div>
+      <div class="mt-10 bg-white rounded-2xl p-6 shadow-md reveal border border-rose/20">
+        <h2 class="font-serif text-2xl tracking-widest flex items-center justify-center gap-2 text-charcoal">
+          <iconify-icon icon="solar:t-shirt-linear" class="text-xl text-rose"></iconify-icon>
+          <span>DRESSCODE</span>
+        </h2>
+        <p class="text-xs mt-2 text-charcoal/80">Mohon berpakaian sesuai tema warna berikut:</p>
+        <!-- 4 colors palette -->
+        <div class="flex justify-center gap-3 mt-5">
+          <div class="flex flex-col items-center">
+            <span class="w-9 h-9 rounded-full bg-[#FFF5F5] border-2 border-rose/40 shadow"></span>
+            <span class="text-[10px] text-charcoal/70 mt-1">Blush</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <span class="w-9 h-9 rounded-full bg-[#F7D7D1] shadow"></span>
+            <span class="text-[10px] text-charcoal/70 mt-1">Peach</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <span class="w-9 h-9 rounded-full bg-[#E3B5BE] shadow"></span>
+            <span class="text-[10px] text-charcoal/70 mt-1">Rose</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <span class="w-9 h-9 rounded-full bg-[#494949] shadow"></span>
+            <span class="text-[10px] text-charcoal/70 mt-1">Charcoal</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROTOKOL KESEHATAN -->
+    <section class="px-6 py-14 text-center bg-brown border-t border-rose/10">
+      <h2 class="font-serif text-2xl reveal flex items-center justify-center gap-2 text-cream">
+        <iconify-icon icon="solar:shield-check-linear" class="text-rose"></iconify-icon>
+        <span>Protokol Kesehatan</span>
+      </h2>
+      <div class="grid grid-cols-2 gap-4 mt-6 text-xs">
+        <div class="glass rounded-xl p-4 reveal-l flex flex-col items-center">
+          <iconify-icon icon="healthicons:mask-outline" class="text-3xl mb-1 text-peach"></iconify-icon>
+          <span class="text-cream">Gunakan masker</span>
+        </div>
+        <div class="glass rounded-xl p-4 reveal-r flex flex-col items-center">
+          <iconify-icon icon="solar:hand-stars-linear" class="text-3xl mb-1 text-peach"></iconify-icon>
+          <span class="text-cream">Cuci tangan</span>
+        </div>
+        <div class="glass rounded-xl p-4 reveal-l flex flex-col items-center">
+          <iconify-icon icon="solar:users-group-two-rounded-linear" class="text-3xl mb-1 text-peach"></iconify-icon>
+          <span class="text-cream">Jaga jarak</span>
+        </div>
+        <div class="glass rounded-xl p-4 reveal-r flex flex-col items-center">
+          <iconify-icon icon="solar:temperature-linear" class="text-3xl mb-1 text-peach"></iconify-icon>
+          <span class="text-cream">Cek suhu tubuh</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- KADO -->
+    <section id="kado" class="relative px-6 py-14 text-center ph">
+      <!-- 📷 FOTO #16 (opsional): latar section kado, file: img/bg-kado.jpg -->
+      <img src="img/bg-kado.jpg" class="absolute inset-0 w-full h-full object-cover opacity-15" alt="" onerror="this.style.display='none'">
+      <div class="relative">
+        <h2 class="font-serif text-3xl reveal flex items-center justify-center gap-2 text-cream">
+          <iconify-icon icon="solar:gift-linear" class="text-rose"></iconify-icon>
+          <span>Hadiah</span>
+        </h2>
+        <p class="text-sm mt-3 reveal text-peach">Doa restu Anda adalah hadiah terindah. Namun bila ingin memberi tanda kasih, dapat melalui:</p>
+        <div class="glass rounded-2xl p-5 mt-6 reveal border border-rose/25 shadow-xl">
+          <p class="font-serif text-xl text-cream">Bank BCA</p>
+          <p id="rek" class="text-2xl tracking-widest mt-1 text-peach font-mono">1234567890</p>
+          <p class="text-sm text-cream/80">a.n. Bagus Tarianto</p>
+          <button onclick="copyRek()" class="mt-3 bg-cream hover:bg-peach text-charcoal rounded-full px-5 py-2 text-sm font-semibold inline-flex items-center gap-1.5 active:scale-95 transition border border-rose/30">
+            <iconify-icon icon="solar:copy-linear" class="text-rose"></iconify-icon>
+            <span>Salin Rekening</span>
+          </button>
+        </div>
+        <div class="glass rounded-2xl p-5 mt-4 reveal border border-rose/25 shadow-xl">
+          <p class="font-serif text-xl flex items-center justify-center gap-1.5 text-cream">
+            <iconify-icon icon="solar:box-linear" class="text-rose"></iconify-icon>
+            <span>Kirim Hadiah</span>
+          </p>
+          <p class="text-sm mt-1 text-cream/90">Jl. Contoh Alamat No. 10, Bandung<br>(Penerima: Arina Febriana)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- UCAPAN & DOA -->
+    <section id="ucapan" class="px-6 py-14 bg-brown border-t border-rose/10">
+      <h2 class="font-serif text-3xl text-center reveal flex items-center justify-center gap-2 text-cream">
+        <iconify-icon icon="solar:chat-round-dots-linear" class="text-rose"></iconify-icon>
+        <span>Ucapan &amp; Doa</span>
+      </h2>
+      <div class="mt-6 space-y-3 reveal">
+        <input id="wNama" placeholder="Nama" class="w-full bg-darkcharcoal/60 border border-rose/30 rounded px-3 py-2 text-sm text-cream placeholder-cream/40 outline-none focus:border-rose">
+        <textarea id="wPesan" rows="3" placeholder="Tulis ucapan & doa" class="w-full bg-darkcharcoal/60 border border-rose/30 rounded px-3 py-2 text-sm text-cream placeholder-cream/40 outline-none focus:border-rose"></textarea>
+        <select id="wHadir" class="w-full bg-darkcharcoal/60 border border-rose/30 rounded px-3 py-2 text-sm text-cream">
+          <option class="text-charcoal bg-cream">Hadir</option><option class="text-charcoal bg-cream">Tidak Hadir</option><option class="text-charcoal bg-cream">Masih Ragu</option>
+        </select>
+        <button onclick="kirimUcapan()" class="w-full bg-cream text-charcoal font-semibold rounded py-2 text-sm flex items-center justify-center gap-2 hover:bg-peach transition border border-rose/40">
+          <iconify-icon icon="solar:plain-bold-duotone" class="text-base text-rose"></iconify-icon>
+          <span>Kirim Ucapan</span>
+        </button>
+      </div>
+      <div id="wList" class="mt-6 space-y-3 max-h-80 overflow-y-auto pr-1"></div>
+    </section>
+
+    <!-- PENUTUP -->
+    <section class="relative px-6 py-20 text-center ph overflow-hidden">
+      <!-- 📷 FOTO #17: Foto penutup (portrait), file: img/penutup.jpg -->
+      <img src="img/penutup.jpg" class="absolute inset-0 w-full h-full object-cover opacity-25" alt="" onerror="this.style.display='none'">
+      <div class="absolute inset-0 bg-gradient-to-t from-darkcharcoal/95 via-darkcharcoal/70 to-transparent"></div>
+      <div class="relative">
+        <p class="text-xs reveal text-peach">Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.</p>
+        <h2 class="font-serif text-4xl mt-6 zoom text-cream">Terima Kasih</h2>
+        <p class="font-serif text-xl mt-3 text-peach">Vea &amp; Raka</p>
+        <p class="text-xs mt-16 opacity-50 text-cream">Dibuat oleh GNVisual</p>
+      </div>
+    </section>
+    <div class="h-24 bg-darkcharcoal"></div>
+  </div>
+
+  <!-- NAV BAWAH (floating estetik Iconify) -->
+  <nav id="nav" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 bg-cream/95 backdrop-blur-md text-charcoal rounded-full p-1.5 flex gap-1 shadow-2xl translate-y-24 transition-transform duration-700 border border-rose/30">
+    <a data-t="home" title="Beranda" class="nv w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition hover:bg-peach/40">
+      <iconify-icon icon="solar:home-2-linear" class="text-xl"></iconify-icon>
+    </a>
+    <a data-t="mempelai" title="Mempelai" class="nv w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition hover:bg-peach/40">
+      <iconify-icon icon="solar:heart-linear" class="text-xl"></iconify-icon>
+    </a>
+    <a data-t="galeri" title="Galeri" class="nv w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition hover:bg-peach/40">
+      <iconify-icon icon="solar:gallery-wide-linear" class="text-xl"></iconify-icon>
+    </a>
+    <a data-t="kado" title="Hadiah" class="nv w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition hover:bg-peach/40">
+      <iconify-icon icon="solar:gift-linear" class="text-xl"></iconify-icon>
+    </a>
+    <a data-t="ucapan" title="Ucapan" class="nv w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition hover:bg-peach/40">
+      <iconify-icon icon="solar:chat-round-dots-linear" class="text-xl"></iconify-icon>
+    </a>
+  </nav>
+
+  <!-- TOMBOL QR CODE (tab samping) -->
+  <button onclick="qr.classList.remove('hidden')" class="absolute right-0 top-1/2 -translate-y-1/2 z-30 bg-cream text-charcoal text-[10px] font-bold rounded-l-xl px-2 py-3 flex flex-col items-center gap-1 shadow-lg hover:bg-peach transition border-y border-l border-rose/30">
+    <iconify-icon icon="solar:qr-code-linear" class="text-base text-rose"></iconify-icon>
+    <span class="[writing-mode:vertical-rl] tracking-widest">QR CODE</span>
+  </button>
+
+  <!-- MUSIK -->
+  <button id="musicBtn" class="absolute top-4 right-4 z-30 w-10 h-10 rounded-full glass hidden flex items-center justify-center text-sm shadow-lg hover:bg-rose/20 transition border border-rose/30">
+    <iconify-icon icon="solar:music-note-2-bold" class="text-lg text-rose"></iconify-icon>
+  </button>
+  <!-- 🎵 FILE MUSIK: ganti src dengan lagu Anda, file: audio/lagu.mp3 -->
+  <audio id="bgm" src="audio/lagu.mp3" loop></audio>
+</main>
+
+<!-- MODAL QR -->
+<div id="qr" class="hidden fixed inset-0 z-[90] bg-darkcharcoal/80 flex items-center justify-center p-6" onclick="this.classList.add('hidden')">
+  <div class="bg-cream text-charcoal rounded-2xl p-6 text-center w-72 zoom show shadow-2xl relative border border-rose/30" onclick="event.stopPropagation()">
+    <button onclick="qr.classList.add('hidden')" class="absolute top-4 right-4 text-charcoal/50 hover:text-charcoal transition">
+      <iconify-icon icon="solar:close-circle-linear" class="text-2xl"></iconify-icon>
+    </button>
+    <div class="w-12 h-12 mx-auto rounded-full bg-peach/40 flex items-center justify-center text-rose mb-2">
+      <iconify-icon icon="solar:qr-code-bold-duotone" class="text-2xl"></iconify-icon>
+    </div>
+    <p class="font-serif text-lg font-bold">QR Code Tamu</p>
+    <!-- 📷 FOTO #18: gambar QR Code tamu, file: img/qr.png -->
+    <div class="w-44 h-44 mx-auto my-4 bg-white p-2 rounded-xl flex items-center justify-center border border-rose/30">
+      <img src="img/qr.png" class="w-full h-full object-contain" alt="QR" onerror="this.style.display='none'">
+    </div>
+    <p class="text-xs text-charcoal/70">Tunjukkan QR ini saat tiba di lokasi</p>
+    <button onclick="qr.classList.add('hidden')" class="mt-4 bg-charcoal text-cream rounded-full px-6 py-2 text-xs font-semibold hover:bg-darkcharcoal transition inline-flex items-center gap-1.5 border border-rose/30">
+      <iconify-icon icon="solar:check-circle-linear" class="text-sm text-rose"></iconify-icon>
+      <span>Tutup</span>
+    </button>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), panel=$('#panel');
+// Nama tamu dari link: undangan.html?to=Nama+Tamu
+const to=new URLSearchParams(location.search).get('to'); if(to)$('#guest').textContent=to;
+
+// Loader
+window.addEventListener('load',()=>setTimeout(()=>{$('#loader').style.opacity=0;setTimeout(()=>$('#loader').remove(),700)},900));
+
+// Countdown (ubah tanggal acara di sini)
+const target=new Date('2026-12-30T08:00:00+07:00');
+function cd(){
+  let d=Math.max(0,target-new Date()),s=Math.floor(d/1e3),
+  v=[Math.floor(s/86400),Math.floor(s%86400/3600),Math.floor(s%3600/60),s%60],l=['Hari','Jam','Menit','Detik'];
+  const h=v.map((n,i)=>`<div class="text-center"><div class="w-12 h-12 rounded-full bg-darkcharcoal/80 border border-rose/30 flex items-center justify-center text-sm font-serif font-bold text-peach shadow">${String(n).padStart(2,'0')}</div><p class="text-[10px] mt-1 text-peach/90 font-medium">${l[i]}</p></div>`).join('');
+  $('#cdCover').innerHTML=h;$('#cdHero').innerHTML=h;
+}
+cd();setInterval(cd,1000);
+
+// Buka undangan
+$('#openBtn').onclick=()=>{
+  $('#cover').classList.add('hide');
+  document.body.classList.remove('overflow-hidden');
+  $('#nav').classList.remove('translate-y-24');
+  $('#musicBtn').classList.remove('hidden');
+  $('#bgm').play().catch(()=>{});playing=true;
+};
+let playing=false;
+$('#musicBtn').onclick=()=>{
+  if(playing){
+    bgm.pause();
+    $('#musicBtn').innerHTML='<iconify-icon icon="solar:volume-cross-bold" class="text-lg text-rose/60"></iconify-icon>';
+  }else{
+    bgm.play().catch(()=>{});
+    $('#musicBtn').innerHTML='<iconify-icon icon="solar:music-note-2-bold" class="text-lg text-rose animate-pulse"></iconify-icon>';
+  }
+  playing=!playing;
+};
+
+// Galeri (6 foto)
+$('#gallery').innerHTML=[1,2,3,4,5,6].map(i=>`<div class="aspect-square ph overflow-hidden rounded-lg zoom border border-rose/20"><img src="img/galeri-${i}.jpg" class="w-full h-full object-cover hover:scale-110 transition duration-700" alt="" onerror="this.style.display='none'"></div>`).join('');
+
+// Animasi scroll
+const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('show')),{root:panel,threshold:.15});
+const watch=()=>document.querySelectorAll('.reveal,.reveal-l,.reveal-r,.zoom').forEach(el=>io.observe(el));watch();
+
+// Navigasi bawah
+document.querySelectorAll('.nv').forEach(a=>a.onclick=()=>document.getElementById(a.dataset.t).scrollIntoView({behavior:'smooth'}));
+const secs=['home','mempelai','galeri','kado','ucapan'].map(id=>document.getElementById(id));
+panel.addEventListener('scroll',()=>{
+  let c=0;secs.forEach((s,i)=>{if(s.offsetTop-panel.clientHeight/2<=panel.scrollTop)c=i});
+  document.querySelectorAll('.nv').forEach((n,i)=>{
+    n.classList.toggle('bg-charcoal',i===c);
+    n.classList.toggle('text-cream',i===c);
+    n.classList.toggle('shadow-md',i===c);
+  });
+});
+
+// Salin rekening
+function copyRek(){
+  navigator.clipboard.writeText($('#rek').textContent);
+  alert('Nomor rekening disalin');
+}
+
+// Ucapan & Doa
+let wishes=JSON.parse(localStorage.getItem('wishes')||'[]');
+function renderW(){
+  $('#wList').innerHTML=wishes.map(w=>`<div class="bg-cream text-charcoal rounded-lg p-3 text-sm reveal show shadow-md border-l-4 border-rose"><div class="flex items-center gap-1.5"><iconify-icon icon="solar:user-circle-linear" class="text-sm text-rose"></iconify-icon><b class="text-charcoal">${w.n}</b> <span class="text-[10px] text-charcoal/60">• ${w.h}</span></div><p class="mt-1 text-charcoal/90">${w.p}</p></div>`).join('')||'<p class="text-center text-sm text-peach/70">Belum ada ucapan</p>';
+}
+function kirimUcapan(){
+  const n=$('#wNama').value.trim(),p=$('#wPesan').value.trim();if(!n||!p)return alert('Lengkapi nama dan ucapan');
+  const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  wishes.unshift({n:esc(n),p:esc(p),h:$('#wHadir').value});localStorage.setItem('wishes',JSON.stringify(wishes));
+  $('#wNama').value=$('#wPesan').value='';renderW();
+}
+renderW();
+
+// Kelopak jatuh
+for(let i=0;i<14;i++){const p=document.createElement('i');p.className='petal';
+  p.style.left=Math.random()*100+'vw';p.style.animationDuration=8+Math.random()*8+'s';p.style.animationDelay=Math.random()*8+'s';document.body.appendChild(p)}
+</script>
+</body>
+</html>

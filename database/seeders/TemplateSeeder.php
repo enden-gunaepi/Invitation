@@ -107,6 +107,62 @@ class TemplateSeeder extends Seeder
             'is_active' => true,
         ]);
 
+        Template::updateOrCreate(['slug' => 'wedding-gnv3'], [
+            'name' => 'Wedding GNV3',
+            'category' => 'wedding',
+            'thumbnail' => 'template-thumbnails/wedding-gnv3.svg',
+            'html_path' => 'invitations.templates.wedding-gnv3.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
+            'color_schemes' => [
+                ['primary' => '#E3B5BE', 'secondary' => '#494949', 'accent' => '#F7D7D1'],
+                ['primary' => '#F7D7D1', 'secondary' => '#242223', 'accent' => '#FFF5F5'],
+            ],
+            'is_premium' => false,
+            'is_active' => true,
+        ]);
+
+        Template::updateOrCreate(['slug' => 'wedding-floral'], [
+            'name' => 'Wedding Floral',
+            'category' => 'wedding',
+            'thumbnail' => 'template-thumbnails/wedding-floral.svg',
+            'html_path' => 'invitations.templates.wedding-floral.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
+            'color_schemes' => [
+                ['primary' => '#721C2C', 'secondary' => '#4A0E17', 'accent' => '#F5DDE2'],
+                ['primary' => '#800020', 'secondary' => '#30070D', 'accent' => '#FAF0F2'],
+            ],
+            'is_premium' => false,
+            'is_active' => true,
+        ]);
+
+        Template::updateOrCreate(['slug' => 'wedding-rustic-burgundy'], [
+            'name' => 'Wedding Rustic Burgundy',
+            'category' => 'wedding',
+            'thumbnail' => 'template-thumbnails/wedding-rustic-burgundy.svg',
+            'html_path' => 'invitations.templates.wedding-rustic-burgundy.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
+            'color_schemes' => [
+                ['primary' => '#6b0000', 'secondary' => '#3a0000', 'accent' => '#fcd5d9'],
+                ['primary' => '#721C2C', 'secondary' => '#1a0000', 'accent' => '#FAF0F2'],
+            ],
+            'is_premium' => false,
+            'is_active' => true,
+        ]);
+
+        Template::updateOrCreate(['slug' => 'wedding-eternal-noir'], [
+            'name' => 'Wedding Eternal Noir',
+            'category' => 'wedding',
+            'thumbnail' => 'template-thumbnails/wedding-eternal-noir.svg',
+            'html_path' => 'invitations.templates.wedding-eternal-noir.index',
+            'render_mode' => Template::RENDER_MODE_BLADE,
+            'color_schemes' => [
+                ['primary' => '#1c1a17', 'secondary' => '#b8975a', 'accent' => '#2b2b2b'],
+                ['primary' => '#12110f', 'secondary' => '#d4af37', 'accent' => '#3a3a3a'],
+            ],
+            'is_premium' => false,
+            'is_active' => true,
+        ]);
+
         Template::updateOrCreate(['slug' => 'wedding-flowers'], [
             'name' => 'Wedding Flowers',
             'category' => 'wedding',

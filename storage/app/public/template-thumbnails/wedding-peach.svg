@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff5ef"/><stop offset="100%" stop-color="#ffd9c2"/></linearGradient></defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <ellipse cx="200" cy="120" rx="180" ry="120" fill="#f6b494" fill-opacity="0.35"/>
+  <ellipse cx="1000" cy="520" rx="220" ry="140" fill="#e89570" fill-opacity="0.32"/>
+  <text x="90" y="310" fill="#9c6246" font-family="Georgia" font-size="74" font-weight="700">Wedding Peach Garden</text>
+  <text x="90" y="370" fill="#b26f4e" font-family="sans-serif" font-size="30">Peach floral romantic style</text>
+</svg>

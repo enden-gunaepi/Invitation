@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3f2a1f"/><stop offset="100%" stop-color="#8b5e3c"/></linearGradient></defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <rect x="70" y="70" width="1060" height="490" fill="none" stroke="#fef3c7" stroke-opacity="0.6" stroke-width="4"/>
+  <text x="100" y="320" fill="#fff7ed" font-family="Georgia" font-size="74" font-weight="700">Wedding Rustic</text>
+  <text x="100" y="380" fill="#fed7aa" font-family="sans-serif" font-size="30">Warm earthy style</text>
+</svg>
